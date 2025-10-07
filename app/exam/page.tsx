@@ -49,8 +49,10 @@ export default function ExamPage() {
 
   if (!user) return null
 
-  const handleAnswer = (questionId: string, optionId: string) => {
-    setAnswers((prev) => ({ ...prev, [questionId]: optionId }))
+  const handleAnswer = (optionId: string) => {
+    if (currentQuestion) {
+      setAnswers((prev) => ({ ...prev, [currentQuestion.id]: optionId }))
+    }
   }
 
   const handleNext = () => {
@@ -98,10 +100,13 @@ export default function ExamPage() {
       const userAnswer = answers[q.id]
       if (!userAnswer) {
         unanswered++
-      } else if (userAnswer === q.correct_option_id) {
-        correct++
       } else {
-        incorrect++
+        const selectedOption = q.options.find(opt => opt.id === userAnswer)
+        if (selectedOption?.is_correct) {
+          correct++
+        } else {
+          incorrect++
+        }
       }
     })
 
@@ -111,22 +116,6 @@ export default function ExamPage() {
   if (!examStarted) {
     return (
       <div className="min-h-screen flex flex-col bg-background">
-        <header className="border-b border-border">
-          <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Button variant="ghost" size="icon" onClick={() => router.back()}>
-                <ArrowLeft className="h-5 w-5" />
-              </Button>
-              <div className="flex items-center gap-2">
-                <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
-                  <BookOpen className="h-5 w-5 text-primary-foreground" />
-                </div>
-                <span className="text-xl font-bold">ExamPrep</span>
-              </div>
-            </div>
-          </div>
-        </header>
-
         <main className="flex-1 flex items-center justify-center px-4 py-12">
           <Card className="w-full max-w-2xl p-8">
             <div className="space-y-6">
@@ -255,20 +244,12 @@ export default function ExamPage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
-      {/* Header */}
+      {/* Exam Header */}
       <header className="border-b border-border sticky top-0 bg-background z-10">
         <div className="container mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2">
-                <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
-                  <BookOpen className="h-5 w-5 text-primary-foreground" />
-                </div>
-                <span className="text-lg font-bold hidden sm:inline">ExamPrep</span>
-              </div>
-              <div className="text-sm text-muted-foreground hidden md:block">
-                {exam.title} • Batch {exam.batch}
-              </div>
+            <div className="text-sm text-muted-foreground">
+              {exam.title} • Batch {exam.batch}
             </div>
             <div className="flex items-center gap-4">
               <ExamTimer durationMinutes={duration} onTimeUp={handleTimeUp} />
@@ -298,14 +279,8 @@ export default function ExamPage() {
               question={currentQuestion}
               questionNumber={currentQuestionIndex + 1}
               totalQuestions={questions.length}
-              selectedAnswer={answers[currentQuestion.id]}
-              onAnswer={handleAnswer}
-              onNext={handleNext}
-              onPrevious={handlePrevious}
-              isFirst={currentQuestionIndex === 0}
-              isLast={currentQuestionIndex === questions.length - 1}
-              isFlagged={flagged.has(currentQuestion.id)}
-              onToggleFlag={() => toggleFlag(currentQuestion.id)}
+              selectedOption={answers[currentQuestion.id] || null}
+              onSelectOption={handleAnswer}
             />
           </div>
 

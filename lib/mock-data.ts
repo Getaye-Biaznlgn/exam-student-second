@@ -5,7 +5,7 @@ export const mockUser: User = {
   email: "student@example.com",
   full_name: "Abebe Kebede",
   role: "student",
-  field: "Natural",
+  field: "natural",
   batch: "2024-A",
   created_at: new Date().toISOString(),
 }
