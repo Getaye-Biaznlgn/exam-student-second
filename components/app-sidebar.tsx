@@ -1,6 +1,6 @@
 "use client"
 
-import { BookOpen, Home, Brain, Clock, TrendingUp, LogOut } from "lucide-react"
+import { Home, Brain, Clock, TrendingUp, LogOut } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useAuth } from "@/lib/auth-context"
@@ -20,14 +20,6 @@ export function AppSidebar() {
 
   return (
     <div className="flex h-full w-64 flex-col border-r border-border bg-card">
-      {/* Logo */}
-      <div className="flex h-16 items-center gap-2 border-b border-border px-6">
-        <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
-          <BookOpen className="h-5 w-5 text-primary-foreground" />
-        </div>
-        <span className="text-xl font-bold">ExamPrep</span>
-      </div>
-
       {/* User Info */}
       <div className="border-b border-border px-6 py-4">
         <div className="space-y-1">
