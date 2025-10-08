@@ -1,5 +1,5 @@
 export type UserRole = "student" | "teacher" | "admin"
-export type ExamField = "Natural" | "Social"
+export type ExamField = "natural" | "social"
 export type QuestionType = "multiple_choice" | "true_false"
 export type ExamStatus = "not_started" | "in_progress" | "completed"
 

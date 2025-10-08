@@ -81,23 +81,12 @@ export default function PracticePage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
-      {/* Header */}
+      {/* Practice Header */}
       <header className="border-b border-border sticky top-0 bg-background z-10">
         <div className="container mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Button variant="ghost" size="icon" onClick={() => router.back()}>
-                <ArrowLeft className="h-5 w-5" />
-              </Button>
-              <div className="flex items-center gap-2">
-                <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
-                  <BookOpen className="h-5 w-5 text-primary-foreground" />
-                </div>
-                <span className="text-lg font-bold hidden sm:inline">ExamPrep</span>
-              </div>
-              <div className="text-sm text-muted-foreground hidden md:block">
-                {exam.title} • Batch {exam.batch}
-              </div>
+            <div className="text-sm text-muted-foreground">
+              {exam.title} • Batch {exam.batch}
             </div>
             <Button onClick={() => router.push("/select-field")} size="sm" variant="outline">
               Exit Practice
