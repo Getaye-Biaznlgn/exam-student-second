@@ -21,6 +21,7 @@ import {
   type RegisterPayload,
   type LoginPayload,
 } from "@/lib/api";
+import { SchoolSelect } from "@/components/school-select";
 
 export default function AuthPage() {
   const { user, login, loading: authLoading } = useAuth();
@@ -106,9 +107,6 @@ export default function AuthPage() {
     }
 
     try {
-      const payload: RegisterPayload = { ...formData };
-      delete (payload as any).password_confirm; // backend doesn't expect password_confirm
-
       const res = await registerStudent(formData);
 
       if (!res.success) throw new Error(res.message || "Registration failed");
@@ -218,43 +216,136 @@ export default function AuthPage() {
                 </CardHeader>
                 <CardContent>
                   <form onSubmit={handleRegister} className="space-y-4">
-                    {[
-                      { label: "Username", name: "username", type: "text" },
-                      { label: "Email", name: "email", type: "email" },
-                      {
-                        label: "Phone Number",
-                        name: "phone_number",
-                        type: "tel",
-                      },
-                      { label: "First Name", name: "first_name", type: "text" },
-                      { label: "Last Name", name: "last_name", type: "text" },
-                      { label: "School ID", name: "school_id", type: "text" },
-                      { label: "Student ID", name: "student_id", type: "text" },
-                      {
-                        label: "Date of Birth",
-                        name: "date_of_birth",
-                        type: "date",
-                      },
-                      { label: "Password", name: "password", type: "password" },
-                      {
-                        label: "Confirm Password",
-                        name: "password_confirm",
-                        type: "password",
-                      },
-                    ].map((field) => (
-                      <div className="space-y-2" key={field.name}>
-                        <Label htmlFor={field.name}>{field.label}</Label>
+                    {/* Username */}
+                    <div className="space-y-2">
+                      <Label htmlFor="username">Username</Label>
+                      <Input
+                        id="username"
+                        type="text"
+                        name="username"
+                        placeholder="Username"
+                        value={formData.username}
+                        onChange={handleInputChange}
+                        required
+                      />
+                    </div>
+
+                    {/* First Name and Last Name on same row */}
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="first_name">First Name</Label>
                         <Input
-                          id={field.name}
-                          type={field.type}
-                          name={field.name}
-                          placeholder={field.label}
-                          value={formData[field.name as keyof typeof formData]}
+                          id="first_name"
+                          type="text"
+                          name="first_name"
+                          placeholder="First Name"
+                          value={formData.first_name}
                           onChange={handleInputChange}
                           required
                         />
                       </div>
-                    ))}
+                      <div className="space-y-2">
+                        <Label htmlFor="last_name">Last Name</Label>
+                        <Input
+                          id="last_name"
+                          type="text"
+                          name="last_name"
+                          placeholder="Last Name"
+                          value={formData.last_name}
+                          onChange={handleInputChange}
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    {/* Email */}
+                    <div className="space-y-2">
+                      <Label htmlFor="email">Email</Label>
+                      <Input
+                        id="email"
+                        type="email"
+                        name="email"
+                        placeholder="Email"
+                        value={formData.email}
+                        onChange={handleInputChange}
+                        required
+                      />
+                    </div>
+
+                    {/* Phone Number */}
+                    <div className="space-y-2">
+                      <Label htmlFor="phone_number">Phone Number</Label>
+                      <Input
+                        id="phone_number"
+                        type="tel"
+                        name="phone_number"
+                        placeholder="Phone Number"
+                        value={formData.phone_number}
+                        onChange={handleInputChange}
+                        required
+                      />
+                    </div>
+
+                    {/* Student ID and Date of Birth on same row */}
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="student_id">Student ID</Label>
+                        <Input
+                          id="student_id"
+                          type="text"
+                          name="student_id"
+                          placeholder="Student ID"
+                          value={formData.student_id}
+                          onChange={handleInputChange}
+                          required
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="date_of_birth">Date of Birth</Label>
+                        <Input
+                          id="date_of_birth"
+                          type="date"
+                          name="date_of_birth"
+                          placeholder="Date of Birth"
+                          value={formData.date_of_birth}
+                          onChange={handleInputChange}
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    {/* School Selection */}
+                    <SchoolSelect
+                      value={formData.school_id}
+                      onValueChange={(value) => setFormData(prev => ({ ...prev, school_id: value }))}
+                      disabled={isSubmitting}
+                    />
+
+                    {/* Password and Confirm Password */}
+                    <div className="space-y-2">
+                      <Label htmlFor="password">Password</Label>
+                      <Input
+                        id="password"
+                        type="password"
+                        name="password"
+                        placeholder="Password"
+                        value={formData.password}
+                        onChange={handleInputChange}
+                        required
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="password_confirm">Confirm Password</Label>
+                      <Input
+                        id="password_confirm"
+                        type="password"
+                        name="password_confirm"
+                        placeholder="Confirm Password"
+                        value={formData.password_confirm}
+                        onChange={handleInputChange}
+                        required
+                      />
+                    </div>
                     <Button
                       type="submit"
                       className="w-full"

@@ -157,16 +157,6 @@ export default function SelectFieldPage() {
               </CardContent>
             </Card>
           </div>
-
-          {/* Info Banner */}
-          <Card className="max-w-2xl mx-auto bg-primary/5 border-primary/20">
-            <CardContent className="pt-6">
-              <p className="text-center text-sm text-muted-foreground text-pretty">
-                <span className="font-semibold text-foreground">Pro Tip:</span> You can switch between fields anytime to
-                practice questions from different subjects and broaden your knowledge.
-              </p>
-            </CardContent>
-          </Card>
         </div>
       </main>
     </div>

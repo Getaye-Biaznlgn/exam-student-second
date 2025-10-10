@@ -84,3 +84,12 @@ export interface StudentProgress {
   average_score: number
   last_practice_date?: string
 }
+
+export interface School {
+  id: string
+  name: string
+  address: string
+  address_name: string
+  created_at: string
+  updated_at: string
+}

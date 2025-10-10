@@ -1,4 +1,5 @@
 const BASE_URL = "http://65.1.135.121:8000/api";
+import { School } from "./types";
 
 /** -------- Types -------- */
 
@@ -64,6 +65,18 @@ async function handleResponse<T>(res: Response): Promise<ApiResponse<T>> {
 }
 
 /** -------- API calls -------- */
+
+/** Fetch all schools */
+export async function fetchSchools(): Promise<ApiResponse<School[]>> {
+  const res = await fetch(`${BASE_URL}/admin/public/schools`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+
+  return handleResponse<School[]>(res);
+}
 
 /** Register a new student */
 export async function registerStudent(
