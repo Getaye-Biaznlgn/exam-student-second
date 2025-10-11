@@ -41,7 +41,7 @@ async function handleResponse<T>(res: Response): Promise<ApiResponse<T>> {
     return {
       success: false,
       message: "Unexpected response format.",
-      data: { raw: text.slice(0, 200) },
+      data: { raw: text.slice(0, 200) } as T,
       meta: {},
     };
   }

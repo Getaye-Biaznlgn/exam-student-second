@@ -11,7 +11,7 @@ import { mockExams } from "@/lib/mock-data"
 import { Progress } from "@/components/ui/progress"
 
 export default function PracticePage() {
-  const { user, isLoading } = useAuth()
+  const { user, loading } = useAuth()
   const router = useRouter()
   const searchParams = useSearchParams()
   const field = searchParams.get("field")
@@ -29,12 +29,12 @@ export default function PracticePage() {
   const currentQuestion = questions[currentQuestionIndex]
 
   useEffect(() => {
-    if (!user && !isLoading) {
+    if (!user && !loading) {
       router.push("/")
     }
-  }, [user, isLoading, router])
+  }, [user, loading, router])
 
-  if (isLoading) {
+  if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -115,8 +115,6 @@ export default function PracticePage() {
               totalQuestions={questions.length}
               onAnswer={handleAnswer}
               showExplanation={true}
-              isFlagged={flagged.has(currentQuestion.id)}
-              onToggleFlag={() => toggleFlag(currentQuestion.id)}
             />
 
             {/* Navigation */}

@@ -12,7 +12,7 @@ import { ExamTimer } from "@/components/exam-timer"
 import { Progress } from "@/components/ui/progress"
 
 export default function ExamPage() {
-  const { user, isLoading } = useAuth()
+  const { user, loading } = useAuth()
   const router = useRouter()
   const searchParams = useSearchParams()
   const field = searchParams.get("field")
@@ -34,12 +34,12 @@ export default function ExamPage() {
   const duration = exam.duration_minutes || 120
 
   useEffect(() => {
-    if (!user && !isLoading) {
+    if (!user && !loading) {
       router.push("/")
     }
-  }, [user, isLoading, router])
+  }, [user, loading, router])
 
-  if (isLoading) {
+  if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>

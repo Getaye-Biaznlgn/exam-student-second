@@ -42,21 +42,21 @@ const subjectColors = {
 }
 
 export default function SelectSubjectPage() {
-  const { user, isLoading } = useAuth()
+  const { user, loading } = useAuth()
   const router = useRouter()
   const searchParams = useSearchParams()
   const field = searchParams.get("field") as "natural" | "social" | null
 
   useEffect(() => {
-    if (!user && !isLoading) {
+    if (!user && !loading) {
       router.push("/")
     }
     if (!field) {
       router.push("/select-field")
     }
-  }, [user, isLoading, field, router])
+  }, [user, loading, field, router])
 
-  if (isLoading || !field) {
+  if (loading || !field) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>

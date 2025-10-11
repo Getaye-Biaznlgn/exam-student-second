@@ -9,22 +9,22 @@ import { BookOpen, ArrowLeft, Calendar } from "lucide-react"
 import { mockExams } from "@/lib/mock-data"
 
 export default function SelectBatchPage() {
-  const { user, isLoading } = useAuth()
+  const { user, loading } = useAuth()
   const router = useRouter()
   const searchParams = useSearchParams()
   const field = searchParams.get("field")
   const subject = searchParams.get("subject")
 
   useEffect(() => {
-    if (!user && !isLoading) {
+    if (!user && !loading) {
       router.push("/")
     }
     if (!field || !subject) {
       router.push("/select-field")
     }
-  }, [user, isLoading, field, subject, router])
+  }, [user, loading, field, subject, router])
 
-  if (isLoading || !field || !subject) {
+  if (loading || !field || !subject) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>

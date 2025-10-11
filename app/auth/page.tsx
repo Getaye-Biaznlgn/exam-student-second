@@ -152,7 +152,7 @@ export default function AuthPage() {
 
           <Tabs
             defaultValue={mode}
-            onValueChange={(val) => setMode(val)}
+            onValueChange={(val) => setMode(val as "login" | "register")}
             className="w-full"
           >
             <TabsList className="grid w-full grid-cols-2">

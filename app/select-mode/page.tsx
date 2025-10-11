@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button"
 import { BookOpen, ArrowLeft, Brain, Clock } from "lucide-react"
 
 export default function SelectModePage() {
-  const { user, isLoading } = useAuth()
+  const { user, loading } = useAuth()
   const router = useRouter()
   const searchParams = useSearchParams()
   const field = searchParams.get("field")
@@ -16,15 +16,15 @@ export default function SelectModePage() {
   const batch = searchParams.get("batch")
 
   useEffect(() => {
-    if (!user && !isLoading) {
+    if (!user && !loading) {
       router.push("/")
     }
     if (!field || !subject || !batch) {
       router.push("/select-field")
     }
-  }, [user, isLoading, field, subject, batch, router])
+  }, [user, loading, field, subject, batch, router])
 
-  if (isLoading || !field || !subject || !batch) {
+  if (loading || !field || !subject || !batch) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
