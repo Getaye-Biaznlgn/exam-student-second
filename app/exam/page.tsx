@@ -5,7 +5,8 @@ import { useRouter, useSearchParams } from "next/navigation"
 import { useAuth } from "@/lib/auth-context"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import { BookOpen, ArrowLeft, Flag } from "lucide-react"
+import { ArrowLeft, ArrowRight, Flag } from "lucide-react"
+import Image from "next/image"
 import { mockExams } from "@/lib/mock-data"
 import { ExamQuestionCard } from "@/components/exam-question-card"
 import { ExamTimer } from "@/components/exam-timer"
@@ -188,10 +189,15 @@ export default function ExamPage() {
         <header className="border-b border-border">
           <div className="container mx-auto px-4 py-4 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
-                <BookOpen className="h-5 w-5 text-primary-foreground" />
+              <div className="h-12 w-24 rounded-lg overflow-hidden">
+                <Image 
+                  src="/logo.png" 
+                  alt="SmartPrep Logo" 
+                  width={150} 
+                  height={80}
+                  className="w-full h-full object-contain"
+                />
               </div>
-              <span className="text-xl font-bold">ExamPrep</span>
             </div>
           </div>
         </header>
@@ -282,6 +288,56 @@ export default function ExamPage() {
               selectedOption={answers[currentQuestion.id] || null}
               onSelectOption={handleAnswer}
             />
+
+            {/* Navigation Buttons */}
+            <Card className="mt-6">
+              <div className="p-6">
+                <div className="flex justify-between items-center">
+                  <Button 
+                    variant="outline" 
+                    onClick={handlePrevious} 
+                    disabled={currentQuestionIndex === 0}
+                    className="flex items-center gap-2"
+                  >
+                    <ArrowLeft className="h-4 w-4" />
+                    Previous
+                  </Button>
+
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-muted-foreground">
+                      Question {currentQuestionIndex + 1} of {questions.length}
+                    </span>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => toggleFlag(currentQuestion.id)}
+                      className={flagged.has(currentQuestion.id) ? "bg-destructive/10 text-destructive" : ""}
+                    >
+                      <Flag className="h-4 w-4 mr-1" />
+                      {flagged.has(currentQuestion.id) ? "Unflag" : "Flag"}
+                    </Button>
+                  </div>
+
+                  {currentQuestionIndex === questions.length - 1 ? (
+                    <Button 
+                      onClick={handleSubmit}
+                      className="flex items-center gap-2 bg-green-600 hover:bg-green-700"
+                    >
+                      Submit Exam
+                      <ArrowRight className="h-4 w-4" />
+                    </Button>
+                  ) : (
+                    <Button 
+                      onClick={handleNext} 
+                      className="flex items-center gap-2"
+                    >
+                      Next
+                      <ArrowRight className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </Card>
           </div>
 
           {/* Question Navigator - Right Side */}

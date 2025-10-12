@@ -115,6 +115,7 @@ export default function PracticePage() {
               totalQuestions={questions.length}
               onAnswer={handleAnswer}
               showExplanation={true}
+              currentAnswer={answers.get(currentQuestion.id) || null}
             />
 
             {/* Navigation */}

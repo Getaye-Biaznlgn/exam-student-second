@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import { CheckCircle2, XCircle, Lightbulb, Brain } from "lucide-react"
 import type { Question } from "@/lib/types"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { cn } from "@/lib/utils"
 import { AITutorDialog } from "./ai-tutor-dialog"
 
@@ -17,6 +17,7 @@ interface QuestionCardProps {
   totalQuestions: number
   onAnswer: (questionId: string, optionId: string, isCorrect: boolean) => void
   showExplanation?: boolean
+  currentAnswer?: { optionId: string; isCorrect: boolean } | null
 }
 
 export function QuestionCard({
@@ -25,11 +26,18 @@ export function QuestionCard({
   totalQuestions,
   onAnswer,
   showExplanation = true,
+  currentAnswer = null,
 }: QuestionCardProps) {
-  const [selectedOption, setSelectedOption] = useState<string | null>(null)
-  const [hasAnswered, setHasAnswered] = useState(false)
+  const [selectedOption, setSelectedOption] = useState<string | null>(currentAnswer?.optionId || null)
+  const [hasAnswered, setHasAnswered] = useState(!!currentAnswer)
   const [showHint, setShowHint] = useState(false)
   const [showAITutor, setShowAITutor] = useState(false)
+
+  // Update component state when currentAnswer changes
+  useEffect(() => {
+    setSelectedOption(currentAnswer?.optionId || null)
+    setHasAnswered(!!currentAnswer)
+  }, [currentAnswer])
 
   const handleSubmit = () => {
     if (!selectedOption) return

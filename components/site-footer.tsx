@@ -16,7 +16,7 @@ export function SiteFooter() {
               <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
                 <BookOpen className="h-5 w-5 text-primary-foreground" />
               </div>
-              <span className="text-lg font-bold">ExamPrep</span>
+              <span className="text-lg font-bold">SmartPrep</span>
             </div>
             <p className="text-sm text-primary-foreground/80">
               Practice smarter with AI explanations, progress tracking, and realistic exam simulations.
@@ -79,7 +79,7 @@ export function SiteFooter() {
         </div>
 
         <div className="mt-8 pt-6 border-t border-primary-foreground/20 text-xs text-primary-foreground/80 flex items-center justify-between">
-          <span>© {new Date().getFullYear()} ExamPrep. All rights reserved.</span>
+          <span>© {new Date().getFullYear()} SmartPrep. All rights reserved.</span>
           <div className="flex items-center gap-3">
             <Link href="#about" className="hover:text-primary-foreground">About</Link>
             <Link href="#contact" className="hover:text-primary-foreground">Contact</Link>
