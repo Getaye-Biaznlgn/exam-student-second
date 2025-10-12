@@ -114,9 +114,9 @@ export default function LandingPage() {
       <section id="about" className="container mx-auto max-w-5xl mt-16 px-4">
         <div className="space-y-8">
           <div className="text-center space-y-3">
-            <h2 className="text-3xl font-bold">About ExamPrep</h2>
+            <h2 className="text-3xl font-bold">About SmartPrep</h2>
             <p className="text-base text-muted-foreground max-w-2xl mx-auto">
-              ExamPrep is Ethiopia's leading online exam preparation platform, designed specifically for university entrance exam candidates. 
+              SmartPrep is Ethiopia's leading online exam preparation platform, designed specifically for university entrance exam candidates. 
               We combine cutting-edge AI technology with comprehensive study materials to help students achieve their academic dreams.
             </p>
           </div>
@@ -265,8 +265,8 @@ export default function LandingPage() {
               <div>
                 <h3 className="text-lg font-bold mb-3">Office Location</h3>
                 <div className="bg-muted/50 rounded-lg p-3">
-                  <p className="font-medium text-sm">ExamPrep Headquarters</p>
-                  <p className="text-xs text-muted-foreground">123 ExamPrep Street</p>
+                  <p className="font-medium text-sm">SmartPrep Headquarters</p>
+                  <p className="text-xs text-muted-foreground">123 SmartPrep Street</p>
                   <p className="text-xs text-muted-foreground">Addis Ababa, Ethiopia</p>
                   <p className="text-xs text-muted-foreground">P.O. Box 12345</p>
                 </div>

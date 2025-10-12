@@ -11,7 +11,7 @@ import { Suspense } from "react"
 import "./globals.css"
 
 export const metadata: Metadata = {
-  title: "ExamPrep - University Entrance Exam Preparation",
+  title: "SmartPrep - University Entrance Exam Preparation",
   description: "Prepare for Ethiopian university entrance exams with AI-powered practice tests",
   generator: "v0.app",
 }

@@ -1,11 +1,12 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { BookOpen, Menu, X } from "lucide-react"
+import { Menu, X } from "lucide-react"
 import Link from "next/link"
 import { useAuth } from "@/lib/auth-context"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
+import Image from "next/image"
 
 export function AppBar() {
   const { user, logout } = useAuth()
@@ -23,10 +24,16 @@ export function AppBar() {
           {/* Logo */}
           <div className="flex items-center gap-2">
             <Link href="/" className="flex items-center gap-2">
-              <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
-                <BookOpen className="h-5 w-5 text-primary-foreground" />
+              <div className="h-12 w-24 rounded-lg overflow-hidden">
+                <Image 
+                  src="/logo.png" 
+                  alt="SmartPrep Logo" 
+                  width={250} 
+                  height={150}
+                  className="w-full h-full object-contain"
+                />
               </div>
-              <span className="text-xl font-bold">ExamPrep</span>
+              {/* <span className="text-xl font-bold">SmartPrep</span> */}
             </Link>
           </div>
 
