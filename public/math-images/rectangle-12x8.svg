@@ -1,0 +1,21 @@
+<svg width="300" height="200" xmlns="http://www.w3.org/2000/svg">
+  <!-- Rectangle with dimensions 12m x 8m -->
+  <rect x="50" y="50" width="200" height="133" fill="lightblue" stroke="black" stroke-width="2"/>
+  
+  <!-- Dimensions labels -->
+  <text x="150" y="40" text-anchor="middle" font-family="Arial" font-size="14" fill="black">12m</text>
+  <text x="30" y="120" text-anchor="middle" font-family="Arial" font-size="14" fill="black" transform="rotate(-90 30 120)">8m</text>
+  
+  <!-- Dimension lines -->
+  <line x1="50" y1="30" x2="250" y2="30" stroke="black" stroke-width="1"/>
+  <line x1="30" y1="50" x2="30" y2="183" stroke="black" stroke-width="1"/>
+  
+  <!-- Arrow markers -->
+  <line x1="50" y1="25" x2="50" y2="35" stroke="black" stroke-width="1"/>
+  <line x1="250" y1="25" x2="250" y2="35" stroke="black" stroke-width="1"/>
+  <line x1="25" y1="50" x2="35" y2="50" stroke="black" stroke-width="1"/>
+  <line x1="25" y1="183" x2="35" y2="183" stroke="black" stroke-width="1"/>
+  
+  <!-- Title -->
+  <text x="150" y="220" text-anchor="middle" font-family="Arial" font-size="16" font-weight="bold" fill="black">Rectangle Garden</text>
+</svg>

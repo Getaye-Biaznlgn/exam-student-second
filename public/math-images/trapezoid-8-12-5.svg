@@ -1,0 +1,25 @@
+<svg width="300" height="200" xmlns="http://www.w3.org/2000/svg">
+  <!-- Trapezoid with parallel sides 8m and 12m, height 5m -->
+  <polygon points="80,150 200,150 180,100 100,100" fill="lightyellow" stroke="black" stroke-width="2"/>
+  
+  <!-- Top side (8m) -->
+  <text x="140" y="90" text-anchor="middle" font-family="Arial" font-size="14" fill="black">8m</text>
+  <line x1="100" y1="85" x2="180" y2="85" stroke="black" stroke-width="1"/>
+  <line x1="100" y1="80" x2="100" y2="90" stroke="black" stroke-width="1"/>
+  <line x1="180" y1="80" x2="180" y2="90" stroke="black" stroke-width="1"/>
+  
+  <!-- Bottom side (12m) -->
+  <text x="140" y="170" text-anchor="middle" font-family="Arial" font-size="14" fill="black">12m</text>
+  <line x1="80" y1="160" x2="200" y2="160" stroke="black" stroke-width="1"/>
+  <line x1="80" y1="155" x2="80" y2="165" stroke="black" stroke-width="1"/>
+  <line x1="200" y1="155" x2="200" y2="165" stroke="black" stroke-width="1"/>
+  
+  <!-- Height (5m) -->
+  <text x="60" y="125" text-anchor="middle" font-family="Arial" font-size="14" fill="black" transform="rotate(-90 60 125)">5m</text>
+  <line x1="50" y1="100" x2="50" y2="150" stroke="black" stroke-width="1"/>
+  <line x1="45" y1="100" x2="55" y2="100" stroke="black" stroke-width="1"/>
+  <line x1="45" y1="150" x2="55" y2="150" stroke="black" stroke-width="1"/>
+  
+  <!-- Title -->
+  <text x="140" y="190" text-anchor="middle" font-family="Arial" font-size="16" font-weight="bold" fill="black">Trapezoid</text>
+</svg>

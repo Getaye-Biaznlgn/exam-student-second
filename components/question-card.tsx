@@ -54,6 +54,15 @@ export function QuestionCard({
             <Badge variant="secondary">Difficulty: {question.difficulty_level}/5</Badge>
           </div>
           <h2 className="text-xl font-semibold leading-relaxed">{question.question_text}</h2>
+          {question.image_url && (
+            <div className="flex justify-center mt-4">
+              <img 
+                src={question.image_url} 
+                alt="Question diagram" 
+                className="max-w-full h-auto max-h-64 rounded-lg border shadow-sm"
+              />
+            </div>
+          )}
         </CardHeader>
         <CardContent className="space-y-6">
           <RadioGroup value={selectedOption || ""} onValueChange={setSelectedOption} disabled={hasAnswered}>

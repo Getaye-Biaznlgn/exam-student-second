@@ -27,6 +27,7 @@ export interface Question {
   question_type: QuestionType
   difficulty_level: number
   explanation?: string
+  image_url?: string
   created_at: string
   options: QuestionOption[]
 }

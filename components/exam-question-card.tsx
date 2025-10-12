@@ -31,6 +31,15 @@ export function ExamQuestionCard({
           </Badge>
         </div>
         <h2 className="text-xl font-semibold leading-relaxed">{question.question_text}</h2>
+        {question.image_url && (
+          <div className="flex justify-center mt-4">
+            <img 
+              src={question.image_url} 
+              alt="Question diagram" 
+              className="max-w-full h-auto max-h-64 rounded-lg border shadow-sm"
+            />
+          </div>
+        )}
       </CardHeader>
       <CardContent>
         <RadioGroup value={selectedOption || ""} onValueChange={onSelectOption}>
