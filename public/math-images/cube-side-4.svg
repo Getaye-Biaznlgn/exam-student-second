@@ -1,0 +1,20 @@
+<svg width="300" height="200" xmlns="http://www.w3.org/2000/svg">
+  <!-- 3D Cube with side length 4cm -->
+  <!-- Front face -->
+  <rect x="100" y="80" width="80" height="80" fill="lightcoral" stroke="black" stroke-width="2"/>
+  
+  <!-- Top face -->
+  <polygon points="100,80 120,60 200,60 180,80" fill="lightpink" stroke="black" stroke-width="2"/>
+  
+  <!-- Right face -->
+  <polygon points="180,80 200,60 200,140 180,160" fill="lightcoral" stroke="black" stroke-width="2"/>
+  
+  <!-- Side dimension -->
+  <text x="150" y="70" text-anchor="middle" font-family="Arial" font-size="14" fill="black">4cm</text>
+  <line x1="100" y1="60" x2="180" y2="60" stroke="black" stroke-width="1"/>
+  <line x1="100" y1="55" x2="100" y2="65" stroke="black" stroke-width="1"/>
+  <line x1="180" y1="55" x2="180" y2="65" stroke="black" stroke-width="1"/>
+  
+  <!-- Title -->
+  <text x="150" y="190" text-anchor="middle" font-family="Arial" font-size="16" font-weight="bold" fill="black">Cube</text>
+</svg>

@@ -1,0 +1,24 @@
+<svg width="300" height="200" xmlns="http://www.w3.org/2000/svg">
+  <!-- Cone with radius 4cm and height 9cm -->
+  <!-- Base circle -->
+  <ellipse cx="150" cy="140" rx="60" ry="20" fill="lightcoral" stroke="black" stroke-width="2"/>
+  
+  <!-- Cone sides -->
+  <polygon points="150,50 90,140 210,140" fill="lightcoral" stroke="black" stroke-width="2"/>
+  
+  <!-- Height line -->
+  <line x1="150" y1="50" x2="150" y2="140" stroke="red" stroke-width="2"/>
+  
+  <!-- Radius line -->
+  <line x1="150" y1="140" x2="210" y2="140" stroke="blue" stroke-width="2"/>
+  
+  <!-- Labels -->
+  <text x="150" y="45" text-anchor="middle" font-family="Arial" font-size="12" fill="red">9cm</text>
+  <text x="180" y="135" text-anchor="middle" font-family="Arial" font-size="12" fill="blue">4cm</text>
+  
+  <!-- Center point -->
+  <circle cx="150" cy="140" r="2" fill="black"/>
+  
+  <!-- Title -->
+  <text x="150" y="190" text-anchor="middle" font-family="Arial" font-size="16" font-weight="bold" fill="black">Cone</text>
+</svg>
