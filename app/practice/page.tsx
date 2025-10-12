@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { QuestionCard } from "@/components/question-card"
 import { BookOpen, ArrowRight, ArrowLeft, Flag } from "lucide-react"
+import Image from "next/image"
 import { mockExams } from "@/lib/mock-data"
 import { Progress } from "@/components/ui/progress"
 
@@ -21,6 +22,7 @@ export default function PracticePage() {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
   const [answers, setAnswers] = useState<Map<string, { optionId: string; isCorrect: boolean }>>(new Map())
   const [flagged, setFlagged] = useState<Set<string>>(new Set())
+  const [practiceCompleted, setPracticeCompleted] = useState(false)
 
   const exam =
     mockExams.find((e) => e.field === field && e.subject_id === subject && e.batch === Number(batch)) || mockExams[0]
@@ -76,8 +78,87 @@ export default function PracticePage() {
     })
   }
 
+  const handleFinishPractice = () => {
+    setPracticeCompleted(true)
+  }
+
+  const calculateResults = () => {
+    let correct = 0
+    let incorrect = 0
+    let unanswered = 0
+
+    questions.forEach((q) => {
+      const userAnswer = answers.get(q.id)
+      if (!userAnswer) {
+        unanswered++
+      } else {
+        if (userAnswer.isCorrect) {
+          correct++
+        } else {
+          incorrect++
+        }
+      }
+    })
+
+    return { correct, incorrect, unanswered, total: questions.length }
+  }
+
   const answeredCount = answers.size
   const progress = (answeredCount / questions.length) * 100
+
+  if (practiceCompleted) {
+    const results = calculateResults()
+    const percentage = Math.round((results.correct / results.total) * 100)
+
+    return (
+      <div className="min-h-screen flex flex-col bg-background">
+        <main className="flex-1 flex items-center justify-center px-4 py-12">
+          <Card className="w-full max-w-2xl p-8">
+            <div className="space-y-6 text-center">
+              <div className="space-y-2">
+                <h1 className="text-3xl font-bold">Practice Session Completed!</h1>
+                <p className="text-muted-foreground">Here's how you performed</p>
+              </div>
+
+              <div className="py-8">
+                <div className="text-6xl font-bold text-primary mb-2">{percentage}%</div>
+                <p className="text-muted-foreground">Overall Score</p>
+              </div>
+
+              <div className="grid grid-cols-3 gap-4">
+                <div className="p-4 rounded-lg bg-green-500/10">
+                  <div className="text-2xl font-bold text-green-600">{results.correct}</div>
+                  <p className="text-sm text-muted-foreground">Correct</p>
+                </div>
+                <div className="p-4 rounded-lg bg-red-500/10">
+                  <div className="text-2xl font-bold text-red-600">{results.incorrect}</div>
+                  <p className="text-sm text-muted-foreground">Incorrect</p>
+                </div>
+                <div className="p-4 rounded-lg bg-muted">
+                  <div className="text-2xl font-bold">{results.unanswered}</div>
+                  <p className="text-sm text-muted-foreground">Unanswered</p>
+                </div>
+              </div>
+
+              <div className="space-y-3 pt-4">
+                <div className="text-sm text-muted-foreground">
+                  <p>Practice Mode • {exam.title} • Batch {exam.batch}</p>
+                </div>
+                <div className="flex gap-3">
+                  <Button className="flex-1" onClick={() => router.push("/select-field")}>
+                    Back to Home
+                  </Button>
+                  <Button variant="outline" className="flex-1" onClick={() => window.location.reload()}>
+                    Practice Again
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </Card>
+        </main>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -132,7 +213,7 @@ export default function PracticePage() {
                   </span>
 
                   {currentQuestionIndex === questions.length - 1 ? (
-                    <Button onClick={() => router.push("/select-field")}>Finish Practice</Button>
+                    <Button onClick={handleFinishPractice}>Finish Practice</Button>
                   ) : (
                     <Button onClick={handleNext}>
                       Next
