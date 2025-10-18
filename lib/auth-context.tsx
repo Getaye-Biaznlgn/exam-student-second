@@ -8,7 +8,7 @@ import React, {
   useEffect,
   ReactNode,
 } from "react";
-import { saveTokens, clearTokens, getAccessToken } from "./api";
+import { saveTokens, clearTokens, getAccessToken, getUserProfile } from "./api";
 
 export interface User {
   id: string;
@@ -20,8 +20,9 @@ export interface User {
   role: string;
   student_id: string;
   date_of_birth: string;
+  stream?: "Natural" | "Social"; // 👈 added here
   profile_picture?: string | null;
-  [key: string]: any; // to allow flexibility for backend response
+  [key: string]: any;
 }
 
 interface AuthContextType {
@@ -43,22 +44,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [accessToken, setAccessToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Restore session from localStorage
+  // Restore session from localStorage and refresh user profile
   useEffect(() => {
-    try {
-      const token = getAccessToken();
-      const userData =
-        typeof window !== "undefined" ? localStorage.getItem("user") : null;
-      if (token && userData) {
-        setAccessToken(token);
-        setUser(JSON.parse(userData));
+    async function restoreSession() {
+      try {
+        const token = getAccessToken();
+        if (!token) return setLoading(false);
+
+        const storedUser =
+          typeof window !== "undefined" ? localStorage.getItem("user") : null;
+        if (storedUser) {
+          setUser(JSON.parse(storedUser));
+          setAccessToken(token);
+        }
+
+        // 👇 Fetch latest profile from backend
+        const res = await getUserProfile();
+        if (res.success && res.data) {
+          setUser(res.data);
+          localStorage.setItem("user", JSON.stringify(res.data));
+        }
+      } catch (err) {
+        console.error("Error restoring session:", err);
+        clearTokens();
+      } finally {
+        setLoading(false);
       }
-    } catch (err) {
-      console.error("Error restoring auth session:", err);
-      clearTokens();
-    } finally {
-      setLoading(false);
     }
+
+    restoreSession();
   }, []);
 
   /** Called after successful login */
@@ -71,10 +85,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     accessToken: string;
     refreshToken?: string;
   }) => {
-    setUser(user);
-    setAccessToken(accessToken);
     saveTokens(accessToken, refreshToken);
-    localStorage.setItem("user", JSON.stringify(user));
+    setAccessToken(accessToken);
+
+    // Fetch full profile after login
+    const res = await getUserProfile();
+    const finalUser = res.success && res.data ? res.data : user;
+
+    setUser(finalUser);
+    localStorage.setItem("user", JSON.stringify(finalUser));
   };
 
   /** Called when logging out */
