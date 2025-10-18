@@ -42,11 +42,13 @@ export default function AuthPage() {
     school_id: "",
     student_id: "",
     date_of_birth: "",
+    stream: "Natural", // 👈 default
   });
+
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    if (user && !authLoading) router.push("/select-field");
+    if (user && !authLoading) router.push("/select-subject");
   }, [user, authLoading, router]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -80,7 +82,7 @@ export default function AuthPage() {
         title: "Welcome back!",
         description: "Successfully logged in to your account.",
       });
-      router.push("/select-field");
+      router.push("/select-subject");
     } catch (err: any) {
       toast({
         title: "Login failed",
@@ -285,6 +287,29 @@ export default function AuthPage() {
                         required
                       />
                     </div>
+                    {/* Field Type (Natural / Social) */}
+                    <div className="space-y-2">
+                      <Label htmlFor="stream">Field Type</Label>
+                      <select
+                        id="stream"
+                        name="stream"
+                        value={formData.stream || ""}
+                        onChange={(e) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            stream: e.target.value,
+                          }))
+                        }
+                        className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                        required
+                      >
+                        <option value="" disabled>
+                          Select your field
+                        </option>
+                        <option value="Natural">Natural</option>
+                        <option value="Social">Social</option>
+                      </select>
+                    </div>
 
                     {/* Student ID and Date of Birth on same row */}
                     <div className="grid grid-cols-2 gap-4">
@@ -317,7 +342,9 @@ export default function AuthPage() {
                     {/* School Selection */}
                     <SchoolSelect
                       value={formData.school_id}
-                      onValueChange={(value) => setFormData(prev => ({ ...prev, school_id: value }))}
+                      onValueChange={(value) =>
+                        setFormData((prev) => ({ ...prev, school_id: value }))
+                      }
                       disabled={isSubmitting}
                     />
 

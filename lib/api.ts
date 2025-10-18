@@ -14,10 +14,11 @@ export interface RegisterPayload {
   school_id: string;
   student_id: string;
   date_of_birth: string;
+  stream: "Natural" | "Social";
 }
 
 export interface LoginPayload {
-  identifier: string; // can be email or username
+  identifier: string;
   password: string;
 }
 
@@ -31,13 +32,10 @@ export interface ApiResponse<T> {
 /** -------- Helper: handle responses -------- */
 async function handleResponse<T>(res: Response): Promise<ApiResponse<T>> {
   const text = await res.text();
-
-  // Attempt to parse JSON
   let data: any;
   try {
     data = JSON.parse(text);
   } catch {
-    // If response is not JSON, wrap it
     return {
       success: false,
       message: "Unexpected response format.",
@@ -46,10 +44,8 @@ async function handleResponse<T>(res: Response): Promise<ApiResponse<T>> {
     };
   }
 
-  // If response is ok, return it
   if (res.ok) return data;
 
-  // Handle error responses with structured message
   const errorMessage =
     data?.message ||
     (typeof data === "object"
@@ -65,47 +61,83 @@ async function handleResponse<T>(res: Response): Promise<ApiResponse<T>> {
 }
 
 /** -------- API calls -------- */
-
-/** Fetch all schools */
 export async function fetchSchools(): Promise<ApiResponse<School[]>> {
-  const res = await fetch(`${BASE_URL}/admin/public/schools`, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-    },
-  });
-
+  const res = await fetch(`${BASE_URL}/admin/public/schools`);
   return handleResponse<School[]>(res);
 }
 
-/** Register a new student */
 export async function registerStudent(
   payload: RegisterPayload
 ): Promise<ApiResponse<any>> {
   const res = await fetch(`${BASE_URL}/auth/register`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(payload),
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload), // 👈 includes stream now
   });
-
   return handleResponse<any>(res);
 }
 
-/** Login an existing student */
 export async function loginStudent(
   payload: LoginPayload
 ): Promise<ApiResponse<any>> {
   const res = await fetch(`${BASE_URL}/auth/login/student`, {
     method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  return handleResponse<any>(res);
+}
+
+export async function getUserProfile(): Promise<ApiResponse<any>> {
+  const token = getAccessToken();
+  if (!token) {
+    return { success: false, message: "No access token found" };
+  }
+
+  const res = await fetch(`${BASE_URL}/auth/student/profile`, {
     headers: {
       "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
     },
-    body: JSON.stringify(payload),
   });
 
   return handleResponse<any>(res);
+}
+// api.ts (add this below getUserProfile)
+
+export async function updateUserProfile(
+  updatedData: Record<string, any>
+): Promise<ApiResponse<any>> {
+  const token = getAccessToken();
+  if (!token) {
+    return { success: false, message: "No access token found" };
+  }
+
+  const res = await fetch(`${BASE_URL}/auth/student/profile/update`, {
+    method: "PUT", // or PATCH — confirm which one backend supports
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(updatedData),
+  });
+
+  return handleResponse<any>(res);
+}
+export async function fetchSubjects(): Promise<ApiResponse<any[]>> {
+  const token = getAccessToken();
+  if (!token) {
+    return { success: false, message: "No access token found" };
+  }
+
+  const res = await fetch(`${BASE_URL}/student/subjects`, {
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  return handleResponse<any[]>(res);
 }
 
 /** -------- Optional: token helpers -------- */
