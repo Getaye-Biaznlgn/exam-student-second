@@ -59,6 +59,17 @@ export interface StartExamResponse {
     ai_explanation: string | null;
   }[];
 }
+interface SubmitAnswer {
+  question_id: string; // Refers to question.question.id (inner ID)
+  selected_option: string | null; // Refers to option_key (e.g., "D")
+  time_spent_seconds: number;
+  is_flagged: boolean;
+}
+
+interface SubmitExamPayload {
+  student_exam_id: string;
+  answers: SubmitAnswer[];
+}
 export interface ApiResponse<T> {
   success: boolean;
   message: string;
@@ -116,9 +127,82 @@ export async function registerStudent(
 export async function startExam(
   payload: StartExamPayload
 ): Promise<ApiResponse<any>> {
-  const res = await fetch(`${BASE_URL}/student/exams/start`, {
+  const token = getAccessToken(); // Get the token
+
+  const headers: HeadersInit = {
+    "Content-Type": "application/json",
+  };
+
+  // Add the Authorization header if a token exists
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
+  const res = await fetch(`${BASE_URL}/student-exams/start-exam`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: headers, // Use the updated headers
+    body: JSON.stringify(payload),
+  });
+
+  return handleResponse<any>(res);
+}
+
+export async function submitExam(
+  studentExamId: string,
+  questions: StartExamResponse["questions"]
+): Promise<ApiResponse<any>> {
+  const token = getAccessToken();
+
+  const payload: SubmitExamPayload = {
+    student_exam_id: studentExamId,
+    answers: questions.map((q) => ({
+      question_id: q.question.id, // Use inner question.id
+      selected_option: q.selected_option, // null if unanswered
+      time_spent_seconds: q.time_spent_seconds || 0,
+      is_flagged: q.is_flagged || false,
+    })),
+  };
+
+  const headers: HeadersInit = {
+    "Content-Type": "application/json",
+  };
+
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
+  const res = await fetch(`${BASE_URL}/student-exams/submit-exam`, {
+    method: "POST",
+    headers,
+    body: JSON.stringify(payload),
+  });
+
+  return handleResponse<any>(res);
+}
+
+export async function submitAnswer(
+  answer: SubmitAnswer
+): Promise<ApiResponse<any>> {
+  const token = getAccessToken();
+
+  const payload = {
+    question_id: answer.question_id, // Expects question.question.id
+    selected_option: answer.selected_option,
+    time_spent_seconds: answer.time_spent_seconds || 0,
+    is_flagged: answer.is_flagged || false,
+  };
+
+  const headers: HeadersInit = {
+    "Content-Type": "application/json",
+  };
+
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
+  const res = await fetch(`${BASE_URL}/student-exams/submit-answer`, {
+    method: "POST",
+    headers,
     body: JSON.stringify(payload),
   });
 
