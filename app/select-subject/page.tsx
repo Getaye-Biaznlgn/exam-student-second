@@ -9,7 +9,6 @@ import { Button } from "@/components/ui/button";
 export default function SelectSubjectPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
-  const [subjects, setSubjects] = useState<any[]>([]);
   const [filteredSubjects, setFilteredSubjects] = useState<any[]>([]);
   const [userField, setUserField] = useState<string>("");
   const [message, setMessage] = useState("");
@@ -18,7 +17,6 @@ export default function SelectSubjectPage() {
     async function loadSubjects() {
       try {
         setLoading(true);
-
         const userRes = await getUserProfile();
         if (!userRes.success || !userRes.data) {
           setMessage("Failed to load user profile.");
@@ -47,7 +45,6 @@ export default function SelectSubjectPage() {
             subject.stream?.toLowerCase() === stream
         );
 
-        setSubjects(subjectsArray);
         setFilteredSubjects(filtered);
       } catch (error) {
         console.error("Error loading subjects:", error);
@@ -59,6 +56,13 @@ export default function SelectSubjectPage() {
 
     loadSubjects();
   }, []);
+
+  const handleSubjectClick = (subject: any) => {
+    // Save the subject data in sessionStorage
+    sessionStorage.setItem("selectedSubject", JSON.stringify(subject));
+    // Navigate to detail page with subject ID
+    router.push(`/select-subject/${subject.id}`);
+  };
 
   if (loading)
     return (
@@ -89,7 +93,7 @@ export default function SelectSubjectPage() {
                 <div
                   key={subject.id}
                   className="border rounded-xl p-4 hover:shadow-lg transition bg-white cursor-pointer"
-                  onClick={() => router.push(`/select-subject/${subject.id}`)}
+                  onClick={() => handleSubjectClick(subject)}
                 >
                   <h3 className="font-semibold text-lg text-gray-800">
                     {subject.name || "Unnamed Subject"}

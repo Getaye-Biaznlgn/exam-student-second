@@ -21,7 +21,44 @@ export interface LoginPayload {
   identifier: string;
   password: string;
 }
+export interface StartExamPayload {
+  exam_id: string;
+  mode: "exam" | "practice";
+}
+export interface StartExamRequest {
+  exam_id: string;
+  mode: "exam" | "practice";
+}
 
+export interface StartExamResponse {
+  student_exam_id: string;
+  mode: string;
+  exam: {
+    id: string;
+    title: string;
+    duration_minutes: number;
+    total_questions: number;
+    passing_marks: number;
+  };
+  questions: {
+    id: string;
+    question: {
+      id: string;
+      question_text: string;
+      options: {
+        id: string;
+        option_key: string;
+        option_text: string;
+      }[];
+      explanation: string;
+    };
+    selected_option: string | null;
+    time_spent_seconds: number;
+    is_correct: boolean | null;
+    is_flagged: boolean;
+    ai_explanation: string | null;
+  }[];
+}
 export interface ApiResponse<T> {
   success: boolean;
   message: string;
@@ -76,7 +113,17 @@ export async function registerStudent(
   });
   return handleResponse<any>(res);
 }
+export async function startExam(
+  payload: StartExamPayload
+): Promise<ApiResponse<any>> {
+  const res = await fetch(`${BASE_URL}/student/exams/start`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
 
+  return handleResponse<any>(res);
+}
 export async function loginStudent(
   payload: LoginPayload
 ): Promise<ApiResponse<any>> {
