@@ -137,7 +137,14 @@ export async function fetchSubjects(): Promise<ApiResponse<any[]>> {
     },
   });
 
-  return handleResponse<any[]>(res);
+  const response = await handleResponse<any>(res);
+
+  // The BE now wraps subjects in `data`
+  if (response.success && response.data?.data) {
+    return { ...response, data: response.data.data };
+  }
+
+  return response;
 }
 
 /** -------- Optional: token helpers -------- */
