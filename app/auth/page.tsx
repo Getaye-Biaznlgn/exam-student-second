@@ -115,7 +115,8 @@ export default function AuthPage() {
 
       toast({
         title: "Account created!",
-        description: "Welcome! Your account has been created successfully.",
+        description:
+          "Welcome! Your account has been created successfully. Please log in to continue.",
       });
 
       // prefill email for login
