@@ -1,398 +1,387 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
-import { useRouter, useSearchParams } from "next/navigation"
-import { useAuth } from "@/lib/auth-context"
-import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
-import { ArrowLeft, ArrowRight, Flag } from "lucide-react"
-import Image from "next/image"
-import { mockExams } from "@/lib/mock-data"
-import { ExamQuestionCard } from "@/components/exam-question-card"
-import { ExamTimer } from "@/components/exam-timer"
-import { Progress } from "@/components/ui/progress"
+import { useEffect, useState, useRef } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useAuth } from "@/lib/auth-context";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { ArrowLeft, ArrowRight, Flag } from "lucide-react";
+import Image from "next/image";
+import {
+  startExam,
+  StartExamResponse,
+  submitExam,
+  submitAnswer,
+} from "@/lib/api";
+import { ExamQuestionCard } from "@/components/exam-question-card";
+import { ExamTimer } from "@/components/exam-timer";
+import { Progress } from "@/components/ui/progress";
 
 export default function ExamPage() {
-  const { user, loading } = useAuth()
-  const router = useRouter()
-  const searchParams = useSearchParams()
-  const field = searchParams.get("field")
-  const subject = searchParams.get("subject")
-  const batch = searchParams.get("batch")
+  const { user, loading: authLoading } = useAuth();
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
-  const [answers, setAnswers] = useState<Record<string, string>>({})
-  const [flagged, setFlagged] = useState<Set<string>>(new Set())
-  const [examStarted, setExamStarted] = useState(false)
-  const [examCompleted, setExamCompleted] = useState(false)
+  const [examData, setExamData] = useState<StartExamResponse | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Get exam based on filters
-  const exam =
-    mockExams.find((e) => e.field === field && e.subject_id === subject && e.batch === Number(batch)) || mockExams[0]
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [answers, setAnswers] = useState<Record<string, string>>({}); // Stores option.id (e.g., "742c59f8-9d47-4d57-baca-22b9cf66b1a0") keyed by question.id
+  const [flagged, setFlagged] = useState<Set<string>>(new Set()); // Keyed by question.id
+  const timeSpentRef = useRef<Record<string, number>>({}); // Changed to ref for synchronous updates
+  const [examStarted, setExamStarted] = useState(false);
+  const [examCompleted, setExamCompleted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const questions = exam.questions
-  const currentQuestion = questions[currentQuestionIndex]
-  const duration = exam.duration_minutes || 120
+  // Track time spent on the current question
+  const timeRef = useRef<NodeJS.Timeout | null>(null);
+  const startTimeRef = useRef<number>(0);
 
   useEffect(() => {
-    if (!user && !loading) {
-      router.push("/")
-    }
-  }, [user, loading, router])
+    const examId = searchParams.get("exam_id");
+    const mode = searchParams.get("mode");
 
-  if (loading) {
+    if (!examId || (mode !== "exam" && mode !== "practice")) {
+      setError("Invalid exam ID or mode provided.");
+      setIsLoading(false);
+      return;
+    }
+
+    async function fetchExam() {
+      try {
+        const res = await startExam({ exam_id: examId, mode });
+        if (res.success && res.data) {
+          setExamData(res.data);
+        } else {
+          setError(res.message || "Failed to start the exam.");
+        }
+      } catch (err) {
+        setError("An unexpected error occurred.");
+        console.error(err);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    fetchExam();
+  }, [searchParams]);
+
+  const examDetails = examData?.exam;
+  const questions = examData?.questions || [];
+  const currentQuestion = questions[currentQuestionIndex];
+  const duration = examDetails?.duration_minutes || 0;
+
+  // Start timer for current question
+  useEffect(() => {
+    if (examStarted && currentQuestion) {
+      startTimeRef.current = Date.now();
+      timeRef.current = setInterval(() => {
+        timeSpentRef.current = {
+          ...timeSpentRef.current,
+          [currentQuestion.question.id]:
+            Math.floor((Date.now() - startTimeRef.current) / 1000) +
+            (timeSpentRef.current[currentQuestion.question.id] || 0),
+        };
+      }, 1000);
+
+      return () => {
+        if (timeRef.current) {
+          clearInterval(timeRef.current);
+        }
+      };
+    }
+  }, [currentQuestionIndex, examStarted, currentQuestion]);
+
+  useEffect(() => {
+    if (!user && !authLoading) {
+      router.push("/");
+    }
+  }, [user, authLoading, router]);
+
+  if (isLoading || authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        <p className="ml-4">Loading Exam...</p>
       </div>
-    )
+    );
   }
 
-  if (!user) return null
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-red-500">
+        <p>{error}</p>
+      </div>
+    );
+  }
 
-  const handleAnswer = (optionId: string) => {
+  if (!user || !examData || !examDetails) return null;
+
+  const handleAnswer = async (optionId: string) => {
     if (currentQuestion) {
-      setAnswers((prev) => ({ ...prev, [currentQuestion.id]: optionId }))
+      // Find the option_key (e.g., "D") for the selected optionId
+      const selectedOptionKey =
+        currentQuestion.question.options.find((opt) => opt.id === optionId)
+          ?.option_key || null;
+
+      if (selectedOptionKey) {
+        // Update local answers state with option.id
+        setAnswers((prev) => ({
+          ...prev,
+          [currentQuestion.question.id]: optionId,
+        }));
+
+        // Send answer to backend with option_key
+        try {
+          const answerPayload = {
+            question_id: currentQuestion.question.id, // Use inner question.id
+            selected_option: selectedOptionKey,
+            time_spent_seconds:
+              timeSpentRef.current[currentQuestion.question.id] || 0,
+            is_flagged: flagged.has(currentQuestion.question.id),
+          };
+
+          const res = await submitAnswer(answerPayload);
+          if (!res.success) {
+            console.error("Failed to submit answer:", res.message);
+            // Optionally, add toast notification here
+          }
+        } catch (err) {
+          console.error("Error submitting answer:", err);
+          // Optionally, add toast notification here
+        }
+      }
     }
-  }
+  };
 
   const handleNext = () => {
     if (currentQuestionIndex < questions.length - 1) {
-      setCurrentQuestionIndex((prev) => prev + 1)
+      setCurrentQuestionIndex(currentQuestionIndex + 1);
     }
-  }
+  };
 
   const handlePrevious = () => {
     if (currentQuestionIndex > 0) {
-      setCurrentQuestionIndex((prev) => prev - 1)
+      setCurrentQuestionIndex(currentQuestionIndex - 1);
     }
-  }
+  };
 
   const handleQuestionJump = (index: number) => {
-    setCurrentQuestionIndex(index)
-  }
+    setCurrentQuestionIndex(index);
+  };
 
-  const toggleFlag = (questionId: string) => {
-    setFlagged((prev) => {
-      const newFlagged = new Set(prev)
-      if (newFlagged.has(questionId)) {
-        newFlagged.delete(questionId)
-      } else {
-        newFlagged.add(questionId)
+  const toggleFlag = async () => {
+    if (currentQuestion) {
+      setFlagged((prev) => {
+        const newFlagged = new Set(prev);
+        if (newFlagged.has(currentQuestion.question.id)) {
+          newFlagged.delete(currentQuestion.question.id);
+        } else {
+          newFlagged.add(currentQuestion.question.id);
+        }
+        return newFlagged;
+      });
+
+      // Find the option_key for the current answer (if any)
+      const selectedOptionId = answers[currentQuestion.question.id];
+      const selectedOptionKey = selectedOptionId
+        ? currentQuestion.question.options.find(
+            (opt) => opt.id === selectedOptionId
+          )?.option_key || null
+        : null;
+
+      // Send updated flag status to backend
+      try {
+        const answerPayload = {
+          question_id: currentQuestion.question.id, // Use inner question.id
+          selected_option: selectedOptionKey,
+          time_spent_seconds:
+            timeSpentRef.current[currentQuestion.question.id] || 0,
+          is_flagged: !flagged.has(currentQuestion.question.id), // Updated flag status
+        };
+
+        const res = await submitAnswer(answerPayload);
+        if (!res.success) {
+          console.error("Failed to update flag:", res.message);
+        }
+      } catch (err) {
+        console.error("Error updating flag:", err);
       }
-      return newFlagged
-    })
-  }
+    }
+  };
 
-  const handleSubmit = () => {
-    setExamCompleted(true)
-  }
+  const handleSubmit = async () => {
+    if (isSubmitting) return;
+    setIsSubmitting(true);
+
+    // Update time spent for the current question before submitting
+    if (currentQuestion) {
+      const now = Date.now();
+      timeSpentRef.current[currentQuestion.question.id] =
+        (timeSpentRef.current[currentQuestion.question.id] || 0) +
+        Math.floor((now - startTimeRef.current) / 1000);
+    }
+
+    try {
+      const modifiedQuestions = questions.map((q) => {
+        const selectedOptionId = answers[q.question.id];
+        const selectedOptionKey = selectedOptionId
+          ? q.question.options.find((opt) => opt.id === selectedOptionId)
+              ?.option_key || null
+          : null;
+        return {
+          ...q,
+          selected_option: selectedOptionKey,
+          time_spent_seconds: timeSpentRef.current[q.question.id] || 0,
+          is_flagged: flagged.has(q.question.id),
+        };
+      });
+
+      const res = await submitExam(examData.student_exam_id, modifiedQuestions);
+      if (res.success) {
+        setExamCompleted(true);
+      } else {
+        const errorMessage =
+          typeof res.message === "string"
+            ? res.message
+            : JSON.stringify(res.message);
+        setError(errorMessage || "Failed to submit exam.");
+      }
+    } catch (err) {
+      setError("An unexpected error occurred while submitting.");
+      console.error(err);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   const handleTimeUp = () => {
-    setExamCompleted(true)
-  }
-
-  const calculateResults = () => {
-    let correct = 0
-    let incorrect = 0
-    let unanswered = 0
-
-    questions.forEach((q) => {
-      const userAnswer = answers[q.id]
-      if (!userAnswer) {
-        unanswered++
-      } else {
-        const selectedOption = q.options.find(opt => opt.id === userAnswer)
-        if (selectedOption?.is_correct) {
-          correct++
-        } else {
-          incorrect++
-        }
-      }
-    })
-
-    return { correct, incorrect, unanswered, total: questions.length }
-  }
+    handleSubmit();
+  };
 
   if (!examStarted) {
     return (
-      <div className="min-h-screen flex flex-col bg-background">
-        <main className="flex-1 flex items-center justify-center px-4 py-12">
-          <Card className="w-full max-w-2xl p-8">
-            <div className="space-y-6">
-              <div className="space-y-2">
-                <h1 className="text-3xl font-bold">{exam.title}</h1>
-                <p className="text-muted-foreground">{exam.description}</p>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4 py-4">
-                <div className="space-y-1">
-                  <p className="text-sm text-muted-foreground">Field</p>
-                  <p className="font-semibold capitalize">{exam.field} Sciences</p>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-sm text-muted-foreground">Batch/Year</p>
-                  <p className="font-semibold">{exam.batch}</p>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-sm text-muted-foreground">Questions</p>
-                  <p className="font-semibold">{questions.length}</p>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-sm text-muted-foreground">Duration</p>
-                  <p className="font-semibold">{duration} minutes</p>
-                </div>
-              </div>
-
-              <div className="space-y-3 border-t pt-6">
-                <h3 className="font-semibold">Instructions:</h3>
-                <ul className="space-y-2 text-sm text-muted-foreground">
-                  <li className="flex gap-2">
-                    <span>•</span>
-                    <span>The exam will be timed for {duration} minutes</span>
-                  </li>
-                  <li className="flex gap-2">
-                    <span>•</span>
-                    <span>You can navigate between questions using the question navigator</span>
-                  </li>
-                  <li className="flex gap-2">
-                    <span>•</span>
-                    <span>You can flag questions for review</span>
-                  </li>
-                  <li className="flex gap-2">
-                    <span>•</span>
-                    <span>Submit your exam before time runs out</span>
-                  </li>
-                  <li className="flex gap-2">
-                    <span>•</span>
-                    <span>Results will be shown after submission</span>
-                  </li>
-                </ul>
-              </div>
-
-              <Button className="w-full" size="lg" onClick={() => setExamStarted(true)}>
-                Start Exam
-              </Button>
-            </div>
-          </Card>
-        </main>
+      <div className="min-h-screen flex items-center justify-center">
+        <Card className="w-full max-w-2xl p-8">
+          <h1 className="text-3xl font-bold">{examDetails.title}</h1>
+          <p>Total Questions: {examDetails.total_questions}</p>
+          <p>Duration: {examDetails.duration_minutes} minutes</p>
+          <p>Passing Marks: {examDetails.passing_marks}</p>
+          <Button
+            className="w-full mt-6"
+            size="lg"
+            onClick={() => setExamStarted(true)}
+          >
+            Start Exam
+          </Button>
+        </Card>
       </div>
-    )
+    );
   }
 
   if (examCompleted) {
-    const results = calculateResults()
-    const percentage = Math.round((results.correct / results.total) * 100)
-
     return (
-      <div className="min-h-screen flex flex-col bg-background">
-        <header className="border-b border-border">
-          <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="h-12 w-24 rounded-lg overflow-hidden">
-                <Image 
-                  src="/logo.png" 
-                  alt="SmartPrep Logo" 
-                  width={150} 
-                  height={80}
-                  className="w-full h-full object-contain"
-                />
-              </div>
-            </div>
-          </div>
-        </header>
-
-        <main className="flex-1 flex items-center justify-center px-4 py-12">
-          <Card className="w-full max-w-2xl p-8">
-            <div className="space-y-6 text-center">
-              <div className="space-y-2">
-                <h1 className="text-3xl font-bold">Exam Completed!</h1>
-                <p className="text-muted-foreground">Here are your results</p>
-              </div>
-
-              <div className="py-8">
-                <div className="text-6xl font-bold text-primary mb-2">{percentage}%</div>
-                <p className="text-muted-foreground">Overall Score</p>
-              </div>
-
-              <div className="grid grid-cols-3 gap-4">
-                <div className="p-4 rounded-lg bg-accent/10">
-                  <div className="text-2xl font-bold text-accent-foreground">{results.correct}</div>
-                  <p className="text-sm text-muted-foreground">Correct</p>
-                </div>
-                <div className="p-4 rounded-lg bg-destructive/10">
-                  <div className="text-2xl font-bold text-destructive">{results.incorrect}</div>
-                  <p className="text-sm text-muted-foreground">Incorrect</p>
-                </div>
-                <div className="p-4 rounded-lg bg-muted">
-                  <div className="text-2xl font-bold">{results.unanswered}</div>
-                  <p className="text-sm text-muted-foreground">Unanswered</p>
-                </div>
-              </div>
-
-              <div className="flex gap-3 pt-4">
-                <Button className="flex-1" onClick={() => router.push("/select-field")}>
-                  Back to Home
-                </Button>
-                <Button variant="outline" className="flex-1 bg-transparent" onClick={() => window.location.reload()}>
-                  Retake Exam
-                </Button>
-              </div>
-            </div>
-          </Card>
-        </main>
+      <div className="min-h-screen flex items-center justify-center">
+        <Card className="w-full max-w-2xl p-8 text-center">
+          <h1 className="text-3xl font-bold">Exam Submitted!</h1>
+          <p className="text-muted-foreground mt-2">
+            Your results will be processed and available in your dashboard.
+          </p>
+          <Button className="mt-6" onClick={() => router.push("/")}>
+            Back to Home
+          </Button>
+        </Card>
       </div>
-    )
+    );
   }
 
-  const answeredCount = Object.keys(answers).length
-  const progress = (answeredCount / questions.length) * 100
+  const answeredCount = Object.keys(answers).length;
+  const progress = (answeredCount / questions.length) * 100;
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
-      {/* Exam Header */}
-      <header className="border-b border-border sticky top-0 bg-background z-10">
-        <div className="container mx-auto px-4 py-3">
-          <div className="flex items-center justify-between">
-            <div className="text-sm text-muted-foreground">
-              {exam.title} • Batch {exam.batch}
-            </div>
-            <div className="flex items-center gap-4">
-              <ExamTimer durationMinutes={duration} onTimeUp={handleTimeUp} />
-              <Button onClick={handleSubmit} size="sm">
-                Submit Exam
-              </Button>
-            </div>
-          </div>
-          <div className="mt-3">
-            <div className="flex items-center justify-between text-sm mb-1">
-              <span className="text-muted-foreground">
-                Progress: {answeredCount} of {questions.length}
-              </span>
-              <span className="text-muted-foreground">{Math.round(progress)}%</span>
-            </div>
-            <Progress value={progress} />
-          </div>
-        </div>
+      <header className="border-b p-4">
+        <div className="text-sm text-muted-foreground">{examDetails.title}</div>
+        <ExamTimer durationMinutes={duration} onTimeUp={handleTimeUp} />
+        <Progress value={progress} className="mt-2" />
       </header>
 
-      {/* Main Content */}
       <main className="flex-1 container mx-auto px-4 py-6">
         <div className="flex gap-6">
-          {/* Question Area */}
           <div className="flex-1">
             <ExamQuestionCard
-              question={currentQuestion}
+              question={currentQuestion.question}
               questionNumber={currentQuestionIndex + 1}
               totalQuestions={questions.length}
-              selectedOption={answers[currentQuestion.id] || null}
+              selectedOption={answers[currentQuestion.question.id] || null}
               onSelectOption={handleAnswer}
             />
-
-            {/* Navigation Buttons */}
-            <Card className="mt-6">
-              <div className="p-6">
-                <div className="flex justify-between items-center">
-                  <Button 
-                    variant="outline" 
-                    onClick={handlePrevious} 
-                    disabled={currentQuestionIndex === 0}
-                    className="flex items-center gap-2"
-                  >
-                    <ArrowLeft className="h-4 w-4" />
-                    Previous
-                  </Button>
-
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-muted-foreground">
-                      Question {currentQuestionIndex + 1} of {questions.length}
-                    </span>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => toggleFlag(currentQuestion.id)}
-                      className={flagged.has(currentQuestion.id) ? "bg-destructive/10 text-destructive" : ""}
-                    >
-                      <Flag className="h-4 w-4 mr-1" />
-                      {flagged.has(currentQuestion.id) ? "Unflag" : "Flag"}
-                    </Button>
-                  </div>
-
-                  {currentQuestionIndex === questions.length - 1 ? (
-                    <Button 
-                      onClick={handleSubmit}
-                      className="flex items-center gap-2 bg-green-600 hover:bg-green-700"
-                    >
-                      Submit Exam
-                      <ArrowRight className="h-4 w-4" />
-                    </Button>
-                  ) : (
-                    <Button 
-                      onClick={handleNext} 
-                      className="flex items-center gap-2"
-                    >
-                      Next
-                      <ArrowRight className="h-4 w-4" />
-                    </Button>
-                  )}
-                </div>
-              </div>
-            </Card>
+            <div className="flex justify-between mt-4">
+              <Button
+                onClick={handlePrevious}
+                disabled={currentQuestionIndex === 0}
+                variant="outline"
+              >
+                <ArrowLeft className="mr-2 h-4 w-4" /> Previous
+              </Button>
+              <Button
+                onClick={toggleFlag}
+                variant={
+                  flagged.has(currentQuestion.question.id)
+                    ? "default"
+                    : "outline"
+                }
+              >
+                <Flag className="mr-2 h-4 w-4" />
+                {flagged.has(currentQuestion.question.id) ? "Unflag" : "Flag"}
+              </Button>
+              {currentQuestionIndex < questions.length - 1 ? (
+                <Button onClick={handleNext}>
+                  Next <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              ) : (
+                <Button onClick={handleSubmit} disabled={isSubmitting}>
+                  {isSubmitting ? "Submitting..." : "Submit Exam"}
+                </Button>
+              )}
+            </div>
           </div>
-
-          {/* Question Navigator - Right Side */}
           <div className="hidden lg:block w-80">
             <Card className="p-4 sticky top-24">
-              <h3 className="font-semibold mb-4">Question Navigator</h3>
+              <h3 className="text-lg font-semibold mb-4">Question Navigator</h3>
               <div className="grid grid-cols-5 gap-2">
-                {questions.map((q, index) => {
-                  const isAnswered = !!answers[q.id]
-                  const isCurrent = index === currentQuestionIndex
-                  const isFlagged = flagged.has(q.id)
-
-                  return (
-                    <button
-                      key={q.id}
-                      onClick={() => handleQuestionJump(index)}
-                      className={`
-                        aspect-square rounded-lg border-2 flex items-center justify-center text-sm font-medium
-                        transition-all relative
-                        ${
-                          isCurrent
-                            ? "border-primary bg-primary text-primary-foreground"
-                            : isAnswered
-                              ? "border-accent bg-accent/10 text-accent-foreground hover:bg-accent/20"
-                              : "border-border hover:border-primary/50 hover:bg-muted"
-                        }
-                      `}
-                    >
-                      {index + 1}
-                      {isFlagged && (
-                        <Flag className="h-3 w-3 absolute -top-1 -right-1 fill-destructive text-destructive" />
-                      )}
-                    </button>
-                  )
-                })}
-              </div>
-
-              <div className="mt-4 pt-4 border-t space-y-2 text-sm">
-                <div className="flex items-center gap-2">
-                  <div className="h-6 w-6 rounded border-2 border-primary bg-primary"></div>
-                  <span className="text-muted-foreground">Current</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="h-6 w-6 rounded border-2 border-accent bg-accent/10"></div>
-                  <span className="text-muted-foreground">Answered</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="h-6 w-6 rounded border-2 border-border"></div>
-                  <span className="text-muted-foreground">Unanswered</span>
-                </div>
+                {questions.map((q, index) => (
+                  <Button
+                    key={q.question.id}
+                    variant={
+                      currentQuestionIndex === index
+                        ? "default"
+                        : answers[q.question.id]
+                        ? "secondary"
+                        : flagged.has(q.question.id)
+                        ? "destructive"
+                        : "outline"
+                    }
+                    className={`h-10 w-10 ${
+                      currentQuestionIndex === index
+                        ? "bg-blue-500 hover:bg-blue-600 text-white"
+                        : answers[q.question.id]
+                        ? "bg-green-500 hover:bg-green-600 text-white"
+                        : flagged.has(q.question.id)
+                        ? "bg-red-500 hover:bg-red-600 text-white"
+                        : "bg-gray-200 hover:bg-gray-300 text-black"
+                    }`}
+                    onClick={() => handleQuestionJump(index)}
+                  >
+                    {index + 1}
+                  </Button>
+                ))}
               </div>
             </Card>
           </div>
         </div>
       </main>
     </div>
-  )
+  );
 }

@@ -1,13 +1,14 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { fetchSubjects, getUserProfile } from "@/lib/api";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
 export default function SelectSubjectPage() {
+  const router = useRouter();
   const [loading, setLoading] = useState(true);
-  const [subjects, setSubjects] = useState<any[]>([]);
   const [filteredSubjects, setFilteredSubjects] = useState<any[]>([]);
   const [userField, setUserField] = useState<string>("");
   const [message, setMessage] = useState("");
@@ -16,8 +17,6 @@ export default function SelectSubjectPage() {
     async function loadSubjects() {
       try {
         setLoading(true);
-
-        // 1️⃣ Fetch user profile
         const userRes = await getUserProfile();
         if (!userRes.success || !userRes.data) {
           setMessage("Failed to load user profile.");
@@ -30,26 +29,22 @@ export default function SelectSubjectPage() {
           "";
         setUserField(stream);
 
-        // 2️⃣ Fetch subjects
         const subjectsRes = await fetchSubjects();
         if (!subjectsRes.success || !subjectsRes.data) {
           setMessage("Failed to load subjects.");
           return;
         }
 
-        // Ensure data is array
         const subjectsArray = Array.isArray(subjectsRes.data)
           ? subjectsRes.data
-          : Object.values(subjectsRes.data || {});
+          : [];
 
-        // 3️⃣ Filter subjects based on user's field/stream
         const filtered = subjectsArray.filter(
           (subject: any) =>
             subject.field?.toLowerCase() === stream ||
             subject.stream?.toLowerCase() === stream
         );
 
-        setSubjects(subjectsArray);
         setFilteredSubjects(filtered);
       } catch (error) {
         console.error("Error loading subjects:", error);
@@ -61,6 +56,13 @@ export default function SelectSubjectPage() {
 
     loadSubjects();
   }, []);
+
+  const handleSubjectClick = (subject: any) => {
+    // Save the subject data in sessionStorage
+    sessionStorage.setItem("selectedSubject", JSON.stringify(subject));
+    // Navigate to detail page with subject ID
+    router.push(`/select-subject/${subject.id}`);
+  };
 
   if (loading)
     return (
@@ -90,7 +92,8 @@ export default function SelectSubjectPage() {
               {filteredSubjects.map((subject) => (
                 <div
                   key={subject.id}
-                  className="border rounded-xl p-4 hover:shadow-lg transition bg-white"
+                  className="border rounded-xl p-4 hover:shadow-lg transition bg-white cursor-pointer"
+                  onClick={() => handleSubjectClick(subject)}
                 >
                   <h3 className="font-semibold text-lg text-gray-800">
                     {subject.name || "Unnamed Subject"}
@@ -101,7 +104,7 @@ export default function SelectSubjectPage() {
                     </p>
                   )}
                   <div className="mt-3">
-                    <Button className="w-full">Select Subject</Button>
+                    <Button className="w-full">View Details</Button>
                   </div>
                 </div>
               ))}
