@@ -4,20 +4,15 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-// import type { Question } from "@/lib/types" // Assuming Question type is defined in @/lib/types
 import { cn } from "@/lib/utils";
 
-/**
- * Defines the type for a single question.
- * Adjust this based on your actual data structure from `@/lib/types`.
- */
 export interface Question {
   id: string;
   question_text: string;
   image_url?: string | null;
   options: {
     id: string;
-    option_key?: string; // Added option_key as it's often useful
+    option_key?: string;
     option_text: string;
   }[];
 }
@@ -28,6 +23,9 @@ interface ExamQuestionCardProps {
   totalQuestions: number;
   selectedOption: string | null;
   onSelectOption: (optionId: string) => void;
+  /** NEW PROPS */
+  isPracticeMode?: boolean;
+  correctOptionKey?: string | null;
 }
 
 export function ExamQuestionCard({
@@ -36,23 +34,21 @@ export function ExamQuestionCard({
   totalQuestions,
   selectedOption,
   onSelectOption,
+  isPracticeMode = false,
+  correctOptionKey = null,
 }: ExamQuestionCardProps) {
   return (
     <Card className="w-full">
       <CardHeader className="space-y-4">
-        {/* This badge shows the progress, e.g., "Question 5 of 20" */}
         <div className="flex items-center justify-between">
           <Badge variant="outline">
             Question {questionNumber} of {totalQuestions}
           </Badge>
         </div>
 
-        {/* --- MODIFICATION --- */}
-        {/* Prepended the question number to the question text */}
         <h2 className="text-xl font-semibold leading-relaxed">
           {questionNumber}. {question.question_text}
         </h2>
-        {/* --- END MODIFICATION --- */}
 
         {question.image_url && (
           <div className="flex justify-center mt-4">
@@ -64,20 +60,36 @@ export function ExamQuestionCard({
           </div>
         )}
       </CardHeader>
+
       <CardContent>
         <RadioGroup value={selectedOption || ""} onValueChange={onSelectOption}>
           <div className="space-y-3">
             {question.options.map((option) => {
               const isSelected = selectedOption === option.id;
 
+              // --- Color logic ---
+              const isCorrect =
+                isPracticeMode &&
+                selectedOption !== null &&
+                option.option_key === correctOptionKey;
+              const isIncorrect =
+                isPracticeMode &&
+                selectedOption !== null &&
+                isSelected &&
+                option.option_key !== correctOptionKey;
+
               return (
                 <div
                   key={option.id}
                   className={cn(
-                    "flex items-start space-x-3 rounded-lg border-2 p-4 transition-all cursor-pointer", // Note: items-start for long labels
+                    "flex items-start space-x-3 rounded-lg border-2 p-4 transition-all cursor-pointer",
+                    // Default styling
                     isSelected
                       ? "border-primary bg-primary/5"
-                      : "border-border hover:border-primary/50"
+                      : "border-border hover:border-primary/50",
+                    // Show feedback colors only AFTER a selection is made
+                    isCorrect && "border-green-500 bg-green-100/50",
+                    isIncorrect && "border-red-500 bg-red-100/50"
                   )}
                   onClick={() => onSelectOption(option.id)}
                 >
@@ -85,8 +97,7 @@ export function ExamQuestionCard({
                     value={option.id}
                     id={option.id}
                     className="mt-1"
-                  />{" "}
-                  {/* Aligns radio button with text */}
+                  />
                   <Label
                     htmlFor={option.id}
                     className="flex-1 cursor-pointer font-normal leading-normal"

@@ -16,6 +16,135 @@ export interface RegisterPayload {
   date_of_birth: string;
   stream: "Natural" | "Social";
 }
+// --- Interface for My Progress Response ---
+export interface MyProgressResponse {
+  total_exams: number;
+  completed_exams: number;
+  average_score: number;
+  total_questions_attempted: number;
+  correct_answers: number;
+  accuracy_percentage: number;
+  subjects_performance: {
+    [subjectName: string]: {
+      exams_taken: number;
+      total_score: number;
+      average_score: number;
+    };
+  };
+}
+export interface StudentDashboardResponse {
+  performance_overview: {
+    overall_average_score: number;
+    total_exams_taken: number;
+    completed_exams: number;
+    accuracy_percentage: number;
+    total_questions_attempted: number;
+    correct_answers: number;
+  };
+  recent_trend: {
+    date: string;
+    score: number;
+    exam_title: string;
+    subject: string;
+    mode: string;
+  }[];
+  rank_percentile: {
+    rank: number;
+    percentile: number;
+    total_students: number;
+    performance_level: string;
+  };
+  subject_breakdown: {
+    [subjectName: string]: {
+      exams_taken: number;
+      total_score: number;
+      average_score: number;
+      highest_score: number;
+      lowest_score: number;
+      improvement_trend: string;
+      strength_level: string;
+    };
+  };
+  practice_vs_exam: {
+    practice: {
+      total_attempts: number;
+      average_score: number;
+      highest_score: number;
+      average_time_minutes: number;
+      accuracy_rate: number;
+    };
+    exam: {
+      total_attempts: number;
+      average_score: number;
+      highest_score: number;
+      average_time_minutes: number;
+      accuracy_rate: number;
+    };
+  };
+  time_management: {
+    student_avg_time_per_question: number;
+    top_performers_avg_time: number;
+    efficiency_rating: string;
+    time_comparison: string;
+  };
+  improvement_tracking: {
+    score_growth: number;
+    most_improved_subject: string | null;
+    needs_attention_subjects: string[];
+    improvement_rate: number;
+  };
+  recommendations: {
+    type: string;
+    message: string;
+    priority: string;
+    action: string;
+  }[];
+  last_updated: string;
+}
+// --- Interface for Topic Analysis Response ---
+export interface TopicAnalysisResponse {
+  topic_analysis: {
+    [topicName: string]: {
+      subject_area_id: string;
+      subject_area_name: string;
+      total_questions_attempted: number;
+      correct_answers: number;
+      accuracy_percentage: number;
+      average_time_per_question: number;
+      difficulty_level: string;
+      strength_level: string;
+      improvement_trend: string;
+      recommendation: string;
+    };
+  };
+  topic_insights: {
+    strong_topics: string[];
+    weak_topics: string[];
+    improving_topics: string[];
+    total_topics_analyzed: number;
+    overall_topic_performance: number;
+  };
+}
+// --- Interface for Exam History Item ---
+export interface ExamHistoryItem {
+  id: string;
+  exam_title: string;
+  exam_subject: string;
+  exam_duration: number;
+  exam_passing_marks: number;
+  mode: "exam" | "practice";
+  start_time: string;
+  end_time: string | null;
+  score: number | string | null;
+  is_completed: boolean;
+  time_spent_total_seconds: number | null;
+  time_spent_minutes: number;
+  is_passed: boolean;
+  created_at: string;
+}
+
+// --- Interface for Exam History Response ---
+export type ExamHistoryResponse = ExamHistoryItem[];
 
 export interface LoginPayload {
   identifier: string;
@@ -30,9 +159,40 @@ export interface StartExamRequest {
   mode: "exam" | "practice";
 }
 
+// Interface for a single option
+interface QuestionOption {
+  id: string;
+  option_key: string;
+  option_text: string;
+}
+
+// Interface for the nested question data
+interface QuestionDetail {
+  id: string;
+  question_text: string;
+  options: QuestionOption[];
+  explanation: string | null; // <-- More accurate type
+  correct_option?: string; // <-- ADDED: Optional field for practice mode
+}
+
+// Interface for a single question in the student's exam
+interface StudentQuestion {
+  id: string;
+  question: QuestionDetail;
+  selected_option: string | null;
+  time_spent_seconds: number;
+  is_correct: boolean | null;
+  is_flagged: boolean;
+  ai_explanation: string | null;
+  // You could also add these fields from your JSON
+  // created_at: string;
+  // updated_at: string;
+}
+
+// Your main response interface, now using the helper interfaces
 export interface StartExamResponse {
   student_exam_id: string;
-  mode: string;
+  mode: "practice" | "exam"; // Using literal types is even better
   exam: {
     id: string;
     title: string;
@@ -40,24 +200,7 @@ export interface StartExamResponse {
     total_questions: number;
     passing_marks: number;
   };
-  questions: {
-    id: string;
-    question: {
-      id: string;
-      question_text: string;
-      options: {
-        id: string;
-        option_key: string;
-        option_text: string;
-      }[];
-      explanation: string;
-    };
-    selected_option: string | null;
-    time_spent_seconds: number;
-    is_correct: boolean | null;
-    is_flagged: boolean;
-    ai_explanation: string | null;
-  }[];
+  questions: StudentQuestion[];
 }
 interface SubmitAnswer {
   question_id: string; // Refers to question.question.id (inner ID)
@@ -140,25 +283,26 @@ export async function registerStudent(
 }
 export async function startExam(
   payload: StartExamPayload
-): Promise<ApiResponse<any>> {
-  const token = getAccessToken(); // Get the token
+): Promise<ApiResponse<StartExamResponse>> {
+  // <-- Use your specific interface
+  const token = getAccessToken();
 
   const headers: HeadersInit = {
     "Content-Type": "application/json",
   };
 
-  // Add the Authorization header if a token exists
   if (token) {
     headers["Authorization"] = `Bearer ${token}`;
   }
 
   const res = await fetch(`${BASE_URL}/student-exams/start-exam`, {
     method: "POST",
-    headers: headers, // Use the updated headers
+    headers: headers,
     body: JSON.stringify(payload),
   });
 
-  return handleResponse<any>(res);
+  // Pass the specific type to handleResponse as well
+  return handleResponse<StartExamResponse>(res);
 }
 
 export async function submitExam(
@@ -192,6 +336,92 @@ export async function submitExam(
   });
 
   return handleResponse<any>(res);
+}
+export async function fetchMyProgress(): Promise<
+  ApiResponse<MyProgressResponse>
+> {
+  const token = getAccessToken();
+
+  const headers: HeadersInit = {
+    "Content-Type": "application/json",
+  };
+
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
+  const res = await fetch(`${BASE_URL}/student-exams/my-progress`, {
+    method: "GET",
+    headers,
+  });
+
+  return res.json();
+}
+// --- Fetch Function for Student Dashboard ---
+export async function fetchStudentDashboard(): Promise<
+  ApiResponse<StudentDashboardResponse>
+> {
+  const token = getAccessToken();
+
+  const headers: HeadersInit = {
+    "Content-Type": "application/json",
+  };
+
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
+  const res = await fetch(`${BASE_URL}/student-exams/dashboard`, {
+    method: "GET",
+    headers,
+  });
+
+  return res.json();
+}
+// --- Fetch Function for Topic Analysis ---
+export async function fetchTopicAnalysis(): Promise<
+  ApiResponse<TopicAnalysisResponse>
+> {
+  const token = getAccessToken();
+
+  const headers: HeadersInit = {
+    "Content-Type": "application/json",
+  };
+
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
+  const res = await fetch(`${BASE_URL}/student-exams/topic-analysis`, {
+    method: "GET",
+    headers,
+  });
+
+  return res.json();
+}
+// --- Fetch Function for Exam History ---
+export async function fetchExamHistory(
+  mode: "exam" | "practice"
+): Promise<ApiResponse<ExamHistoryResponse>> {
+  const token = getAccessToken();
+
+  const headers: HeadersInit = {
+    "Content-Type": "application/json",
+  };
+
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
+  const res = await fetch(
+    `${BASE_URL}/student-exams/exam-history?mode=${mode}`,
+    {
+      method: "GET",
+      headers,
+    }
+  );
+
+  return res.json();
 }
 // --- AI Explanation ---
 export async function fetchAIExplanation(
