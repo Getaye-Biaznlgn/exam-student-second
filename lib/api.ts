@@ -76,6 +76,20 @@ export interface ApiResponse<T> {
   data?: T;
   meta?: Record<string, any>;
 }
+export interface AIExplanation {
+  content: string;
+  steps: string[];
+  why_correct: string;
+  why_wrong: string;
+  key_concepts: string[];
+  tips: string;
+}
+
+export interface AIExplanationResponse {
+  question_id: string;
+  explanation: AIExplanation;
+  cached: boolean;
+}
 
 /** -------- Helper: handle responses -------- */
 async function handleResponse<T>(res: Response): Promise<ApiResponse<T>> {
@@ -178,6 +192,30 @@ export async function submitExam(
   });
 
   return handleResponse<any>(res);
+}
+// --- AI Explanation ---
+export async function fetchAIExplanation(
+  questionId: string
+): Promise<ApiResponse<AIExplanationResponse>> {
+  const token = getAccessToken();
+
+  const headers: HeadersInit = {
+    "Content-Type": "application/json",
+  };
+
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
+  const res = await fetch(
+    `${BASE_URL}/student-exams/questions/${questionId}/ai-explanation`,
+    {
+      method: "GET",
+      headers,
+    }
+  );
+
+  return handleResponse<AIExplanationResponse>(res);
 }
 
 export async function submitAnswer(
