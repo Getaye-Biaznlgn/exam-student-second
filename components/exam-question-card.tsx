@@ -6,6 +6,19 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
+/**
+ * Removes all HTML tags from a string.
+ * @param htmlString The HTML content to clean.
+ * @returns The cleaned, plain text string.
+ */
+function stripHtmlTags(htmlString: string | null | undefined): string {
+  if (typeof htmlString !== "string") {
+    return "";
+  }
+  // Regex to match anything between '<' and '>', including the angle brackets themselves
+  return htmlString.replace(/<[^>]*>/g, "").trim();
+}
+
 export interface Question {
   id: string;
   question_text: string;
@@ -47,7 +60,8 @@ export function ExamQuestionCard({
         </div>
 
         <h2 className="text-xl font-semibold leading-relaxed">
-          {questionNumber}. {question.question_text}
+          {questionNumber}. {/* MODIFIED: Strip HTML tags from question text */}
+          {stripHtmlTags(question.question_text)}
         </h2>
 
         {question.image_url && (
@@ -102,7 +116,8 @@ export function ExamQuestionCard({
                     htmlFor={option.id}
                     className="flex-1 cursor-pointer font-normal leading-normal"
                   >
-                    {option.option_text}
+                    {/* MODIFIED: Strip HTML tags from option text */}
+                    {stripHtmlTags(option.option_text)}
                   </Label>
                 </div>
               );

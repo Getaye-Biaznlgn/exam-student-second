@@ -27,7 +27,7 @@ export default function TopicAnalysisPage() {
         } else {
           setError(res.message || "Failed to load topic analysis.");
         }
-      } catch (err) {
+      } catch {
         setError("An error occurred while fetching topic analysis.");
       } finally {
         setLoading(false);
@@ -57,8 +57,100 @@ export default function TopicAnalysisPage() {
   const { subjects, overall_insights } = data;
 
   return (
-    <div className="p-6 space-y-6">
-      <h1 className="text-2xl font-bold">Topic Analysis</h1>
+    <div className="p-6 space-y-6 no-scrollbar overflow-y-auto h-screen">
+      <h1 className="text-2xl font-bold mb-4">Topic Analysis</h1>
+
+      {/* --- Overall Insights Summary --- */}
+      <Card className="border border-muted shadow-sm">
+        <CardHeader>
+          <CardTitle>Overall Insights</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {/* Stats Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <Card className="bg-muted p-4 text-center">
+              <p className="text-sm text-muted-foreground">Total Subjects</p>
+              <h3 className="text-lg font-semibold">
+                {overall_insights.total_subjects}
+              </h3>
+            </Card>
+
+            <Card className="bg-muted p-4 text-center">
+              <p className="text-sm text-muted-foreground">
+                Total Topics Analyzed
+              </p>
+              <h3 className="text-lg font-semibold">
+                {overall_insights.total_topics_analyzed}
+              </h3>
+            </Card>
+
+            <Card className="bg-muted p-4 text-center">
+              <p className="text-sm text-muted-foreground">
+                Overall Performance
+              </p>
+              <h3 className="text-lg font-semibold">
+                {overall_insights.overall_performance.toFixed(2)}%
+              </h3>
+            </Card>
+          </div>
+
+          {/* Topic Strengths */}
+          <div>
+            <h3 className="font-medium">Strong Topics</h3>
+            <div className="flex flex-wrap gap-2 mt-2">
+              {overall_insights.strong_topics.length > 0 ? (
+                overall_insights.strong_topics.map((t) => (
+                  <Badge key={t} className="bg-green-600 text-white">
+                    {t}
+                  </Badge>
+                ))
+              ) : (
+                <p className="text-sm text-muted-foreground">
+                  No strong topics yet.
+                </p>
+              )}
+            </div>
+          </div>
+
+          <div>
+            <h3 className="font-medium">Weak Topics</h3>
+            <div className="flex flex-wrap gap-2 mt-2">
+              {overall_insights.weak_topics.length > 0 ? (
+                overall_insights.weak_topics.map((t) => (
+                  <Badge key={t} className="bg-red-600 text-white">
+                    {t}
+                  </Badge>
+                ))
+              ) : (
+                <p className="text-sm text-muted-foreground">
+                  No weak topics yet.
+                </p>
+              )}
+            </div>
+          </div>
+
+          <div>
+            <h3 className="font-medium">Improving Topics</h3>
+            <div className="flex flex-wrap gap-2 mt-2">
+              {overall_insights.improving_topics.length > 0 ? (
+                overall_insights.improving_topics.map((t) => (
+                  <Badge
+                    key={t}
+                    className="border-blue-600 text-blue-600"
+                    variant="outline"
+                  >
+                    {t}
+                  </Badge>
+                ))
+              ) : (
+                <p className="text-sm text-muted-foreground">
+                  No improving topics yet.
+                </p>
+              )}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* --- Subjects Section --- */}
       {subjects.length === 0 ? (
@@ -133,79 +225,6 @@ export default function TopicAnalysisPage() {
           </Card>
         ))
       )}
-
-      {/* --- Insights Summary --- */}
-      <Card>
-        <CardHeader>
-          <h2 className="text-xl font-semibold">Overall Insights</h2>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div>
-            <h3 className="font-medium">Strong Topics</h3>
-            <div className="flex flex-wrap gap-2 mt-2">
-              {overall_insights.strong_topics.length > 0 ? (
-                overall_insights.strong_topics.map((t) => (
-                  <Badge key={t} className="bg-green-600 text-white">
-                    {t}
-                  </Badge>
-                ))
-              ) : (
-                <p className="text-sm text-muted-foreground">
-                  No strong topics yet.
-                </p>
-              )}
-            </div>
-          </div>
-
-          <div>
-            <h3 className="font-medium">Weak Topics</h3>
-            <div className="flex flex-wrap gap-2 mt-2">
-              {overall_insights.weak_topics.length > 0 ? (
-                overall_insights.weak_topics.map((t) => (
-                  <Badge key={t} className="bg-red-600 text-white">
-                    {t}
-                  </Badge>
-                ))
-              ) : (
-                <p className="text-sm text-muted-foreground">
-                  No weak topics yet.
-                </p>
-              )}
-            </div>
-          </div>
-
-          <div>
-            <h3 className="font-medium">Improving Topics</h3>
-            <div className="flex flex-wrap gap-2 mt-2">
-              {overall_insights.improving_topics.length > 0 ? (
-                overall_insights.improving_topics.map((t) => (
-                  <Badge
-                    key={t}
-                    className="border-blue-600 text-blue-600"
-                    variant="outline"
-                  >
-                    {t}
-                  </Badge>
-                ))
-              ) : (
-                <p className="text-sm text-muted-foreground">
-                  No improving topics yet.
-                </p>
-              )}
-            </div>
-          </div>
-
-          <div className="mt-3 text-sm text-muted-foreground">
-            Total Subjects: <strong>{overall_insights.total_subjects}</strong>
-            <br />
-            Total Topics Analyzed:{" "}
-            <strong>{overall_insights.total_topics_analyzed}</strong>
-            <br />
-            Overall Performance:{" "}
-            <strong>{overall_insights.overall_performance.toFixed(2)}%</strong>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 }
