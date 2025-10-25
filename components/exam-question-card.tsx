@@ -7,16 +7,22 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
 /**
- * Removes all HTML tags from a string.
- * @param htmlString The HTML content to clean.
- * @returns The cleaned, plain text string.
+ * Extracts base64 <img> src from HTML string (if present).
  */
-function stripHtmlTags(htmlString: string | null | undefined): string {
-  if (typeof htmlString !== "string") {
-    return "";
-  }
-  // Regex to match anything between '<' and '>', including the angle brackets themselves
-  return htmlString.replace(/<[^>]*>/g, "").trim();
+function extractBase64Image(
+  htmlString: string | null | undefined
+): string | null {
+  if (!htmlString) return null;
+  const match = htmlString.match(/<img[^>]+src=["'](data:image\/[^"']+)["']/i);
+  return match ? match[1] : null;
+}
+
+/**
+ * Removes image tags but keeps other HTML for rendering text.
+ */
+function removeImageTags(htmlString: string | null | undefined): string {
+  if (!htmlString) return "";
+  return htmlString.replace(/<img[^>]*>/gi, "");
 }
 
 export interface Question {
@@ -36,7 +42,6 @@ interface ExamQuestionCardProps {
   totalQuestions: number;
   selectedOption: string | null;
   onSelectOption: (optionId: string) => void;
-  /** NEW PROPS */
   isPracticeMode?: boolean;
   correctOptionKey?: string | null;
 }
@@ -50,6 +55,11 @@ export function ExamQuestionCard({
   isPracticeMode = false,
   correctOptionKey = null,
 }: ExamQuestionCardProps) {
+  // Extract image from HTML or fallback to image_url
+  const embeddedImage = extractBase64Image(question.question_text);
+  const displayImage = embeddedImage || question.image_url || null;
+  const questionTextWithoutImage = removeImageTags(question.question_text);
+
   return (
     <Card className="w-full">
       <CardHeader className="space-y-4">
@@ -59,16 +69,18 @@ export function ExamQuestionCard({
           </Badge>
         </div>
 
-        <h2 className="text-xl font-semibold leading-relaxed">
-          {questionNumber}. {/* MODIFIED: Strip HTML tags from question text */}
-          {stripHtmlTags(question.question_text)}
-        </h2>
+        <h2
+          className="text-xl font-semibold leading-relaxed prose prose-sm max-w-none"
+          dangerouslySetInnerHTML={{
+            __html: `${questionNumber}. ${questionTextWithoutImage}`,
+          }}
+        />
 
-        {question.image_url && (
+        {displayImage && (
           <div className="flex justify-center mt-4">
             <img
-              src={question.image_url}
-              alt="Question diagram"
+              src={displayImage}
+              alt="Question illustration"
               className="max-w-full h-auto max-h-64 rounded-lg border shadow-sm"
             />
           </div>
@@ -80,8 +92,6 @@ export function ExamQuestionCard({
           <div className="space-y-3">
             {question.options.map((option) => {
               const isSelected = selectedOption === option.id;
-
-              // --- Color logic ---
               const isCorrect =
                 isPracticeMode &&
                 selectedOption !== null &&
@@ -97,11 +107,9 @@ export function ExamQuestionCard({
                   key={option.id}
                   className={cn(
                     "flex items-start space-x-3 rounded-lg border-2 p-4 transition-all cursor-pointer",
-                    // Default styling
                     isSelected
                       ? "border-primary bg-primary/5"
                       : "border-border hover:border-primary/50",
-                    // Show feedback colors only AFTER a selection is made
                     isCorrect && "border-green-500 bg-green-100/50",
                     isIncorrect && "border-red-500 bg-red-100/50"
                   )}
@@ -114,11 +122,9 @@ export function ExamQuestionCard({
                   />
                   <Label
                     htmlFor={option.id}
-                    className="flex-1 cursor-pointer font-normal leading-normal"
-                  >
-                    {/* MODIFIED: Strip HTML tags from option text */}
-                    {stripHtmlTags(option.option_text)}
-                  </Label>
+                    className="flex-1 cursor-pointer font-normal leading-normal prose prose-sm"
+                    dangerouslySetInnerHTML={{ __html: option.option_text }}
+                  />
                 </div>
               );
             })}
