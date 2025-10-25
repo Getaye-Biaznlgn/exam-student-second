@@ -22,14 +22,32 @@ export default function ExamHistoryPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Define loadHistory outside useEffect so we can call it from "Retry"
+  // but wrap it in useCallback or define it inside useEffect
+  // For simplicity here, we'll define it inside useEffect and pass it
+  // to the retry button, though this is slightly less clean.
+  // A better approach would be useCallback, but let's stick to minimal changes.
+
+  // Re-defining loadHistory inside useEffect is fine, but we need
+  // to make the retry button work. Let's define loadHistory
+  // *within* the useEffect dependency array.
+
   useEffect(() => {
     async function loadHistory() {
       setLoading(true);
       setError(null);
+      setHistory([]); // <-- FIX 1: Reset history on each load
       try {
         const res = await fetchExamHistory(mode);
         if (res.success && res.data) {
-          setHistory(res.data);
+          // --- FIX 2: Check if data is an array ---
+          if (Array.isArray(res.data)) {
+            setHistory(res.data);
+          } else {
+            console.error("API returned non-array data:", res.data);
+            setError("Failed to load history: Invalid data format.");
+          }
+          // --- End of FIX 2 ---
         } else {
           setError(res.message || "Failed to load history");
         }
@@ -41,6 +59,30 @@ export default function ExamHistoryPage() {
     }
     loadHistory();
   }, [mode]);
+
+  // This function is for the "Retry" button
+  async function handleRetry() {
+    setLoading(true);
+    setError(null);
+    setHistory([]);
+    try {
+      const res = await fetchExamHistory(mode);
+      if (res.success && res.data) {
+        if (Array.isArray(res.data)) {
+          setHistory(res.data);
+        } else {
+          console.error("API returned non-array data:", res.data);
+          setError("Failed to load history: Invalid data format.");
+        }
+      } else {
+        setError(res.message || "Failed to load history");
+      }
+    } catch (err) {
+      setError("Error fetching history");
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return (
     <div className="flex flex-col h-full">
@@ -90,16 +132,21 @@ export default function ExamHistoryPage() {
         ) : error ? (
           <div className="flex flex-col items-center justify-center h-40 text-red-500">
             <p>{error}</p>
-            <Button onClick={() => setMode(mode)} className="mt-4">
+            {/* --- FIX 3: Make Retry button call loadHistory --- */}
+            <Button onClick={handleRetry} className="mt-4">
               Retry
             </Button>
+            {/* --- End of FIX 3 --- */}
           </div>
-        ) : history.length === 0 ? (
+        ) : // --- FIX 4: Safety check for array ---
+        !Array.isArray(history) || history.length === 0 ? (
+          // --- End of FIX 4 ---
           <div className="flex flex-col items-center justify-center h-40 text-muted-foreground">
             <p>No {mode} history found.</p>
           </div>
         ) : (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {/* This is now safe to map */}
             {history.map((item) => (
               <Card key={item.id} className="hover:shadow-md transition-shadow">
                 <CardHeader className="pb-2">

@@ -101,29 +101,48 @@ export interface StudentDashboardResponse {
   }[];
   last_updated: string;
 }
-// --- Interface for Topic Analysis Response ---
+// --- Interface for Topic Analysis Response (Updated) ---
+
+export interface Topic {
+  topic_id: string;
+  topic_name: string;
+  description: string;
+  total_questions_attempted: number;
+  correct_answers: number;
+  accuracy_percentage: number;
+  average_time_per_question: number;
+  difficulty_level: string;
+  strength_level: string;
+  improvement_trend: string;
+  recommendation: string;
+}
+
+export interface Subject {
+  subject_id: string;
+  subject_name: string;
+  subject_description: string | null;
+  field: string;
+  total_topics: number;
+  topics_attempted: number;
+  average_accuracy: number;
+  strong_topics_count: number;
+  weak_topics_count: number;
+  improving_topics_count: number;
+  topics: Topic[];
+}
+
+export interface OverallInsights {
+  strong_topics: string[];
+  weak_topics: string[];
+  improving_topics: string[];
+  total_subjects: number;
+  total_topics_analyzed: number;
+  overall_performance: number;
+}
+
 export interface TopicAnalysisResponse {
-  topic_analysis: {
-    [topicName: string]: {
-      subject_area_id: string;
-      subject_area_name: string;
-      total_questions_attempted: number;
-      correct_answers: number;
-      accuracy_percentage: number;
-      average_time_per_question: number;
-      difficulty_level: string;
-      strength_level: string;
-      improvement_trend: string;
-      recommendation: string;
-    };
-  };
-  topic_insights: {
-    strong_topics: string[];
-    weak_topics: string[];
-    improving_topics: string[];
-    total_topics_analyzed: number;
-    overall_topic_performance: number;
-  };
+  subjects: Subject[];
+  overall_insights: OverallInsights;
 }
 // --- Interface for Exam History Item ---
 export interface ExamHistoryItem {
@@ -378,7 +397,7 @@ export async function fetchStudentDashboard(): Promise<
 
   return res.json();
 }
-// --- Fetch Function for Topic Analysis ---
+// --- Fetch Function for Topic Analysis (Updated) ---
 export async function fetchTopicAnalysis(): Promise<
   ApiResponse<TopicAnalysisResponse>
 > {
@@ -397,7 +416,19 @@ export async function fetchTopicAnalysis(): Promise<
     headers,
   });
 
-  return res.json();
+  const data = await res.json();
+
+  // optional safety check to ensure structure consistency
+  if (!data?.data?.subjects || !data?.data?.overall_insights) {
+    throw new Error("Invalid response format from topic-analysis API");
+  }
+
+  return {
+    success: data.success,
+    message: data.message,
+    data: data.data,
+    meta: data.meta || {},
+  };
 }
 // --- Fetch Function for Exam History ---
 export async function fetchExamHistory(
