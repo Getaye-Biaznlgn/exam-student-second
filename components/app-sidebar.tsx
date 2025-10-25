@@ -9,8 +9,8 @@ import { cn } from "@/lib/utils";
 
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: Home },
-  { name: "Practice Mode", href: "/select-subject", icon: Brain },
-  { name: "Exam Mode", href: "/select-subject", icon: Clock },
+  { name: "topic analysis", href: "/topic-analysis", icon: Brain },
+  { name: "history", href: "/history", icon: Clock },
   { name: "Progress", href: "/progress", icon: TrendingUp },
 ];
 

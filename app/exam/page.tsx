@@ -496,6 +496,10 @@ export default function ExamPage() {
                 totalQuestions={questions.length}
                 selectedOption={answers[currentQuestion.question.id] || null}
                 onSelectOption={handleAnswer}
+                isPracticeMode={isPracticeMode}
+                correctOptionKey={
+                  currentQuestion.question.correct_option || null
+                }
               />
             )}
 

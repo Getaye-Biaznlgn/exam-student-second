@@ -66,12 +66,7 @@ export function AppBar() {
                 >
                   Exam
                 </Link>
-                <Link
-                  href="/progress"
-                  className="text-sm font-medium hover:text-primary transition-colors"
-                >
-                  Progress
-                </Link>
+
                 <Link
                   href="/dashboard"
                   className="text-sm font-medium hover:text-primary transition-colors"
