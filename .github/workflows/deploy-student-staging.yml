@@ -1,0 +1,85 @@
+name: 🚀 Deploy Online Exam Student (Main Branch)
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '**'  # Since we're now in the student folder, any change should trigger
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🔄 Deploy on server
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.STAGING_VPS_IP2 }}
+          username: ${{ secrets.STAGING_VPS_SSH_USER2 }}
+          key: ${{ secrets.STAGING_VPS_SSH_KEY2 }}
+          port: 22
+          command_timeout: 60m   # ✅ increased for long builds
+          script: |
+            cd /home/ubuntu/online-exam/online-exam-student
+
+            # Ensure directory exists and has proper permissions
+            sudo mkdir -p /home/ubuntu/online-exam/online-exam-student
+            sudo chown -R ubuntu:ubuntu /home/ubuntu/online-exam/online-exam-student/
+            sudo chmod -R 755 /home/ubuntu/online-exam/online-exam-student/
+
+            # Pull latest code from repository
+            echo "📥 Pulling latest code from repository..."
+            git pull origin main
+
+            # Install dependencies
+            echo "📦 Installing dependencies..."
+            npm ci --legacy-peer-deps
+
+            # Build the Next.js application
+            echo "🛠 Building Next.js application..."
+            npm run build
+
+            # Fix permissions after build
+            sudo chown -R ubuntu:ubuntu .next public package.json package-lock.json
+            sudo chmod -R 755 .next public
+
+            # Install PM2 if not already installed
+            echo "📦 Checking PM2 installation..."
+            if ! command -v pm2 &> /dev/null; then
+                echo "🔧 Installing PM2..."
+                sudo npm install -g pm2
+                
+                # Setup PM2 to start on boot
+                echo "🔧 Setting up PM2 startup..."
+                sudo pm2 startup systemd -u ubuntu --hp /home/ubuntu
+            fi
+            
+            # Restart student service with PM2
+            echo "🔄 Restarting student service with PM2..."
+            
+            # Check if PM2 process exists and restart, otherwise start new
+            if pm2 list | grep -q "online-exam-student"; then
+                echo "🔄 Restarting existing PM2 process..."
+                pm2 restart online-exam-student
+            else
+                echo "🚀 Starting new PM2 process..."
+                pm2 start npm --name "online-exam-student" -- start -- -p 3005
+            fi
+            
+            # Save PM2 configuration
+            pm2 save
+            
+            # Wait a moment for the app to start
+            sleep 5
+            
+            # Check if the process is running
+            if pm2 list | grep -q "online-exam-student.*online"; then
+                echo "✅ Next.js student application started successfully with PM2!"
+                pm2 logs online-exam-student --lines 10
+            else
+                echo "❌ Failed to start Next.js student application with PM2."
+                pm2 logs online-exam-student --lines 20
+                exit 1
+            fi
+
+            echo "✅ Online Exam Student deployment completed successfully!"
