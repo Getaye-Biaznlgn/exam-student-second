@@ -6,15 +6,25 @@ import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ArrowLeft, ArrowRight, Flag } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"; // --- NEW ---
 // import Image from "next/image"; // Image component is not used, can be removed
 import {
   startExam,
   StartExamResponse,
   submitExam,
   submitAnswer,
-  fetchAIExplanation, // --- NEW ---
-  type AIExplanation, // --- NEW ---
-  type AIExplanationResponse, // --- NEW ---
+  fetchAIExplanation,
+  type AIExplanation,
+  type AIExplanationResponse,
 } from "@/lib/api";
 import { ExamQuestionCard } from "@/components/exam-question-card";
 import { ExamTimer } from "@/components/exam-timer";
@@ -50,6 +60,7 @@ export default function ExamPage() {
   const [examStarted, setExamStarted] = useState(false);
   const [examCompleted, setExamCompleted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showConfirmModal, setShowConfirmModal] = useState(false); // --- NEW ---
 
   const [finalResult, setFinalResult] = useState<any>(null);
 
@@ -277,19 +288,9 @@ export default function ExamPage() {
     }
   };
 
-  const handleSubmit = async () => {
+  // --- NEW: Contains the actual submission logic ---
+  const proceedWithSubmit = async () => {
     if (isSubmitting) return;
-
-    const unansweredCount = questions.length - Object.keys(answers).length;
-
-    if (unansweredCount > 0) {
-      const confirmed = window.confirm(
-        `You have ${unansweredCount} unanswered question(s). Are you sure you want to submit?`
-      );
-      if (!confirmed) {
-        return;
-      }
-    }
 
     setIsSubmitting(true);
     updateCurrentQuestionTime();
@@ -326,12 +327,29 @@ export default function ExamPage() {
       console.error(err);
     } finally {
       setIsSubmitting(false);
+      setShowConfirmModal(false); // Ensure modal is closed
+    }
+  };
+
+  // --- MODIFIED: This function now just checks and opens the modal ---
+  const handleSubmit = async () => {
+    if (isSubmitting) return;
+
+    const unansweredCount = questions.length - Object.keys(answers).length;
+
+    if (unansweredCount > 0) {
+      // Show custom modal instead of window.confirm
+      setShowConfirmModal(true);
+    } else {
+      // No unanswered questions, submit directly
+      proceedWithSubmit();
     }
   };
 
   const handleTimeUp = () => {
     alert("Time is up! Your exam will be submitted automatically.");
-    handleSubmit();
+    // Use proceedWithSubmit directly to bypass the modal on time up
+    proceedWithSubmit();
   };
 
   // --- NEW: Handle Review Function ---
@@ -476,7 +494,7 @@ export default function ExamPage() {
 
           {/* --- NEW: Button Group for Review/Home --- */}
           <div className="flex gap-4 justify-center mt-6">
-            <Button variant="outline" onClick={handleReview}>
+            <Button variant="outline" onClick={() => router.push("/history")}>
               Review Exam
             </Button>
             <Button onClick={() => router.push("/")}>Back to Home</Button>
@@ -490,6 +508,7 @@ export default function ExamPage() {
 
   const answeredCount = Object.keys(answers).length;
   const progress = (answeredCount / questions.length) * 100;
+  const unansweredCount = questions.length - answeredCount; // --- NEW ---
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -693,6 +712,31 @@ export default function ExamPage() {
           </div>
         </div>
       </main>
+
+      <AlertDialog open={showConfirmModal} onOpenChange={setShowConfirmModal}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              Are you sure you want to submit?
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              You have {unansweredCount} unanswered question(s). This action
+              cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isSubmitting}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={proceedWithSubmit}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? "Submitting..." : "Submit Anyway"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
