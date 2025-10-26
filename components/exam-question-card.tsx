@@ -7,22 +7,15 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
 /**
- * Extracts base64 <img> src from HTML string (if present).
+ * Safely renders HTML content.
+ * @param htmlString The HTML content to render.
+ * @returns The HTML content or empty string if invalid.
  */
-function extractBase64Image(
-  htmlString: string | null | undefined
-): string | null {
-  if (!htmlString) return null;
-  const match = htmlString.match(/<img[^>]+src=["'](data:image\/[^"']+)["']/i);
-  return match ? match[1] : null;
-}
-
-/**
- * Removes image tags but keeps other HTML for rendering text.
- */
-function removeImageTags(htmlString: string | null | undefined): string {
-  if (!htmlString) return "";
-  return htmlString.replace(/<img[^>]*>/gi, "");
+function getHtmlContent(htmlString: string | null | undefined): string {
+  if (typeof htmlString !== "string") {
+    return "";
+  }
+  return htmlString.trim();
 }
 
 export interface Question {
@@ -55,10 +48,6 @@ export function ExamQuestionCard({
   isPracticeMode = false,
   correctOptionKey = null,
 }: ExamQuestionCardProps) {
-  // Extract image from HTML or fallback to image_url
-  const embeddedImage = extractBase64Image(question.question_text);
-  const displayImage = embeddedImage || question.image_url || null;
-  const questionTextWithoutImage = removeImageTags(question.question_text);
 
   return (
     <Card className="w-full">
@@ -69,22 +58,10 @@ export function ExamQuestionCard({
           </Badge>
         </div>
 
-        <h2
-          className="text-xl font-semibold leading-relaxed prose prose-sm max-w-none"
-          dangerouslySetInnerHTML={{
-            __html: `${questionNumber}. ${questionTextWithoutImage}`,
-          }}
-        />
-
-        {displayImage && (
-          <div className="flex justify-center mt-4">
-            <img
-              src={displayImage}
-              alt="Question illustration"
-              className="max-w-full h-auto max-h-64 rounded-lg border shadow-sm"
-            />
-          </div>
-        )}
+        <h2 className="text-xl font-semibold leading-relaxed">
+          {questionNumber}. {/* MODIFIED: Render HTML content */}
+          <span dangerouslySetInnerHTML={{ __html: getHtmlContent(question.question_text) }} />
+        </h2>
       </CardHeader>
 
       <CardContent>
@@ -122,9 +99,11 @@ export function ExamQuestionCard({
                   />
                   <Label
                     htmlFor={option.id}
-                    className="flex-1 cursor-pointer font-normal leading-normal prose prose-sm"
-                    dangerouslySetInnerHTML={{ __html: option.option_text }}
-                  />
+                    className="flex-1 cursor-pointer font-normal leading-normal"
+                  >
+                    {/* MODIFIED: Render HTML content */}
+                    <span dangerouslySetInnerHTML={{ __html: getHtmlContent(option.option_text) }} />
+                  </Label>
                 </div>
               );
             })}
