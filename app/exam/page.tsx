@@ -21,17 +21,15 @@ import { ExamTimer } from "@/components/exam-timer";
 import { Progress } from "@/components/ui/progress";
 
 /**
- * Removes all HTML tags from a string.
- * @param htmlString The HTML content to clean.
- * @returns The cleaned, plain text string.
+ * Safely renders HTML content.
+ * @param htmlString The HTML content to render.
+ * @returns The HTML content or empty string if invalid.
  */
-function stripHtmlTags(htmlString: string | null | undefined): string {
+function getHtmlContent(htmlString: string | null | undefined): string {
   if (typeof htmlString !== "string") {
     return "";
   }
-  // Regex to match anything between '<' and '>', including the angle brackets themselves
-  // The 'g' flag ensures all occurrences are replaced.
-  return htmlString.replace(/<[^>]*>/g, "").trim();
+  return htmlString.trim();
 }
 
 export default function ExamPage() {
@@ -549,8 +547,8 @@ export default function ExamPage() {
 
                     <h4 className="font-semibold mt-4">Explanation:</h4>
                     <p className="text-sm whitespace-pre-wrap text-muted-foreground">
-                      {/* Using the new stripHtmlTags function */}
-                      {stripHtmlTags(currentAIExplanation.content)}
+                      {/* Using the new HTML rendering function */}
+                      <span dangerouslySetInnerHTML={{ __html: getHtmlContent(currentAIExplanation.content) }} />
                     </p>
 
                     <h4 className="font-semibold mt-4">Steps:</h4>
@@ -565,16 +563,16 @@ export default function ExamPage() {
 
                     <h4 className="font-semibold mt-4">Why it's Correct:</h4>
                     <p className="text-sm whitespace-pre-wrap text-green-700 dark:text-green-400">
-                      {/* Using the new stripHtmlTags function */}
-                      {stripHtmlTags(currentAIExplanation.why_correct)}
+                      {/* Using the new HTML rendering function */}
+                      <span dangerouslySetInnerHTML={{ __html: getHtmlContent(currentAIExplanation.why_correct) }} />
                     </p>
 
                     <h4 className="font-semibold mt-4">
                       Why Others are Wrong:
                     </h4>
                     <p className="text-sm whitespace-pre-wrap text-red-700 dark:text-red-400">
-                      {/* Using the new stripHtmlTags function */}
-                      {stripHtmlTags(currentAIExplanation.why_wrong)}
+                      {/* Using the new HTML rendering function */}
+                      <span dangerouslySetInnerHTML={{ __html: getHtmlContent(currentAIExplanation.why_wrong) }} />
                     </p>
 
                     <h4 className="font-semibold mt-4">Key Concepts:</h4>
@@ -591,8 +589,8 @@ export default function ExamPage() {
 
                     <h4 className="font-semibold mt-4">Tips:</h4>
                     <p className="text-sm whitespace-pre-wrap text-muted-foreground">
-                      {/* Using the new stripHtmlTags function */}
-                      {stripHtmlTags(currentAIExplanation.tips)}
+                      {/* Using the new HTML rendering function */}
+                      <span dangerouslySetInnerHTML={{ __html: getHtmlContent(currentAIExplanation.tips) }} />
                     </p>
                   </Card>
                 )}
