@@ -101,7 +101,7 @@ export function AppBar() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => router.push("/select-field")}
+                  onClick={() => router.push("/select-subject")}
                 >
                   Start Exam
                 </Button>
@@ -150,7 +150,7 @@ export function AppBar() {
                 Home
               </Link>
               <Link
-                href="/select-field"
+                href="/select-subject"
                 className="text-sm font-medium hover:text-primary transition-colors"
                 onClick={() => setIsMobileMenuOpen(false)}
               >

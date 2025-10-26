@@ -78,7 +78,7 @@ export default function ExamPage() {
 
     async function fetchExam() {
       try {
-        const res = await startExam({ exam_id: examId, mode });
+        const res = await startExam({ exam_id: examId??'', mode: mode as "exam" | "practice" });
         if (res.success && res.data) {
           setExamData(res.data);
 

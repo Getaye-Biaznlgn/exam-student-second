@@ -35,7 +35,6 @@ interface ExamQuestionCardProps {
   totalQuestions: number;
   selectedOption: string | null;
   onSelectOption: (optionId: string) => void;
-  /** NEW PROPS */
   isPracticeMode?: boolean;
   correctOptionKey?: string | null;
 }
@@ -49,6 +48,7 @@ export function ExamQuestionCard({
   isPracticeMode = false,
   correctOptionKey = null,
 }: ExamQuestionCardProps) {
+
   return (
     <Card className="w-full">
       <CardHeader className="space-y-4">
@@ -62,16 +62,6 @@ export function ExamQuestionCard({
           {questionNumber}. {/* MODIFIED: Render HTML content */}
           <span dangerouslySetInnerHTML={{ __html: getHtmlContent(question.question_text) }} />
         </h2>
-
-        {question.image_url && (
-          <div className="flex justify-center mt-4">
-            <img
-              src={question.image_url}
-              alt="Question diagram"
-              className="max-w-full h-auto max-h-64 rounded-lg border shadow-sm"
-            />
-          </div>
-        )}
       </CardHeader>
 
       <CardContent>
@@ -79,8 +69,6 @@ export function ExamQuestionCard({
           <div className="space-y-3">
             {question.options.map((option) => {
               const isSelected = selectedOption === option.id;
-
-              // --- Color logic ---
               const isCorrect =
                 isPracticeMode &&
                 selectedOption !== null &&
@@ -96,11 +84,9 @@ export function ExamQuestionCard({
                   key={option.id}
                   className={cn(
                     "flex items-start space-x-3 rounded-lg border-2 p-4 transition-all cursor-pointer",
-                    // Default styling
                     isSelected
                       ? "border-primary bg-primary/5"
                       : "border-border hover:border-primary/50",
-                    // Show feedback colors only AFTER a selection is made
                     isCorrect && "border-green-500 bg-green-100/50",
                     isIncorrect && "border-red-500 bg-red-100/50"
                   )}

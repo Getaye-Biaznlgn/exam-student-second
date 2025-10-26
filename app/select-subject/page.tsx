@@ -9,23 +9,9 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 
 function AnimatedLoadingIndicator() {
-  const [progress, setProgress] = useState(0);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setProgress((prev) => {
-        // Increase smoothly but don’t exceed 90%
-        if (prev < 90) return prev + Math.random() * 10;
-        return prev;
-      });
-    }, 300);
-
-    return () => clearInterval(interval);
-  }, []);
-
   return (
     <div className="flex flex-col items-center justify-center h-96 space-y-4 w-full max-w-md mx-auto">
-      <Progress value={progress} className="w-full h-2" />
+      <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
       <p className="text-sm text-muted-foreground">Loading subjects...</p>
     </div>
   );
