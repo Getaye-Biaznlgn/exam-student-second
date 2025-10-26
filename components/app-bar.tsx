@@ -17,6 +17,15 @@ export function AppBar() {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
 
+  const handleLogout = async () => {
+    try {
+      await logout(); // Clear user/session data
+      router.push("/auth"); // Redirect to auth page
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+  };
+
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto px-4">
@@ -33,7 +42,6 @@ export function AppBar() {
                   className="w-full h-full object-contain"
                 />
               </div>
-              {/* <span className="text-xl font-bold">SmartPrep</span> */}
             </Link>
           </div>
 
@@ -74,7 +82,7 @@ export function AppBar() {
                   Dashboard
                 </Link>
                 <Link
-                  href="./profile"
+                  href="/profile"
                   className="text-sm font-medium hover:text-primary transition-colors"
                 >
                   Profile
@@ -93,11 +101,11 @@ export function AppBar() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => router.push("/select-field")}
+                  onClick={() => router.push("/select-subject")}
                 >
                   Start Exam
                 </Button>
-                <Button variant="ghost" size="sm" onClick={logout}>
+                <Button variant="ghost" size="sm" onClick={handleLogout}>
                   Logout
                 </Button>
               </div>
@@ -142,7 +150,7 @@ export function AppBar() {
                 Home
               </Link>
               <Link
-                href="/select-field"
+                href="/select-subject"
                 className="text-sm font-medium hover:text-primary transition-colors"
                 onClick={() => setIsMobileMenuOpen(false)}
               >

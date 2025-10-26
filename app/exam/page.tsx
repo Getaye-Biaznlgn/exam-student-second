@@ -20,6 +20,18 @@ import { ExamQuestionCard } from "@/components/exam-question-card";
 import { ExamTimer } from "@/components/exam-timer";
 import { Progress } from "@/components/ui/progress";
 
+/**
+ * Safely renders HTML content.
+ * @param htmlString The HTML content to render.
+ * @returns The HTML content or empty string if invalid.
+ */
+function getHtmlContent(htmlString: string | null | undefined): string {
+  if (typeof htmlString !== "string") {
+    return "";
+  }
+  return htmlString.trim();
+}
+
 export default function ExamPage() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
@@ -66,7 +78,7 @@ export default function ExamPage() {
 
     async function fetchExam() {
       try {
-        const res = await startExam({ exam_id: examId, mode });
+        const res = await startExam({ exam_id: examId??'', mode: mode as "exam" | "practice" });
         if (res.success && res.data) {
           setExamData(res.data);
 
@@ -535,13 +547,15 @@ export default function ExamPage() {
 
                     <h4 className="font-semibold mt-4">Explanation:</h4>
                     <p className="text-sm whitespace-pre-wrap text-muted-foreground">
-                      {currentAIExplanation.content}
+                      {/* Using the new HTML rendering function */}
+                      <span dangerouslySetInnerHTML={{ __html: getHtmlContent(currentAIExplanation.content) }} />
                     </p>
 
                     <h4 className="font-semibold mt-4">Steps:</h4>
                     <ol className="list-decimal list-inside text-sm space-y-1 text-muted-foreground">
                       {currentAIExplanation.steps.map((step, index) => (
                         <li key={index} className="whitespace-pre-wrap">
+                          {/* Assuming steps are already plain text or Markdown meant to be rendered as-is */}
                           {step}
                         </li>
                       ))}
@@ -549,14 +563,16 @@ export default function ExamPage() {
 
                     <h4 className="font-semibold mt-4">Why it's Correct:</h4>
                     <p className="text-sm whitespace-pre-wrap text-green-700 dark:text-green-400">
-                      {currentAIExplanation.why_correct}
+                      {/* Using the new HTML rendering function */}
+                      <span dangerouslySetInnerHTML={{ __html: getHtmlContent(currentAIExplanation.why_correct) }} />
                     </p>
 
                     <h4 className="font-semibold mt-4">
                       Why Others are Wrong:
                     </h4>
                     <p className="text-sm whitespace-pre-wrap text-red-700 dark:text-red-400">
-                      {currentAIExplanation.why_wrong}
+                      {/* Using the new HTML rendering function */}
+                      <span dangerouslySetInnerHTML={{ __html: getHtmlContent(currentAIExplanation.why_wrong) }} />
                     </p>
 
                     <h4 className="font-semibold mt-4">Key Concepts:</h4>
@@ -564,6 +580,7 @@ export default function ExamPage() {
                       {currentAIExplanation.key_concepts.map(
                         (concept, index) => (
                           <li key={index} className="whitespace-pre-wrap">
+                            {/* Assuming concepts are already plain text or Markdown meant to be rendered as-is */}
                             {concept}
                           </li>
                         )
@@ -572,7 +589,8 @@ export default function ExamPage() {
 
                     <h4 className="font-semibold mt-4">Tips:</h4>
                     <p className="text-sm whitespace-pre-wrap text-muted-foreground">
-                      {currentAIExplanation.tips}
+                      {/* Using the new HTML rendering function */}
+                      <span dangerouslySetInnerHTML={{ __html: getHtmlContent(currentAIExplanation.tips) }} />
                     </p>
                   </Card>
                 )}

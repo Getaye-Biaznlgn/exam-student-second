@@ -6,6 +6,17 @@ import { fetchSubjects, getUserProfile } from "@/lib/api";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
+import { Progress } from "@/components/ui/progress";
+
+function AnimatedLoadingIndicator() {
+  return (
+    <div className="flex flex-col items-center justify-center h-96 space-y-4 w-full max-w-md mx-auto">
+      <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+      <p className="text-sm text-muted-foreground">Loading subjects...</p>
+    </div>
+  );
+}
+
 export default function SelectSubjectPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
@@ -64,10 +75,7 @@ export default function SelectSubjectPage() {
     router.push(`/select-subject/${subject.id}`);
   };
 
-  if (loading)
-    return (
-      <p className="text-center mt-6 text-gray-600">Loading subjects...</p>
-    );
+  if (loading) return <AnimatedLoadingIndicator />;
 
   return (
     <div className="max-w-4xl mx-auto mt-10">
