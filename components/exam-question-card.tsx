@@ -48,6 +48,12 @@ export function ExamQuestionCard({
   isPracticeMode = false,
   correctOptionKey = null,
 }: ExamQuestionCardProps) {
+  // Handle select event only when a new option is chosen
+  const handleSelect = (optionId: string) => {
+    if (optionId !== selectedOption) {
+      onSelectOption(optionId);
+    }
+  };
 
   return (
     <Card className="w-full">
@@ -59,13 +65,17 @@ export function ExamQuestionCard({
         </div>
 
         <h2 className="text-xl font-semibold leading-relaxed">
-          {questionNumber}. {/* MODIFIED: Render HTML content */}
-          <span dangerouslySetInnerHTML={{ __html: getHtmlContent(question.question_text) }} />
+          {questionNumber}.{" "}
+          <span
+            dangerouslySetInnerHTML={{
+              __html: getHtmlContent(question.question_text),
+            }}
+          />
         </h2>
       </CardHeader>
 
       <CardContent>
-        <RadioGroup value={selectedOption || ""} onValueChange={onSelectOption}>
+        <RadioGroup value={selectedOption || ""} onValueChange={handleSelect}>
           <div className="space-y-3">
             {question.options.map((option) => {
               const isSelected = selectedOption === option.id;
@@ -83,26 +93,29 @@ export function ExamQuestionCard({
                 <div
                   key={option.id}
                   className={cn(
-                    "flex items-start space-x-3 rounded-lg border-2 p-4 transition-all cursor-pointer",
+                    "flex items-start space-x-3 rounded-lg border-2 p-4 transition-all",
                     isSelected
                       ? "border-primary bg-primary/5"
                       : "border-border hover:border-primary/50",
                     isCorrect && "border-green-500 bg-green-100/50",
                     isIncorrect && "border-red-500 bg-red-100/50"
                   )}
-                  onClick={() => onSelectOption(option.id)}
                 >
+                  {/* ✅ Only the radio button is clickable */}
                   <RadioGroupItem
                     value={option.id}
                     id={option.id}
-                    className="mt-1"
+                    className="mt-1 cursor-pointer"
                   />
                   <Label
                     htmlFor={option.id}
-                    className="flex-1 cursor-pointer font-normal leading-normal"
+                    className="flex-1 font-normal leading-normal cursor-default select-text"
                   >
-                    {/* MODIFIED: Render HTML content */}
-                    <span dangerouslySetInnerHTML={{ __html: getHtmlContent(option.option_text) }} />
+                    <span
+                      dangerouslySetInnerHTML={{
+                        __html: getHtmlContent(option.option_text),
+                      }}
+                    />
                   </Label>
                 </div>
               );

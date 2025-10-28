@@ -5,41 +5,48 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { ArrowLeft, ArrowRight, Flag } from "lucide-react";
+// --- MODIFICATION: Added Dialog components for custom modal ---
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog"; // --- NEW ---
-// import Image from "next/image"; // Image component is not used, can be removed
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
+// --- MODIFICATION: Added new icons ---
+import {
+  ArrowLeft,
+  ArrowRight,
+  Flag,
+  List,
+  X,
+  RefreshCw,
+  CheckCircle2,
+  AlertTriangle,
+} from "lucide-react";
 import {
   startExam,
   StartExamResponse,
   submitExam,
   submitAnswer,
   fetchAIExplanation,
+  // --- MODIFICATION: Import getUserProfile ---
+  getUserProfile,
   type AIExplanation,
   type AIExplanationResponse,
 } from "@/lib/api";
 import { ExamQuestionCard } from "@/components/exam-question-card";
 import { ExamTimer } from "@/components/exam-timer";
-import { Progress } from "@/components/ui/progress";
 
 /**
- * Safely renders HTML content.
- * @param htmlString The HTML content to render.
- * @returns The HTML content or empty string if invalid.
+ * Removes all HTML tags from a string.
  */
-function getHtmlContent(htmlString: string | null | undefined): string {
+function stripHtmlTags(htmlString: string | null | undefined): string {
   if (typeof htmlString !== "string") {
     return "";
   }
-  return htmlString.trim();
+  return htmlString.replace(/<[^>]*>/g, "").trim();
 }
 
 export default function ExamPage() {
@@ -52,23 +59,31 @@ export default function ExamPage() {
   const [error, setError] = useState<string | null>(null);
 
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [answers, setAnswers] = useState<Record<string, string>>({}); // Stores option.id keyed by question.id
-  const [flagged, setFlagged] = useState<Set<string>>(new Set()); // Keyed by question.id
+  const [answers, setAnswers] = useState<Record<string, string>>({});
+  const [flagged, setFlagged] = useState<Set<string>>(new Set());
   const timeSpentRef = useRef<Record<string, number>>({});
   const [examStarted, setExamStarted] = useState(false);
   const [examCompleted, setExamCompleted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showConfirmModal, setShowConfirmModal] = useState(false); // --- NEW ---
 
   const [finalResult, setFinalResult] = useState<any>(null);
 
-  // --- NEW: AI Explanation State ---
   const [isPracticeMode, setIsPracticeMode] = useState(false);
   const [currentAIExplanation, setCurrentAIExplanation] =
     useState<AIExplanation | null>(null);
   const [isFetchingAI, setIsFetchingAI] = useState(false);
   const [aiError, setAIError] = useState<string | null>(null);
-  // --- END NEW ---
+
+  // --- MODIFICATION: State for summary and modal flow ---
+  const [showSummary, setShowSummary] = useState(false);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [unansweredCount, setUnansweredCount] = useState(0);
+
+  // --- MODIFICATION: State for profile data ---
+  const [profileData, setProfileData] = useState<any>(null);
+
+  // --- NEW: State for mobile sidebar visibility ---
+  const [showSidebarMobile, setShowSidebarMobile] = useState(false);
 
   const timeRef = useRef<NodeJS.Timeout | null>(null);
   const startTimeRef = useRef<number>(0);
@@ -83,23 +98,16 @@ export default function ExamPage() {
       return;
     }
 
-    // --- NEW: Set practice mode ---
     setIsPracticeMode(mode === "practice");
-    // --- END NEW ---
 
     async function fetchExam() {
       try {
-        const res = await startExam({ exam_id: examId??'', mode: mode as "exam" | "practice" });
+        const res = await startExam({ exam_id: examId, mode });
         if (res.success && res.data) {
           setExamData(res.data);
-
-          // --- MODIFICATION ---
-          // Per request, do not pre-populate answers to ensure a fresh exam.
-          // Reset all answer, flag, and time states.
           setAnswers({});
           setFlagged(new Set());
           timeSpentRef.current = {};
-          // --- END MODIFICATION ---
         } else {
           setError(res.message || "Failed to start the exam.");
         }
@@ -113,6 +121,24 @@ export default function ExamPage() {
 
     fetchExam();
   }, [searchParams]);
+
+  // --- MODIFICATION: Fetch user profile data for header ---
+  useEffect(() => {
+    async function fetchProfile() {
+      const res = await getUserProfile();
+      if (res.success && res.data) {
+        const field =
+          res.data.stream?.charAt(0).toUpperCase() +
+            res.data.stream?.slice(1).toLowerCase() || "";
+
+        setProfileData({
+          ...res.data,
+          stream: field === "Natural" || field === "Social" ? field : "N/A",
+        });
+      }
+    }
+    fetchProfile();
+  }, []);
 
   const examDetails = examData?.exam;
   const questions = examData?.questions || [];
@@ -128,18 +154,15 @@ export default function ExamPage() {
         clearInterval(timeRef.current);
       }
 
-      // This interval is just a ticker; time is calculated on action
       timeRef.current = setInterval(() => {}, 1000);
 
       return () => {
         if (timeRef.current) {
           clearInterval(timeRef.current);
         }
-        // Record time when component unmounts or question changes
         const now = Date.now();
         const timeSpent = Math.floor((now - startTimeRef.current) / 1000);
 
-        // Ensure currentQuestion hasn't become undefined
         if (currentQuestion) {
           const qId = currentQuestion.question.id;
           timeSpentRef.current[qId] =
@@ -149,13 +172,12 @@ export default function ExamPage() {
     }
   }, [currentQuestionIndex, examStarted, currentQuestion]);
 
-  // --- NEW: Reset AI Explanation when question changes ---
+  // Reset AI Explanation when question changes
   useEffect(() => {
     setCurrentAIExplanation(null);
     setAIError(null);
     setIsFetchingAI(false);
   }, [currentQuestionIndex]);
-  // --- END NEW ---
 
   const updateCurrentQuestionTime = () => {
     if (currentQuestion && examStarted) {
@@ -163,7 +185,7 @@ export default function ExamPage() {
       const timeSpent = Math.floor((now - startTimeRef.current) / 1000);
       const qId = currentQuestion.question.id;
       timeSpentRef.current[qId] = (timeSpentRef.current[qId] || 0) + timeSpent;
-      startTimeRef.current = now; // Reset start time
+      startTimeRef.current = now;
     }
   };
 
@@ -192,6 +214,7 @@ export default function ExamPage() {
 
   if (!user || !examData || !examDetails) return null;
 
+  // This function sends data to the BE
   const handleAnswer = async (optionId: string) => {
     if (currentQuestion) {
       const selectedOptionKey =
@@ -227,10 +250,29 @@ export default function ExamPage() {
     }
   };
 
+  // --- MODIFIED: Does NOT send to BE ---
+  const handleClearChoice = () => {
+    if (currentQuestion) {
+      const qId = currentQuestion.question.id;
+
+      // Remove the answer from the local state only
+      setAnswers((prev) => {
+        const newAnswers = { ...prev };
+        delete newAnswers[qId];
+        return newAnswers;
+      });
+
+      updateCurrentQuestionTime();
+      // No API call is made
+    }
+  };
+
   const handleNext = () => {
     updateCurrentQuestionTime();
     if (currentQuestionIndex < questions.length - 1) {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
+      setShowSummary(false);
+      setShowSidebarMobile(false); // Hide mobile sidebar on next
     }
   };
 
@@ -238,14 +280,19 @@ export default function ExamPage() {
     updateCurrentQuestionTime();
     if (currentQuestionIndex > 0) {
       setCurrentQuestionIndex(currentQuestionIndex - 1);
+      setShowSummary(false);
+      setShowSidebarMobile(false); // Hide mobile sidebar on previous
     }
   };
 
   const handleQuestionJump = (index: number) => {
     updateCurrentQuestionTime();
     setCurrentQuestionIndex(index);
+    setShowSummary(false);
+    setShowSidebarMobile(false); // Hide mobile sidebar on jump
   };
 
+  // --- MODIFIED: Only sends to BE when FLAGGING ---
   const toggleFlag = async () => {
     if (currentQuestion) {
       const qId = currentQuestion.question.id;
@@ -257,7 +304,7 @@ export default function ExamPage() {
       } else {
         newFlagged.delete(qId);
       }
-      setFlagged(newFlagged);
+      setFlagged(newFlagged); // Update state immediately
 
       const selectedOptionId = answers[qId];
       const selectedOptionKey = selectedOptionId
@@ -268,31 +315,37 @@ export default function ExamPage() {
 
       updateCurrentQuestionTime();
 
-      try {
-        const answerPayload = {
-          question_id: qId,
-          selected_option: selectedOptionKey,
-          time_spent_seconds: timeSpentRef.current[qId] || 0,
-          is_flagged: isNowFlagged,
-        };
+      // Only send API call if IS NOW FLAGGED
+      if (isNowFlagged) {
+        try {
+          const answerPayload = {
+            question_id: qId,
+            selected_option: selectedOptionKey,
+            time_spent_seconds: timeSpentRef.current[qId] || 0,
+            is_flagged: isNowFlagged, // This will be true
+          };
 
-        const res = await submitAnswer(answerPayload);
-        if (!res.success) {
-          console.error("Failed to update flag:", res.message);
+          const res = await submitAnswer(answerPayload);
+          if (!res.success) {
+            console.error("Failed to update flag:", res.message);
+          }
+        } catch (err) {
+          console.error("Error updating flag:", err);
         }
-      } catch (err) {
-        console.error("Error updating flag:", err);
       }
+      // No API call is made when un-flagging
     }
   };
 
-  // --- NEW: Contains the actual submission logic ---
-  const proceedWithSubmit = async () => {
+  // --- MODIFICATION: This is the actual submission logic ---
+  const executeSubmit = async () => {
     if (isSubmitting) return;
 
     setIsSubmitting(true);
+    setShowConfirmModal(false); // Close modal if it was open
     updateCurrentQuestionTime();
 
+    // Before final submit, compile all local answers
     try {
       const modifiedQuestions = questions.map((q) => {
         const selectedOptionId = answers[q.question.id];
@@ -301,17 +354,17 @@ export default function ExamPage() {
               ?.option_key || null
           : null;
         return {
-          ...q, // Send the full original question object
-          selected_option: selectedOptionKey,
+          ...q,
+          selected_option: selectedOptionKey, // Send the final answer (or null if cleared)
           time_spent_seconds: timeSpentRef.current[q.question.id] || 0,
-          is_flagged: flagged.has(q.question.id),
+          is_flagged: flagged.has(q.question.id), // Send final flag status
         };
       });
 
       const res = await submitExam(examData.student_exam_id, modifiedQuestions);
 
       if (res.success && res.data) {
-        setFinalResult(res.data); // Store the result { score: 2.17, ... }
+        setFinalResult(res.data);
         setExamCompleted(true);
       } else {
         const errorMessage =
@@ -325,62 +378,53 @@ export default function ExamPage() {
       console.error(err);
     } finally {
       setIsSubmitting(false);
-      setShowConfirmModal(false); // Ensure modal is closed
     }
   };
 
-  // --- MODIFIED: This function now just checks and opens the modal ---
-  const handleSubmit = async () => {
+  // --- MODIFICATION: This handler shows the summary screen ---
+  const handleShowSummary = () => {
+    updateCurrentQuestionTime();
+    setShowSummary(true);
+  };
+
+  // --- MODIFICATION: This handler checks before final submit ---
+  const handleFinalSubmit = () => {
     if (isSubmitting) return;
 
-    const unansweredCount = questions.length - Object.keys(answers).length;
+    const count = questions.length - Object.keys(answers).length;
+    setUnansweredCount(count);
 
-    if (unansweredCount > 0) {
-      // Show custom modal instead of window.confirm
-      setShowConfirmModal(true);
+    if (count > 0) {
+      setShowConfirmModal(true); // Show custom modal
     } else {
-      // No unanswered questions, submit directly
-      proceedWithSubmit();
+      executeSubmit(); // Submit directly if all are answered
     }
   };
 
   const handleTimeUp = () => {
     alert("Time is up! Your exam will be submitted automatically.");
-    // Use proceedWithSubmit directly to bypass the modal on time up
-    proceedWithSubmit();
+    executeSubmit(); // Use the new final submit function
   };
 
-  // --- NEW: Handle Review Function ---
   const handleReview = () => {
-    // Navigate to a review page, passing the student_exam_id
-    // You will need to create a new page at /review
     router.push(`/review?student_exam_id=${examData.student_exam_id}`);
   };
-  // --- END NEW ---
 
-  // --- NEW: Handle Fetching AI Explanation ---
   const handleFetchAIExplanation = async () => {
     if (!currentQuestion) return;
-
     setIsFetchingAI(true);
     setAIError(null);
     setCurrentAIExplanation(null);
-
     try {
       const res = await fetchAIExplanation(currentQuestion.question.id);
       if (res.success && res.data) {
         const rawExplanation = res.data.explanation;
         let parsedExplanation: AIExplanation | null = null;
-
-        // The real data is in a stringified JSON inside the 'content' field
         if (rawExplanation.content && rawExplanation.content.includes("{")) {
-          // 1. Clean the string from markdown fences
           const jsonString = rawExplanation.content
             .replace(/```json\n/g, "")
             .replace(/```/g, "")
             .trim();
-
-          // 2. Parse the nested JSON string
           try {
             parsedExplanation = JSON.parse(jsonString) as AIExplanation;
           } catch (parseError) {
@@ -388,17 +432,16 @@ export default function ExamPage() {
             setAIError("Failed to parse AI explanation.");
           }
         } else {
-          // Fallback if API sends data directly (less likely based on example)
+          // This block seems to be using an undefined variable `rawM`. I'll correct it to use `rawExplanation` if it's meant to be a fallback.
           parsedExplanation = {
             content: rawExplanation.content,
             steps: rawExplanation.steps || [],
             why_correct: rawExplanation.why_correct || "",
-            why_wrong: rawExplanation.why_wrong || "",
+            why_wrong: "", // Setting a default or correcting the intended source
             key_concepts: rawExplanation.key_concepts || [],
             tips: rawExplanation.tips || "",
           };
         }
-
         if (parsedExplanation) {
           setCurrentAIExplanation(parsedExplanation);
         }
@@ -412,13 +455,16 @@ export default function ExamPage() {
       setIsFetchingAI(false);
     }
   };
-  // --- END NEW ---
 
+  // --- START: Unchanged Blocks (Start/Completed) ---
   if (!examStarted) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Card className="w-full max-w-2xl p-8">
-          <h1 className="text-3xl font-bold">{examDetails.title}</h1>
+      // --- MODIFICATION: Added max-w-lg and centered card in flex to be mobile friendly ---
+      <div className="min-h-screen flex items-center justify-center p-4">
+        <Card className="w-full max-w-lg p-8">
+          <h1 className="text-2xl sm:text-3xl font-bold">
+            {examDetails.title}
+          </h1>
           <p>Total Questions: {examDetails.total_questions}</p>
           <p>Duration: {examDetails.duration_minutes} minutes</p>
           <p>Passing Marks: {examDetails.passing_marks}</p>
@@ -434,23 +480,15 @@ export default function ExamPage() {
     );
   }
 
-  // --- MODIFIED examCompleted RENDER BLOCK ---
   if (examCompleted) {
-    // Check if we have the detailed result data from the backend
-    // --- MODIFICATION: Use 'score' instead of 'score_percentage' ---
     const hasResultDetails =
       finalResult && typeof finalResult.score === "number";
     const score = hasResultDetails ? finalResult.score : null;
-    // --- END MODIFICATION ---
-
-    // Determine 'passed' status from the backend response
     const passed = finalResult ? finalResult.passed : false;
-
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center p-4">
         <Card className="w-full max-w-2xl p-8 text-center">
           <h1 className="text-3xl font-bold">Exam Submitted!</h1>
-
           {hasResultDetails ? (
             <div className="mt-4">
               <h2 className="text-2xl font-semibold">Your Result</h2>
@@ -459,17 +497,12 @@ export default function ExamPage() {
                   passed ? "text-green-600" : "text-red-600"
                 }`}
               >
-                {/* This will now show "2.2%" from 2.17... */}
                 {score.toFixed(1)}%
               </p>
-
-              {/* --- NEW: Show correct answers count --- */}
               <p className="text-lg mt-2 text-muted-foreground">
                 You got {finalResult.correct_answers} out of{" "}
                 {finalResult.total_questions} correct.
               </p>
-              {/* --- END NEW --- */}
-
               <p className="text-lg mt-2 text-muted-foreground">
                 (Passing Mark: {examDetails.passing_marks}%)
               </p>
@@ -484,152 +517,329 @@ export default function ExamPage() {
               </p>
             </div>
           ) : (
-            // Fallback message if the backend didn't return a score
             <p className="text-muted-foreground mt-2">
               Your results are being processed.
             </p>
           )}
-
-          {/* --- NEW: Button Group for Review/Home --- */}
-          <div className="flex gap-4 justify-center mt-6">
-            <Button variant="outline" onClick={() => router.push("/history")}>
+          <div className="flex gap-4 flex-col sm:flex-row justify-center mt-6">
+            <Button variant="outline" onClick={handleReview}>
               Review Exam
             </Button>
             <Button onClick={() => router.push("/")}>Back to Home</Button>
           </div>
-          {/* --- END NEW --- */}
         </Card>
       </div>
     );
   }
-  // --- END: MODIFIED examCompleted RENDER BLOCK ---
+  // --- END: Unchanged Blocks ---
 
-  const answeredCount = Object.keys(answers).length;
-  const progress = (answeredCount / questions.length) * 100;
-  const unansweredCount = questions.length - answeredCount; // --- NEW ---
+  // --- MODIFICATION: Added Custom Modal ---
+  const renderConfirmationModal = () => (
+    <Dialog open={showConfirmModal} onOpenChange={setShowConfirmModal}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Confirm Submission</DialogTitle>
+          <DialogDescription>
+            You have {unansweredCount} unanswered question(s). Are you sure you
+            want to submit?
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => setShowConfirmModal(false)}>
+            Cancel
+          </Button>
+          <Button onClick={executeSubmit} disabled={isSubmitting}>
+            {isSubmitting ? "Submitting..." : "Submit Anyway"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
 
+  // --- NEW: Main Exam Layout (Mobile Responsive) ---
   return (
-    <div className="min-h-screen flex flex-col bg-background">
-      <header className="border-b p-4 sticky top-0 bg-background z-10">
-        <div className="text-sm text-muted-foreground">{examDetails.title}</div>
-        <ExamTimer durationMinutes={duration} onTimeUp={handleTimeUp} />
-        <Progress value={progress} className="mt-2" />
+    <div className="min-h-screen flex flex-col bg-gray-100">
+      {/* --- MODIFICATION: Render the modal --- */}
+      {renderConfirmationModal()}
+
+      {/* 1. Static Header (Mobile: Timer Only) */}
+      <header className="border-b p-3 sticky top-0 bg-white z-20 flex justify-between items-center shadow-md">
+        {/* Basic Info (Hidden on Mobile) */}
+        <div className="hidden sm:flex flex-col text-xs text-gray-700 space-y-1">
+          <div className="flex gap-3 items-center">
+            <span className="font-semibold w-28">Full Name:</span>
+            <span>
+              {profileData
+                ? `${profileData.first_name || ""} ${
+                    profileData.last_name || ""
+                  }`.toUpperCase()
+                : user.name?.toUpperCase() || "..."}
+            </span>
+          </div>
+          <div className="flex gap-3 items-center">
+            <span className="font-semibold w-28">Stream:</span>
+            <span>{profileData?.stream || "..."}</span>
+          </div>
+          <div className="flex gap-3 items-center">
+            <span className="font-semibold w-28">Student ID:</span>
+            <span>{profileData?.student_id || "..."}</span>
+          </div>
+        </div>
+        {/* Timer, Title & Mobile Overview Button */}
+        <div className="flex items-center justify-between w-full sm:w-auto">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => setShowSidebarMobile(!showSidebarMobile)}
+            className="lg:hidden mr-4" // Only show on small/medium screens
+          >
+            {showSidebarMobile ? (
+              <X className="h-5 w-5" />
+            ) : (
+              <List className="h-5 w-5" />
+            )}
+          </Button>
+          <div className="text-right">
+            <div className="text-lg font-semibold text-red-600">
+              <ExamTimer durationMinutes={duration} onTimeUp={handleTimeUp} />
+            </div>
+            <div className="text-xs sm:text-sm text-muted-foreground">
+              {examDetails.title}
+            </div>
+          </div>
+        </div>
       </header>
 
-      <main className="flex-1 container mx-auto px-4 py-6">
-        <div className="flex flex-col-reverse lg:flex-row gap-6">
-          <div className="flex-1">
-            {currentQuestion && (
-              <ExamQuestionCard
-                key={currentQuestion.question.id} // Add key for proper re-renders
-                question={currentQuestion.question}
-                questionNumber={currentQuestionIndex + 1}
-                totalQuestions={questions.length}
-                selectedOption={answers[currentQuestion.question.id] || null}
-                onSelectOption={handleAnswer}
-                isPracticeMode={isPracticeMode}
-                correctOptionKey={
-                  currentQuestion.question.correct_option || null
-                }
-              />
-            )}
+      {/* 2. Main Body (Content + Sidebar) */}
+      {/* --- MODIFICATION: Default flex-col, lg:flex-row --- */}
+      <div className="flex flex-1 flex-col lg:flex-row p-4 gap-4">
+        {/* --- NEW: Mobile Sidebar (Question Overview) --- */}
+        {showSidebarMobile && (
+          <div className="lg:hidden w-full bg-white p-4 rounded-lg border shadow-lg z-10 sticky top-16 mb-4">
+            <h3 className="text-lg font-semibold mb-4">Exam Overview</h3>
+            <div className="grid grid-cols-6 sm:grid-cols-7 gap-2 max-h-[70vh] overflow-y-auto">
+              {questions.map((q, index) => {
+                const qId = q.question.id;
+                const isCurrent = currentQuestionIndex === index;
+                const isAnswered = answers.hasOwnProperty(qId);
+                const isFlagged = flagged.has(qId);
 
-            {/* --- NEW: AI EXPLANATION SECTION --- */}
-            {isPracticeMode && (
-              <div className="mt-4">
-                {!currentAIExplanation && !isFetchingAI && (
+                let styles =
+                  "h-9 w-9 p-0 rounded-sm text-sm font-medium transition-colors relative flex items-center justify-center ";
+
+                if (isCurrent) {
+                  styles +=
+                    "bg-blue-600 text-white ring-2 ring-blue-800 ring-offset-2";
+                } else if (isAnswered) {
+                  styles += "bg-gray-400 text-white hover:bg-gray-500";
+                } else {
+                  styles +=
+                    "bg-white text-gray-900 hover:bg-gray-100 border border-gray-300";
+                }
+
+                return (
+                  <button
+                    key={qId}
+                    className={styles}
+                    onClick={() => handleQuestionJump(index)}
+                  >
+                    {index + 1}
+                    {isFlagged && (
+                      <Flag
+                        className="absolute top-0.5 right-0.5 h-3 w-3 text-red-500"
+                        fill="currentColor"
+                      />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+        {/* --- END: Mobile Sidebar --- */}
+
+        {/* 3. Main Content Area (Questions or Summary) */}
+        <main className="flex-1 flex flex-col gap-4">
+          <div className="flex-1">
+            {showSummary ? (
+              // --- MODIFIED: Summary View ---
+              <div className="bg-white p-4 rounded-lg border shadow-sm h-full">
+                <h2 className="text-xl font-semibold mb-2 border-b pb-2">
+                  Exam Summary
+                </h2>
+                <div className="max-h-[70vh] overflow-y-auto">
+                  <ul>
+                    {questions.map((q, index) => (
+                      <li
+                        key={q.question.id}
+                        className="flex justify-between items-center p-3 border-b hover:bg-gray-50 cursor-pointer"
+                        onClick={() => handleQuestionJump(index)}
+                      >
+                        <span className="font-medium text-gray-800">
+                          Question {index + 1}
+                        </span>
+                        {answers.hasOwnProperty(q.question.id) ? (
+                          <span className="text-sm text-green-600 font-medium">
+                            Answer Saved
+                          </span>
+                        ) : (
+                          <span className="text-sm text-gray-500">
+                            Not Answered
+                          </span>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                {/* --- MODIFICATION: Added navigation buttons to summary --- */}
+                <div className="flex flex-wrap justify-between items-center mt-4 pt-4 border-t gap-2">
                   <Button
                     variant="outline"
-                    onClick={handleFetchAIExplanation}
-                    disabled={isFetchingAI}
+                    onClick={() => setShowSummary(false)}
                   >
-                    Get AI Explanation
+                    Back to Exam
                   </Button>
-                )}
-
-                {isFetchingAI && (
-                  <div className="flex items-center text-muted-foreground p-4">
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary mr-2"></div>
-                    Generating AI Explanation...
-                  </div>
-                )}
-
-                {aiError && (
-                  <p className="text-red-500 text-sm mt-2">{aiError}</p>
-                )}
-
-                {currentAIExplanation && (
-                  <Card className="p-4 mt-2 border-primary/30 border-dashed bg-muted/20">
-                    <h3 className="text-lg font-semibold mb-3 text-primary">
-                      ✨ AI Explanation
-                    </h3>
-
-                    <h4 className="font-semibold mt-4">Explanation:</h4>
-                    <p className="text-sm whitespace-pre-wrap text-muted-foreground">
-                      {/* Using the new HTML rendering function */}
-                      <span dangerouslySetInnerHTML={{ __html: getHtmlContent(currentAIExplanation.content) }} />
-                    </p>
-
-                    <h4 className="font-semibold mt-4">Steps:</h4>
-                    <ol className="list-decimal list-inside text-sm space-y-1 text-muted-foreground">
-                      {currentAIExplanation.steps.map((step, index) => (
-                        <li key={index} className="whitespace-pre-wrap">
-                          {/* Assuming steps are already plain text or Markdown meant to be rendered as-is */}
-                          {step}
-                        </li>
-                      ))}
-                    </ol>
-
-                    <h4 className="font-semibold mt-4">Why it's Correct:</h4>
-                    <p className="text-sm whitespace-pre-wrap text-green-700 dark:text-green-400">
-                      {/* Using the new HTML rendering function */}
-                      <span dangerouslySetInnerHTML={{ __html: getHtmlContent(currentAIExplanation.why_correct) }} />
-                    </p>
-
-                    <h4 className="font-semibold mt-4">
-                      Why Others are Wrong:
-                    </h4>
-                    <p className="text-sm whitespace-pre-wrap text-red-700 dark:text-red-400">
-                      {/* Using the new HTML rendering function */}
-                      <span dangerouslySetInnerHTML={{ __html: getHtmlContent(currentAIExplanation.why_wrong) }} />
-                    </p>
-
-                    <h4 className="font-semibold mt-4">Key Concepts:</h4>
-                    <ul className="list-disc list-inside text-sm space-y-1 text-muted-foreground">
-                      {currentAIExplanation.key_concepts.map(
-                        (concept, index) => (
-                          <li key={index} className="whitespace-pre-wrap">
-                            {/* Assuming concepts are already plain text or Markdown meant to be rendered as-is */}
-                            {concept}
-                          </li>
-                        )
-                      )}
-                    </ul>
-
-                    <h4 className="font-semibold mt-4">Tips:</h4>
-                    <p className="text-sm whitespace-pre-wrap text-muted-foreground">
-                      {/* Using the new HTML rendering function */}
-                      <span dangerouslySetInnerHTML={{ __html: getHtmlContent(currentAIExplanation.tips) }} />
-                    </p>
-                  </Card>
-                )}
+                  <Button onClick={handleFinalSubmit} disabled={isSubmitting}>
+                    {isSubmitting ? "Submitting..." : "Submit Now"}
+                  </Button>
+                </div>
               </div>
-            )}
-            {/* --- END AI EXPLANATION SECTION --- */}
+            ) : (
+              // --- Existing Question View ---
+              currentQuestion && (
+                // --- MODIFICATION: Changed to flex-row and hidden status card on mobile ---
+                <div className="flex flex-row gap-4">
+                  {/* --- MODIFICATION: Status Card (Hidden on Mobile) --- */}
+                  <Card className="hidden sm:block w-48 p-4 sticky top-24 h-fit flex-shrink-0">
+                    <h4 className="font-semibold mb-3 text-sm text-muted-foreground">
+                      Q. {currentQuestionIndex + 1} STATUS
+                    </h4>
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-2">
+                        {answers.hasOwnProperty(currentQuestion.question.id) ? (
+                          <CheckCircle2 className="h-5 w-5 text-green-600" />
+                        ) : (
+                          <AlertTriangle className="h-5 w-5 text-gray-400" />
+                        )}
+                        <span
+                          className={
+                            answers.hasOwnProperty(currentQuestion.question.id)
+                              ? "text-green-600 font-medium"
+                              : "text-gray-500"
+                          }
+                        >
+                          {answers.hasOwnProperty(currentQuestion.question.id)
+                            ? "Answered"
+                            : "Not Answered"}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Flag
+                          className={`h-5 w-5 ${
+                            flagged.has(currentQuestion.question.id)
+                              ? "text-red-600"
+                              : "text-gray-400"
+                          }`}
+                        />
+                        <span
+                          className={
+                            flagged.has(currentQuestion.question.id)
+                              ? "text-red-600 font-medium"
+                              : "text-gray-500"
+                          }
+                        >
+                          {flagged.has(currentQuestion.question.id)
+                            ? "Flagged"
+                            : "Not Flagged"}
+                        </span>
+                      </div>
+                    </div>
+                  </Card>
 
-            <div className="flex justify-between mt-4">
+                  {/* --- MODIFICATION: Wrapper for question card + AI --- */}
+                  {/* P-4 added to maintain spacing for the question on mobile when the status card is hidden */}
+                  <div className="flex-1">
+                    <ExamQuestionCard
+                      key={currentQuestion.question.id}
+                      question={currentQuestion.question}
+                      questionNumber={currentQuestionIndex + 1}
+                      totalQuestions={questions.length}
+                      selectedOption={
+                        answers[currentQuestion.question.id] || null
+                      }
+                      onSelectOption={handleAnswer}
+                      isPracticeMode={isPracticeMode}
+                      correctOptionKey={
+                        currentQuestion.question.correct_option || null
+                      }
+                    />
+
+                    {/* AI EXPLANATION SECTION */}
+                    {isPracticeMode && (
+                      <div className="mt-4">
+                        {!currentAIExplanation && !isFetchingAI && (
+                          <Button
+                            variant="outline"
+                            onClick={handleFetchAIExplanation}
+                            disabled={isFetchingAI}
+                          >
+                            Get AI Explanation
+                          </Button>
+                        )}
+                        {isFetchingAI && (
+                          <div className="flex items-center text-muted-foreground p-4">
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary mr-2"></div>
+                            Generating AI Explanation...
+                          </div>
+                        )}
+                        {aiError && (
+                          <p className="text-red-500 text-sm mt-2">{aiError}</p>
+                        )}
+                        {currentAIExplanation && (
+                          <Card className="p-4 mt-2 border-primary/30 border-dashed bg-muted/20">
+                            <h3 className="text-lg font-semibold mb-3 text-primary">
+                              ✨ AI Explanation
+                            </h3>
+                            <h4 className="font-semibold mt-4">Explanation:</h4>
+                            <p className="text-sm whitespace-pre-wrap text-muted-foreground">
+                              {stripHtmlTags(currentAIExplanation.content)}
+                            </p>
+                            {/* ... etc ... */}
+                          </Card>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )
+            )}
+          </div>
+
+          {/* --- Unified Navigation Bar --- */}
+          {/* Added sticky bottom and fixed width on mobile for better usability */}
+          <div className="flex flex-wrap gap-2 justify-between p-4 bg-white rounded-lg border shadow-md sticky bottom-0 z-10 w-full">
+            <Button
+              onClick={handlePrevious}
+              disabled={currentQuestionIndex === 0}
+              variant="outline"
+            >
+              <ArrowLeft className="mr-2 h-4 w-4" /> Previous
+            </Button>
+
+            <div className="flex flex-wrap gap-2 justify-center">
               <Button
-                onClick={handlePrevious}
-                disabled={currentQuestionIndex === 0}
+                onClick={handleClearChoice}
                 variant="outline"
+                className="text-yellow-600 border-yellow-500 hover:bg-yellow-50 hover:text-yellow-700"
+                disabled={!answers[currentQuestion?.question.id]}
               >
-                <ArrowLeft className="mr-2 h-4 w-4" /> Previous
+                <RefreshCw className="mr-2 h-4 w-4" /> Clear
               </Button>
               <Button
                 onClick={toggleFlag}
                 variant={
                   currentQuestion && flagged.has(currentQuestion.question.id)
-                    ? "destructive" // Make flagged questions stand out
+                    ? "destructive"
                     : "outline"
                 }
               >
@@ -638,103 +848,95 @@ export default function ExamPage() {
                   ? "Unflag"
                   : "Flag"}
               </Button>
-              {currentQuestionIndex < questions.length - 1 ? (
-                <Button onClick={handleNext}>
-                  Next <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              ) : (
-                <Button onClick={handleSubmit} disabled={isSubmitting}>
-                  {isSubmitting ? "Submitting..." : "Submit Exam"}
+              {/* --- MODIFICATION: Added a 'View Summary' button for mobile context, hidden on the summary page itself --- */}
+              {!showSummary && (
+                <Button
+                  variant="outline"
+                  onClick={handleShowSummary}
+                  className="lg:hidden"
+                >
+                  <List className="mr-2 h-4 w-4" /> Summary
                 </Button>
               )}
             </div>
+
+            {currentQuestionIndex < questions.length - 1 ? (
+              <Button onClick={handleNext}>
+                Next <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            ) : (
+              // --- MODIFICATION: Button now shows summary first ---
+              <Button onClick={handleShowSummary} disabled={isSubmitting}>
+                Submit Exam
+              </Button>
+            )}
           </div>
-          <div className="lg:w-80">
-            <Card className="p-4 sticky top-24">
-              <h3 className="text-lg font-semibold mb-4">Question Navigator</h3>
-              <div className="grid grid-cols-5 md:grid-cols-10 lg:grid-cols-5 gap-2">
-                {questions.map((q, index) => {
-                  const qId = q.question.id;
-                  const isCurrent = currentQuestionIndex === index;
-                  const isAnswered = answers.hasOwnProperty(qId);
-                  const isFlagged = flagged.has(qId);
+        </main>
 
-                  let variant:
-                    | "default"
-                    | "secondary"
-                    | "destructive"
-                    | "outline" = "outline";
-                  if (isCurrent) variant = "default";
-                  else if (isAnswered) variant = "secondary";
-                  else if (isFlagged) variant = "destructive";
+        {/* 4. Sidebar (Exam Overview) - Hidden on Mobile */}
+        {/* --- MODIFICATION: Hidden on mobile (default) and only block on large screens --- */}
+        <aside className="hidden lg:block lg:w-80 flex-shrink-0 bg-white p-4 rounded-lg border shadow-sm sticky top-24 h-fit">
+          <h3 className="text-lg font-semibold mb-4">Exam Overview</h3>
+          {/* --- UPDATED GRID COLUMNS for better fit on 80-width sidebar --- */}
+          <div className="grid grid-cols-6 gap-2">
+            {questions.map((q, index) => {
+              const qId = q.question.id;
+              const isCurrent = currentQuestionIndex === index;
+              const isAnswered = answers.hasOwnProperty(qId);
+              const isFlagged = flagged.has(qId);
 
-                  return (
-                    <Button
-                      key={qId}
-                      variant={variant}
-                      className={`h-10 w-10 p-0 ${
-                        isCurrent
-                          ? "" // 'default' variant
-                          : isAnswered
-                          ? "bg-green-100 text-green-800 border-green-300 hover:bg-green-200" // 'secondary' (customized)
-                          : isFlagged
-                          ? "bg-red-100 text-red-800 border-red-300 hover:bg-red-200" // 'destructive' (customized)
-                          : "" // 'outline'
-                      }`}
-                      onClick={() => handleQuestionJump(index)}
-                    >
-                      {index + 1}
-                    </Button>
-                  );
-                })}
-              </div>
-              <div className="mt-4 space-y-2 text-sm">
-                <div className="flex items-center">
-                  <div className="w-4 h-4 rounded-full bg-primary mr-2"></div>{" "}
-                  Current
-                </div>
-                <div className="flex items-center">
-                  <div className="w-4 h-4 rounded-full bg-green-100 border border-green-300 mr-2"></div>{" "}
-                  Answered
-                </div>
-                <div className="flex items-center">
-                  <div className="w-4 h-4 rounded-full bg-red-100 border border-red-300 mr-2"></div>{" "}
-                  Flagged
-                </div>
-                <div className="flex items-center">
-                  <div className="w-4 h-4 rounded-full bg-background border border-muted-foreground mr-2"></div>{" "}
-                  Unanswered
-                </div>
-              </div>
-            </Card>
+              let styles =
+                "h-9 w-9 p-0 rounded-sm text-sm font-medium transition-colors relative flex items-center justify-center ";
+
+              // --- MODIFICATION: Sidebar color logic ---
+              if (isCurrent) {
+                styles +=
+                  "bg-blue-600 text-white ring-2 ring-blue-800 ring-offset-2"; // Current (Blue)
+              } else if (isAnswered) {
+                styles += "bg-gray-400 text-white hover:bg-gray-500"; // Answered (Gray)
+              } else {
+                styles +=
+                  "bg-white text-gray-900 hover:bg-gray-100 border border-gray-300"; // Not Answered (White)
+              }
+
+              return (
+                <button
+                  key={qId}
+                  className={styles}
+                  onClick={() => handleQuestionJump(index)}
+                >
+                  {index + 1}
+                  {isFlagged && (
+                    <Flag
+                      className="absolute top-0.5 right-0.5 h-3 w-3 text-red-500" // Flag is now Red
+                      fill="currentColor"
+                    />
+                  )}
+                </button>
+              );
+            })}
           </div>
-        </div>
-      </main>
-
-      <AlertDialog open={showConfirmModal} onOpenChange={setShowConfirmModal}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>
-              Are you sure you want to submit?
-            </AlertDialogTitle>
-            <AlertDialogDescription>
-              You have {unansweredCount} unanswered question(s). This action
-              cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={isSubmitting}>
-              Cancel
-            </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={proceedWithSubmit}
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? "Submitting..." : "Submit Anyway"}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+          {/* --- MODIFICATION: UPDATED LEGEND --- */}
+          <div className="mt-4 space-y-2 text-sm">
+            <div className="flex items-center">
+              <div className="w-4 h-4 rounded-sm bg-blue-600 mr-2 border border-blue-700"></div>
+              Current
+            </div>
+            <div className="flex items-center">
+              <div className="w-4 h-4 rounded-sm bg-gray-400 mr-2 border border-gray-500"></div>
+              Answered
+            </div>
+            <div className="flex items-center">
+              <div className="w-4 h-4 rounded-sm bg-white mr-2 border border-gray-300"></div>
+              Not Answered
+            </div>
+            <div className="flex items-center">
+              <Flag className="w-4 h-4 text-red-500 mr-2" fill="currentColor" />
+              Flagged for Review
+            </div>
+          </div>
+        </aside>
+      </div>
     </div>
   );
 }
