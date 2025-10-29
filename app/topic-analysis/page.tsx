@@ -12,11 +12,13 @@ import { Badge } from "@/components/ui/badge";
 import { fetchTopicAnalysis } from "@/lib/api";
 import type { TopicAnalysisResponse } from "@/types";
 import { Loader2 } from "lucide-react";
+import { cn } from "@/lib/utils"; // make sure you have this utility (ShadCN includes it)
 
 export default function TopicAnalysisPage() {
   const [data, setData] = useState<TopicAnalysisResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedSubjectId, setSelectedSubjectId] = useState<string>("");
 
   useEffect(() => {
     async function loadData() {
@@ -24,6 +26,9 @@ export default function TopicAnalysisPage() {
         const res = await fetchTopicAnalysis();
         if (res.success) {
           setData(res.data);
+          if (res.data.subjects.length > 0) {
+            setSelectedSubjectId(res.data.subjects[0].subject_id); // select first subject by default
+          }
         } else {
           setError(res.message || "Failed to load topic analysis.");
         }
@@ -55,18 +60,20 @@ export default function TopicAnalysisPage() {
   if (!data) return null;
 
   const { subjects, overall_insights } = data;
+  const selectedSubject = subjects.find(
+    (subject) => subject.subject_id === selectedSubjectId
+  );
 
   return (
     <div className="p-6 space-y-6 no-scrollbar overflow-y-auto h-screen">
       <h1 className="text-2xl font-bold mb-4">Topic Analysis</h1>
 
-      {/* --- Overall Insights Summary --- */}
+      {/* --- Overall Insights --- */}
       <Card className="border border-muted shadow-sm">
         <CardHeader>
           <CardTitle>Overall Insights</CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
-          {/* Stats Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <Card className="bg-muted p-4 text-center">
               <p className="text-sm text-muted-foreground">Total Subjects</p>
@@ -94,7 +101,6 @@ export default function TopicAnalysisPage() {
             </Card>
           </div>
 
-          {/* Topic Strengths */}
           <div>
             <h3 className="font-medium">Strong Topics</h3>
             <div className="flex flex-wrap gap-2 mt-2">
@@ -152,78 +158,92 @@ export default function TopicAnalysisPage() {
         </CardContent>
       </Card>
 
-      {/* --- Subjects Section --- */}
-      {subjects.length === 0 ? (
-        <p className="text-muted-foreground text-center">
-          No subjects available.
-        </p>
-      ) : (
-        subjects.map((subject) => (
-          <Card
-            key={subject.subject_id}
-            className="border border-muted shadow-sm"
-          >
-            <CardHeader>
-              <CardTitle>{subject.subject_name}</CardTitle>
-              <CardDescription>
-                Field: {subject.field} • Avg Accuracy:{" "}
-                {subject.average_accuracy.toFixed(2)}%
-              </CardDescription>
-            </CardHeader>
+      {/* --- Subject Filter (Horizontal List) --- */}
+      {subjects.length > 0 && (
+        <div className="flex overflow-x-auto gap-2 py-2 no-scrollbar">
+          {subjects.map((subject) => (
+            <button
+              key={subject.subject_id}
+              onClick={() => setSelectedSubjectId(subject.subject_id)}
+              className={cn(
+                "px-4 py-2 rounded-full border transition-all whitespace-nowrap",
+                selectedSubjectId === subject.subject_id
+                  ? "bg-blue-600 text-white border-blue-600"
+                  : "bg-muted text-muted-foreground hover:bg-blue-100 hover:text-blue-700"
+              )}
+            >
+              {subject.subject_name}
+            </button>
+          ))}
+        </div>
+      )}
 
-            <CardContent className="space-y-4">
-              {subject.topics.length > 0 ? (
-                subject.topics.map((topic) => (
-                  <div
-                    key={topic.topic_id}
-                    className="border border-border rounded-lg p-3 space-y-1"
-                  >
-                    <h3 className="font-semibold text-base">
-                      {topic.topic_name}
-                    </h3>
-                    <p className="text-sm text-muted-foreground">
-                      {topic.description || "No description provided."}
+      {/* --- Selected Subject Topics --- */}
+      {selectedSubject ? (
+        <Card className="border border-muted shadow-sm">
+          <CardHeader>
+            <CardTitle>{selectedSubject.subject_name}</CardTitle>
+            <CardDescription>
+              Field: {selectedSubject.field} • Avg Accuracy:{" "}
+              {selectedSubject.average_accuracy.toFixed(2)}%
+            </CardDescription>
+          </CardHeader>
+
+          <CardContent className="space-y-4">
+            {selectedSubject.topics.length > 0 ? (
+              selectedSubject.topics.map((topic) => (
+                <div
+                  key={topic.topic_id}
+                  className="border border-border rounded-lg p-3 space-y-1"
+                >
+                  <h3 className="font-semibold text-base">
+                    {topic.topic_name}
+                  </h3>
+                  <p className="text-sm text-muted-foreground">
+                    {topic.description || "No description provided."}
+                  </p>
+                  <div className="grid grid-cols-2 gap-x-4 text-sm mt-2">
+                    <p>
+                      <strong>Accuracy:</strong>{" "}
+                      {topic.accuracy_percentage.toFixed(2)}%
                     </p>
-                    <div className="grid grid-cols-2 gap-x-4 text-sm mt-2">
-                      <p>
-                        <strong>Accuracy:</strong>{" "}
-                        {topic.accuracy_percentage.toFixed(2)}%
-                      </p>
-                      <p>
-                        <strong>Difficulty:</strong> {topic.difficulty_level}
-                      </p>
-                      <p>
-                        <strong>Strength:</strong> {topic.strength_level}
-                      </p>
-                      <p>
-                        <strong>Trend:</strong> {topic.improvement_trend}
-                      </p>
-                      <p>
-                        <strong>Questions Attempted:</strong>{" "}
-                        {topic.total_questions_attempted}
-                      </p>
-                      <p>
-                        <strong>Correct Answers:</strong>{" "}
-                        {topic.correct_answers}
-                      </p>
-                      <p>
-                        <strong>Avg Time:</strong>{" "}
-                        {topic.average_time_per_question}s
-                      </p>
-                    </div>
-                    <p className="text-xs mt-2 text-muted-foreground">
-                      <strong>Recommendation:</strong> {topic.recommendation}
+                    <p>
+                      <strong>Difficulty:</strong> {topic.difficulty_level}
+                    </p>
+                    <p>
+                      <strong>Strength:</strong> {topic.strength_level}
+                    </p>
+                    <p>
+                      <strong>Trend:</strong> {topic.improvement_trend}
+                    </p>
+                    <p>
+                      <strong>Questions Attempted:</strong>{" "}
+                      {topic.total_questions_attempted}
+                    </p>
+                    <p>
+                      <strong>Correct Answers:</strong> {topic.correct_answers}
+                    </p>
+                    <p>
+                      <strong>Avg Time:</strong>{" "}
+                      {topic.average_time_per_question}s
                     </p>
                   </div>
-                ))
-              ) : (
-                <p className="text-muted-foreground text-sm">
-                  No topics analyzed for this subject.
-                </p>
-              )}
-            </CardContent>
-          </Card>
-        ))
+                  <p className="text-xs mt-2 text-muted-foreground">
+                    <strong>Recommendation:</strong> {topic.recommendation}
+                  </p>
+                </div>
+              ))
+            ) : (
+              <p className="text-muted-foreground text-sm">
+                No topics analyzed for this subject.
+              </p>
+            )}
+          </CardContent>
+        </Card>
+      ) : (
+        <p className="text-muted-foreground text-center">
+          No subject selected.
+        </p>
       )}
     </div>
   );

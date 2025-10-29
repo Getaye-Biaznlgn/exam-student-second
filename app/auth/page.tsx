@@ -22,6 +22,7 @@ import {
   type LoginPayload,
 } from "@/lib/api";
 import { SchoolSelect } from "@/components/school-select";
+import { Eye, EyeOff } from "lucide-react"; // --- NEW ---
 
 export default function AuthPage() {
   const { user, login, loading: authLoading } = useAuth();
@@ -46,6 +47,9 @@ export default function AuthPage() {
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showPassword, setShowPassword] = useState(false); // --- NEW ---
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false); // --- NEW ---
+  const [phoneError, setPhoneError] = useState<string | null>(null); // --- NEW ---
 
   useEffect(() => {
     if (user && !authLoading) router.push("/select-subject");
@@ -53,6 +57,12 @@ export default function AuthPage() {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
+
+    // --- NEW: Clear phone error on new input ---
+    if (name === "phone_number") {
+      setPhoneError(null);
+    }
+
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
@@ -98,6 +108,22 @@ export default function AuthPage() {
     e.preventDefault();
     setIsSubmitting(true);
 
+    // --- NEW: Phone Number Validation ---
+    const phoneRegex = /^(09\d{8}|\+2519\d{8})$/; // Validates 09... (10 digits) or +2519... (12 digits)
+    if (!phoneRegex.test(formData.phone_number)) {
+      const errorMsg =
+        "Invalid phone. Use 09... (10 digits) or +2519... (12 digits).";
+      setPhoneError(errorMsg);
+      toast({
+        title: "Registration failed",
+        description: errorMsg,
+        variant: "destructive",
+      });
+      setIsSubmitting(false);
+      return;
+    }
+    // --- END NEW ---
+
     if (formData.password !== formData.password_confirm) {
       toast({
         title: "Registration failed",
@@ -121,7 +147,7 @@ export default function AuthPage() {
 
       // prefill email for login
       setFormData((prev) => ({ ...prev, password: "", password_confirm: "" }));
-      setMode("login");
+      setMode("login"); // <-- This switches to the login tab
     } catch (err: any) {
       toast({
         title: "Registration failed",
@@ -154,7 +180,7 @@ export default function AuthPage() {
           </div>
 
           <Tabs
-            defaultValue={mode}
+            value={mode} // --- MODIFIED: Control tab state ---
             onValueChange={(val) => setMode(val as "login" | "register")}
             className="w-full"
           >
@@ -185,18 +211,37 @@ export default function AuthPage() {
                         required
                       />
                     </div>
+                    {/* --- NEW: Password with Show/Hide --- */}
                     <div className="space-y-2">
                       <Label htmlFor="login-password">Password</Label>
-                      <Input
-                        id="login-password"
-                        type="password"
-                        name="password"
-                        placeholder="Enter your password"
-                        value={formData.password}
-                        onChange={handleInputChange}
-                        required
-                      />
+                      <div className="relative">
+                        <Input
+                          id="login-password"
+                          type={showPassword ? "text" : "password"}
+                          name="password"
+                          placeholder="Enter your password"
+                          value={formData.password}
+                          onChange={handleInputChange}
+                          required
+                          className="pr-10" // Make space for icon
+                        />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                          onClick={() => setShowPassword(!showPassword)}
+                          tabIndex={-1} // Prevent tabbing to it
+                        >
+                          {showPassword ? (
+                            <EyeOff className="h-4 w-4" />
+                          ) : (
+                            <Eye className="h-4 w-4" />
+                          )}
+                        </Button>
+                      </div>
                     </div>
+                    {/* --- END NEW --- */}
                     <Button
                       type="submit"
                       className="w-full"
@@ -275,18 +320,22 @@ export default function AuthPage() {
                       />
                     </div>
 
-                    {/* Phone Number */}
+                    {/* Phone Number with Validation */}
                     <div className="space-y-2">
                       <Label htmlFor="phone_number">Phone Number</Label>
                       <Input
                         id="phone_number"
                         type="tel"
                         name="phone_number"
-                        placeholder="Phone Number"
+                        placeholder="0912345678 or +251912345678"
                         value={formData.phone_number}
                         onChange={handleInputChange}
                         required
+                        className={phoneError ? "border-red-500" : ""} // --- NEW ---
                       />
+                      {phoneError && ( // --- NEW ---
+                        <p className="text-xs text-red-500">{phoneError}</p>
+                      )}
                     </div>
                     {/* Field Type (Natural / Social) */}
                     <div className="space-y-2">
@@ -349,30 +398,69 @@ export default function AuthPage() {
                       disabled={isSubmitting}
                     />
 
-                    {/* Password and Confirm Password */}
+                    {/* Password with Show/Hide */}
                     <div className="space-y-2">
                       <Label htmlFor="password">Password</Label>
-                      <Input
-                        id="password"
-                        type="password"
-                        name="password"
-                        placeholder="Password"
-                        value={formData.password}
-                        onChange={handleInputChange}
-                        required
-                      />
+                      {/* --- NEW: Wrapper --- */}
+                      <div className="relative">
+                        <Input
+                          id="password"
+                          type={showPassword ? "text" : "password"}
+                          name="password"
+                          placeholder="Password"
+                          value={formData.password}
+                          onChange={handleInputChange}
+                          required
+                          className="pr-10"
+                        />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                          onClick={() => setShowPassword(!showPassword)}
+                          tabIndex={-1}
+                        >
+                          {showPassword ? (
+                            <EyeOff className="h-4 w-4" />
+                          ) : (
+                            <Eye className="h-4 w-4" />
+                          )}
+                        </Button>
+                      </div>
                     </div>
+                    {/* Confirm Password with Show/Hide */}
                     <div className="space-y-2">
                       <Label htmlFor="password_confirm">Confirm Password</Label>
-                      <Input
-                        id="password_confirm"
-                        type="password"
-                        name="password_confirm"
-                        placeholder="Confirm Password"
-                        value={formData.password_confirm}
-                        onChange={handleInputChange}
-                        required
-                      />
+                      {/* --- NEW: Wrapper --- */}
+                      <div className="relative">
+                        <Input
+                          id="password_confirm"
+                          type={showConfirmPassword ? "text" : "password"}
+                          name="password_confirm"
+                          placeholder="Confirm Password"
+                          value={formData.password_confirm}
+                          onChange={handleInputChange}
+                          required
+                          className="pr-10"
+                        />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                          onClick={() =>
+                            setShowConfirmPassword(!showConfirmPassword)
+                          }
+                          tabIndex={-1}
+                        >
+                          {showConfirmPassword ? (
+                            <EyeOff className="h-4 w-4" />
+                          ) : (
+                            <Eye className="h-4 w-4" />
+                          )}
+                        </Button>
+                      </div>
                     </div>
                     <Button
                       type="submit"
