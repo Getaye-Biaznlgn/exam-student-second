@@ -5,6 +5,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
+import { sanitize } from "isomorphic-dompurify"; // ← NEW: Safe HTML sanitizer
 
 interface AIExplanation {
   content: string;
@@ -23,9 +24,21 @@ interface Props {
   onFetchAI: () => void;
 }
 
-function stripHtml(html: string | null | undefined): string {
-  if (!html) return "";
-  return html.replace(/<[^>]*>/g, "").trim();
+/**
+ * Safely render HTML with bold, italics, lists, etc.
+ * Uses DOMPurify to prevent XSS
+ */
+function SafeHtml({ html }: { html: string }) {
+  const clean = sanitize(html, {
+    ADD_TAGS: ["b", "i", "u", "strong", "em", "ul", "ol", "li", "p", "br"],
+    ADD_ATTR: [],
+  });
+  return (
+    <div
+      dangerouslySetInnerHTML={{ __html: clean }}
+      className="prose prose-sm max-w-none"
+    />
+  );
 }
 
 export function QuestionExplanations({
@@ -39,9 +52,9 @@ export function QuestionExplanations({
   const [showAI, setShowAI] = useState(false);
 
   return (
-    <div className="mt-6 space-y-4">
+    <div className="mt-6 space-y-6">
       {/* === Static Explanation === */}
-      <div>
+      <div className="space-y-2">
         <Button
           variant="outline"
           size="sm"
@@ -52,17 +65,15 @@ export function QuestionExplanations({
         </Button>
 
         {showStatic && staticExplanation && (
-          <Card className="mt-2 p-4 bg-muted/10 border border-primary/20">
-            <h4 className="font-semibold text-primary mb-2">Explanation</h4>
-            <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-              {stripHtml(staticExplanation)}
-            </p>
+          <Card className="p-4 bg-muted/10 border border-primary/20">
+            <h4 className="font-semibold text-primary mb-3">Explanation</h4>
+            <SafeHtml html={staticExplanation} />
           </Card>
         )}
       </div>
 
       {/* === AI Explanation === */}
-      <div>
+      <div className="space-y-2">
         <Button
           variant="outline"
           size="sm"
@@ -78,7 +89,7 @@ export function QuestionExplanations({
         </Button>
 
         {showAI && (
-          <div className="mt-2">
+          <div className="space-y-3">
             {isFetchingAI && (
               <div className="flex items-center text-muted-foreground p-3">
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -87,26 +98,78 @@ export function QuestionExplanations({
             )}
 
             {aiError && !isFetchingAI && (
-              <p className="text-red-500 text-sm p-2">{aiError}</p>
+              <p className="text-red-500 text-sm p-2 bg-red-50 rounded">
+                {aiError}
+              </p>
             )}
 
             {aiExplanation && !isFetchingAI && (
-              <Card className="p-4 bg-muted/10 border border-primary/20">
-                <h4 className="font-semibold text-primary mb-2">
+              <Card className="p-5 bg-muted/10 border border-primary/20">
+                <h4 className="font-semibold text-primary mb-4">
                   AI Explanation
                 </h4>
-                <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-                  {stripHtml(aiExplanation.content)}
-                </p>
-                {/* Optional: render other AI fields */}
+
+                {/* Main Content */}
+                {aiExplanation.content && (
+                  <div className="mb-4">
+                    <SafeHtml html={aiExplanation.content} />
+                  </div>
+                )}
+
+                {/* Steps */}
                 {aiExplanation.steps && aiExplanation.steps.length > 0 && (
-                  <div className="mt-3">
-                    <h5 className="font-medium text-sm">Steps:</h5>
-                    <ol className="list-decimal list-inside text-sm text-muted-foreground space-y-1 mt-1">
+                  <div className="mt-4">
+                    <h5 className="font-medium text-sm text-primary mb-2">
+                      Step-by-step:
+                    </h5>
+                    <ol className="list-decimal list-inside space-y-1 text-sm text-muted-foreground">
                       {aiExplanation.steps.map((step, i) => (
-                        <li key={i}>{stripHtml(step)}</li>
+                        <li key={i}>
+                          <SafeHtml html={step} />
+                        </li>
                       ))}
                     </ol>
+                  </div>
+                )}
+
+                {/* Why Correct */}
+                {aiExplanation.why_correct && (
+                  <div className="mt-4 p-3 bg-green-50 rounded border border-green-200">
+                    <p className="font-medium text-green-800 text-sm">
+                      Why this answer is correct:
+                    </p>
+                    <div className="text-sm text-green-700 mt-1">
+                      <SafeHtml html={aiExplanation.why_correct} />
+                    </div>
+                  </div>
+                )}
+
+                {/* Key Concepts */}
+                {aiExplanation.key_concepts &&
+                  aiExplanation.key_concepts.length > 0 && (
+                    <div className="mt-4">
+                      <h5 className="font-medium text-sm text-primary mb-2">
+                        Key Concepts:
+                      </h5>
+                      <ul className="list-disc list-inside text-sm text-muted-foreground space-y-1">
+                        {aiExplanation.key_concepts.map((kc, i) => (
+                          <li key={i}>
+                            <SafeHtml html={kc} />
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                {/* Tips */}
+                {aiExplanation.tips && (
+                  <div className="mt-4 p-3 bg-blue-50 rounded border border-blue-200">
+                    <p className="font-medium text-blue-800 text-sm">
+                      Exam Tip:
+                    </p>
+                    <p className="text-sm text-blue-700 mt-1">
+                      <SafeHtml html={aiExplanation.tips} />
+                    </p>
                   </div>
                 )}
               </Card>

@@ -36,23 +36,6 @@ export function ExamNavigationBar({
       </Button>
 
       <div className="flex flex-wrap gap-2 justify-center">
-        <Button
-          onClick={onClear}
-          variant="outline"
-          className="text-yellow-600 border-yellow-500 hover:bg-yellow-50 hover:text-yellow-700"
-          disabled={clearDisabled}
-        >
-          <RefreshCw className="mr-2 h-4 w-4" /> Clear
-        </Button>
-
-        <Button
-          onClick={onFlag}
-          variant={isFlagged ? "destructive" : "outline"}
-        >
-          <Flag className="mr-2 h-4 w-4" />
-          {isFlagged ? "Unflag" : "Flag"}
-        </Button>
-
         {showSummaryBtn && (
           <Button variant="outline" onClick={onSummary} className="lg:hidden">
             <List className="mr-2 h-4 w-4" /> Summary

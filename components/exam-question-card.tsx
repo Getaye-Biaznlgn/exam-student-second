@@ -1,42 +1,28 @@
 "use client";
 
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import React, { useState, useEffect } from "react";
+import { Card, CardContent } from "@/components/ui/card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
-/**
- * Safely renders HTML content.
- * @param htmlString The HTML content to render.
- * @returns The HTML content or empty string if invalid.
- */
-function getHtmlContent(htmlString: string | null | undefined): string {
-  if (typeof htmlString !== "string") {
-    return "";
-  }
-  return htmlString.trim();
-}
-
-export interface Question {
-  id: string;
-  question_text: string;
-  image_url?: string | null;
-  options: {
-    id: string;
-    option_key?: string;
-    option_text: string;
-  }[];
-}
-
 interface ExamQuestionCardProps {
-  question: Question;
+  question: {
+    id: string;
+    question_text: string;
+    options: {
+      id: string;
+      option_key?: string;
+      option_text: string;
+      is_correct?: boolean;
+    }[];
+  };
   questionNumber: number;
   totalQuestions: number;
   selectedOption: string | null;
   onSelectOption: (optionId: string) => void;
-  isPracticeMode?: boolean;
-  correctOptionKey?: string | null;
+  onClearChoice?: () => void;
+  remainingTime: number;
+  mode?: "exam" | "practice";
 }
 
 export function ExamQuestionCard({
@@ -45,84 +31,133 @@ export function ExamQuestionCard({
   totalQuestions,
   selectedOption,
   onSelectOption,
-  isPracticeMode = false,
-  correctOptionKey = null,
+  onClearChoice,
+  remainingTime,
+  mode = "exam",
 }: ExamQuestionCardProps) {
-  // Handle select event only when a new option is chosen
-  const handleSelect = (optionId: string) => {
-    if (optionId !== selectedOption) {
-      onSelectOption(optionId);
-    }
+  const [timeLeft, setTimeLeft] = useState(remainingTime);
+  const [answered, setAnswered] = useState(false);
+  const [localSelection, setLocalSelection] = useState<string | null>(
+    selectedOption
+  );
+
+  useEffect(() => setTimeLeft(remainingTime), [remainingTime]);
+
+  useEffect(() => {
+    if (timeLeft <= 0) return;
+    const timer = setInterval(
+      () => setTimeLeft((prev) => Math.max(0, prev - 1)),
+      1000
+    );
+    return () => clearInterval(timer);
+  }, [timeLeft]);
+
+  const formatTime = (sec: number) => {
+    const m = Math.floor(sec / 60);
+    const s = sec % 60;
+    return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+  };
+
+  const handleOptionSelect = (optionId: string) => {
+    setLocalSelection(optionId);
+    if (mode === "practice") setAnswered(true);
+    onSelectOption(optionId);
+  };
+
+  const handleClearChoice = () => {
+    setLocalSelection(null);
+    setAnswered(false);
+    if (onClearChoice) onClearChoice();
   };
 
   return (
-    <Card className="w-full">
-      <CardHeader className="space-y-4">
-        <div className="flex items-center justify-between">
-          <Badge variant="outline">
-            Question {questionNumber} of {totalQuestions}
-          </Badge>
-        </div>
-
-        <h2 className="text-xl font-semibold leading-relaxed">
-          {questionNumber}.{" "}
+    <div className="flex flex-col items-center justify-center w-full bg-gray-50 py-10">
+      {/* Timer */}
+      <div className="w-full max-w-3xl flex justify-end mb-4 pr-4">
+        <div className="bg-white border rounded-md px-4 py-2 text-sm font-medium shadow-sm">
+          Time left:{" "}
           <span
-            dangerouslySetInnerHTML={{
-              __html: getHtmlContent(question.question_text),
-            }}
-          />
-        </h2>
-      </CardHeader>
+            className={`font-semibold ${
+              timeLeft <= 300 ? "text-red-600" : "text-gray-800"
+            }`}
+          >
+            {formatTime(timeLeft)}
+          </span>
+        </div>
+      </div>
 
-      <CardContent>
-        <RadioGroup value={selectedOption || ""} onValueChange={handleSelect}>
-          <div className="space-y-3">
-            {question.options.map((option) => {
-              const isSelected = selectedOption === option.id;
-              const isCorrect =
-                isPracticeMode &&
-                selectedOption !== null &&
-                option.option_key === correctOptionKey;
-              const isIncorrect =
-                isPracticeMode &&
-                selectedOption !== null &&
-                isSelected &&
-                option.option_key !== correctOptionKey;
+      <Card className="w-full max-w-3xl shadow-lg border border-gray-200">
+        <CardContent className="p-6">
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6">
+            {/* Question */}
+            <div className="flex items-start justify-between">
+              <h2 className="text-lg font-semibold text-gray-800 leading-relaxed">
+                <span
+                  dangerouslySetInnerHTML={{
+                    __html: question.question_text || "",
+                  }}
+                />
+              </h2>
+              <p className="text-sm text-gray-500">
+                ({questionNumber}/{totalQuestions})
+              </p>
+            </div>
 
-              return (
-                <div
-                  key={option.id}
-                  className={cn(
-                    "flex items-start space-x-3 rounded-lg border-2 p-4 transition-all",
-                    isSelected
-                      ? "border-primary bg-primary/5"
-                      : "border-border hover:border-primary/50",
-                    isCorrect && "border-green-500 bg-green-100/50",
-                    isIncorrect && "border-red-500 bg-red-100/50"
-                  )}
-                >
-                  {/* ✅ Only the radio button is clickable */}
-                  <RadioGroupItem
-                    value={option.id}
-                    id={option.id}
-                    className="mt-1 cursor-pointer"
-                  />
-                  <Label
-                    htmlFor={option.id}
-                    className="flex-1 font-normal leading-normal cursor-default select-text"
-                  >
-                    <span
-                      dangerouslySetInnerHTML={{
-                        __html: getHtmlContent(option.option_text),
-                      }}
-                    />
-                  </Label>
-                </div>
-              );
-            })}
+            {/* Options */}
+            <div className="mt-4">
+              <RadioGroup
+                value={localSelection || ""}
+                onValueChange={(value) => handleOptionSelect(value)}
+              >
+                {question.options.map((opt) => {
+                  const isSelected = localSelection === opt.id;
+                  const isCorrect = opt.is_correct;
+                  const showFeedback = mode === "practice" && answered;
+
+                  const optionClasses = cn(
+                    "flex items-center space-x-3 mb-3 rounded-md transition-colors select-none",
+                    showFeedback && isCorrect && "bg-green-100/50",
+                    showFeedback && isSelected && !isCorrect && "bg-red-100/50",
+                    !showFeedback &&
+                      (isSelected ? "bg-primary/5" : "hover:bg-gray-100")
+                  );
+
+                  return (
+                    <div key={opt.id} className={optionClasses}>
+                      {/* Only radio is clickable */}
+                      <RadioGroupItem
+                        id={opt.id}
+                        value={opt.id}
+                        className="cursor-pointer"
+                      />
+                      {/* Label NOT clickable */}
+                      <div className="text-gray-800 select-none pointer-events-none">
+                        {opt.option_key ? `${opt.option_key}. ` : ""}
+                        <span
+                          dangerouslySetInnerHTML={{
+                            __html: opt.option_text || "",
+                          }}
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+              </RadioGroup>
+            </div>
+
+            {/* Clear choice (left side) */}
+            <div className="mt-3 text-left">
+              <button
+                onClick={handleClearChoice}
+                className="text-sm text-blue-600 hover:underline"
+                type="button"
+              >
+                Clear my choice
+              </button>
+            </div>
           </div>
-        </RadioGroup>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+    </div>
   );
 }
