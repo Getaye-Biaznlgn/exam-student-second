@@ -72,9 +72,10 @@ export default function AuthPage() {
 
     try {
       const payload: LoginPayload = {
-        identifier: formData.email,
+        identifier: formData.phone_number, // ✅ use phone number instead of email
         password: formData.password,
       };
+
       const res = await loginStudent(payload);
 
       if (!res.success || !res.data)
@@ -200,17 +201,18 @@ export default function AuthPage() {
                 <CardContent>
                   <form onSubmit={handleLogin} className="space-y-4">
                     <div className="space-y-2">
-                      <Label htmlFor="login-email">Email</Label>
+                      <Label htmlFor="login-phone">Phone Number</Label>
                       <Input
-                        id="login-email"
-                        type="email"
-                        name="email"
-                        placeholder="student@example.com"
-                        value={formData.email}
+                        id="login-phone"
+                        type="tel"
+                        name="phone_number"
+                        placeholder="0912345678 or +251912345678"
+                        value={formData.phone_number}
                         onChange={handleInputChange}
                         required
                       />
                     </div>
+
                     {/* --- NEW: Password with Show/Hide --- */}
                     <div className="space-y-2">
                       <Label htmlFor="login-password">Password</Label>
