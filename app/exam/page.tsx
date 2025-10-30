@@ -10,6 +10,7 @@ import {
   fetchAIExplanation,
   getUserProfile,
 } from "@/lib/api";
+import { useLayout } from "@/lib/layout-context"; // ← NEW
 
 import { ExamQuestionCard } from "@/components/exam-question-card";
 import { ExamStartCard } from "@/components/exam/ExamStartCard";
@@ -21,7 +22,7 @@ import { QuestionStatusCard } from "@/components/exam/QuestionStatusCard";
 import { ExamNavigationBar } from "@/components/exam/ExamNavigationBar";
 import { ExamSummary } from "@/components/exam/ExamSummary";
 import { ConfirmSubmitModal } from "@/components/exam/ConfirmSubmitModal";
-import { QuestionExplanations } from "@/components/exam/QuestionExplanation"; // ← NEW
+import { QuestionExplanations } from "@/components/exam/QuestionExplanation"; // ← Fixed import
 
 function stripHtmlTags(html: string | null | undefined): string {
   if (typeof html !== "string") return "";
@@ -64,6 +65,39 @@ export default function ExamPage() {
 
   const timeRef = useRef<NodeJS.Timeout | null>(null);
   const startTimeRef = useRef<number>(0);
+
+  // ── NEW: Central exam timer (counts down once) ───────────────────────
+  const durationSeconds = (examData?.exam?.duration_minutes ?? 0) * 60;
+  const [remainingSeconds, setRemainingSeconds] = useState(durationSeconds);
+
+  useEffect(() => {
+    if (!examStarted || durationSeconds === 0) return;
+
+    const startTime = Date.now();
+    const endTime = startTime + durationSeconds * 1000;
+
+    const timer = setInterval(() => {
+      const now = Date.now();
+      const left = Math.max(0, Math.floor((endTime - now) / 1000));
+      setRemainingSeconds(left);
+
+      if (left <= 0) {
+        clearInterval(timer);
+        // Auto-submit when time is up
+        alert("Time is up! Submitting automatically.");
+        // You can trigger submit here if needed
+      }
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [examStarted, durationSeconds]);
+
+  // Reset timer when exam starts
+  useEffect(() => {
+    if (examStarted) {
+      setRemainingSeconds(durationSeconds);
+    }
+  }, [examStarted, durationSeconds]);
 
   // ── Fetch exam & profile ─────────────────────────────────────────────
   useEffect(() => {
@@ -110,9 +144,8 @@ export default function ExamPage() {
     })();
   }, []);
 
-  // ── Timer logic (per question) ───────────────────────────────────────
+  // ── Per-question time tracking (unchanged) ───────────────────────────
   const currentQuestion = examData?.questions?.[currentIdx];
-  const duration = examData?.exam?.duration_minutes ?? 0;
 
   useEffect(() => {
     if (examStarted && currentQuestion) {
@@ -141,6 +174,22 @@ export default function ExamPage() {
   useEffect(() => {
     if (!user && !authLoading) router.push("/");
   }, [user, authLoading, router]);
+
+  // ── Hide/Show Main Nav Bar ───────────────────────────────────────────
+  const { setShowNav } = useLayout(); // ← NEW
+
+  useEffect(() => {
+    if (examStarted) {
+      setShowNav(false); // Hide nav when exam starts
+    } else {
+      setShowNav(true); // Show nav on "Start" screen
+    }
+
+    // Cleanup function to show nav when leaving the page
+    return () => {
+      setShowNav(true);
+    };
+  }, [examStarted, setShowNav]); // ← NEW
 
   // ── Loading / error screens ───────────────────────────────────────────
   if (isLoading || authLoading) {
@@ -365,17 +414,16 @@ export default function ExamPage() {
         isSubmitting={isSubmitting}
       />
 
+      {/* Pass remainingSeconds to header */}
       <ExamHeader
         profile={profileData}
         user={user}
         title={examData!.exam.title}
-        duration={duration}
+        duration={examData!.exam.duration_minutes}
+        remainingSeconds={remainingSeconds} // ← NEW
         showSidebarMobile={showSidebarMobile}
         toggleSidebar={() => setShowSidebarMobile((v) => !v)}
-        onTimeUp={() => {
-          alert("Time is up! Submitting automatically.");
-          executeSubmit();
-        }}
+        onTimeUp={executeSubmit}
       />
 
       <div className="flex flex-1 flex-col lg:flex-row p-4 gap-4">
@@ -407,10 +455,12 @@ export default function ExamPage() {
                     currentQuestion!.question.id
                   )}
                   flagged={flagged.has(currentQuestion!.question.id)}
+                  isFlagged={flagged.has(currentQuestion!.question.id)}
                   questionNumber={currentIdx + 1}
+                  onFlag={toggleFlag}
                 />
 
-                <div className="flex-1">
+                <div className="flex-1 h-20px">
                   <ExamQuestionCard
                     key={currentQuestion!.question.id}
                     question={currentQuestion!.question}
@@ -424,6 +474,7 @@ export default function ExamPage() {
                     correctOptionKey={
                       currentQuestion!.question.correct_option ?? null
                     }
+                    remainingTime={remainingSeconds} // ← PASS TO CARD
                   />
 
                   {/* === BOTH EXPLANATIONS (Practice Mode Only) === */}
