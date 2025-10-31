@@ -10,7 +10,7 @@ import {
   fetchAIExplanation,
   getUserProfile,
 } from "@/lib/api";
-import { useLayout } from "@/lib/layout-context"; // ← NEW
+import { useLayout } from "@/lib/layout-context";
 
 import { ExamQuestionCard } from "@/components/exam-question-card";
 import { ExamStartCard } from "@/components/exam/ExamStartCard";
@@ -22,7 +22,7 @@ import { QuestionStatusCard } from "@/components/exam/QuestionStatusCard";
 import { ExamNavigationBar } from "@/components/exam/ExamNavigationBar";
 import { ExamSummary } from "@/components/exam/ExamSummary";
 import { ConfirmSubmitModal } from "@/components/exam/ConfirmSubmitModal";
-import { QuestionExplanations } from "@/components/exam/QuestionExplanation"; // ← Fixed import
+import { QuestionExplanations } from "@/components/exam/QuestionExplanation";
 
 function stripHtmlTags(html: string | null | undefined): string {
   if (typeof html !== "string") return "";

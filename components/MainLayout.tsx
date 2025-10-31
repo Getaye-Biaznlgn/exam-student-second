@@ -4,20 +4,27 @@ import { useLayout } from "@/lib/layout-context";
 import { AppBar } from "@/components/app-bar";
 import { SiteFooter } from "@/components/site-footer";
 import { Toaster } from "@/components/ui/toaster";
+import { usePathname } from "next/navigation"; // ✅ add this
 import type React from "react";
 
 export function MainLayout({ children }: { children: React.ReactNode }) {
-  // Get the showNav state from the context
   const { showNav } = useLayout();
+  const pathname = usePathname(); // ✅ get current route
+
+  // ✅ only show footer on home page
+  const showFooter = pathname === "/";
 
   return (
     <>
-      {/* This is the magic: only show AppBar if showNav is true */}
+      {/* show AppBar if showNav is true */}
       {showNav && <AppBar />}
 
-      {/* Render the rest of your layout and the page content */}
+      {/* main content */}
       {children}
-      <SiteFooter />
+
+      {/* only show footer on home page */}
+      {showFooter && <SiteFooter />}
+
       <Toaster />
     </>
   );
