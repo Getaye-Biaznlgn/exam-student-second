@@ -2,7 +2,6 @@ const BASE_URL = "http://65.1.135.121:8000/api";
 import { School } from "./types";
 
 export interface RegisterPayload {
-  username: string;
   email: string;
   phone_number: string;
   password: string;

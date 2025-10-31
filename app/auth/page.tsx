@@ -15,14 +15,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import {
-  registerStudent,
-  loginStudent,
-  type RegisterPayload,
-  type LoginPayload,
-} from "@/lib/api";
+import { registerStudent, loginStudent, type LoginPayload } from "@/lib/api";
 import { SchoolSelect } from "@/components/school-select";
-import { Eye, EyeOff } from "lucide-react"; // --- NEW ---
+import { Eye, EyeOff } from "lucide-react";
 
 export default function AuthPage() {
   const { user, login, loading: authLoading } = useAuth();
@@ -30,10 +25,13 @@ export default function AuthPage() {
   const { toast } = useToast();
 
   const [mode, setMode] = useState<"login" | "register">("login");
+
+  // NOTE: `username` removed, `password_confirm` kept for BE
   const [formData, setFormData] = useState<
-    RegisterPayload & { password_confirm: string }
+    Omit<Parameters<typeof registerStudent>[0], "username"> & {
+      password_confirm: string;
+    }
   >({
-    username: "",
     email: "",
     phone_number: "",
     password: "",
@@ -43,13 +41,13 @@ export default function AuthPage() {
     school_id: "",
     student_id: "",
     date_of_birth: "",
-    stream: "Natural", // 👈 default
+    stream: "Natural",
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showPassword, setShowPassword] = useState(false); // --- NEW ---
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false); // --- NEW ---
-  const [phoneError, setPhoneError] = useState<string | null>(null); // --- NEW ---
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [phoneError, setPhoneError] = useState<string | null>(null);
 
   useEffect(() => {
     if (user && !authLoading) router.push("/select-subject");
@@ -57,47 +55,38 @@ export default function AuthPage() {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-
-    // --- NEW: Clear phone error on new input ---
-    if (name === "phone_number") {
-      setPhoneError(null);
-    }
-
+    if (name === "phone_number") setPhoneError(null);
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  /* --------------------- LOGIN --------------------- */
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
 
     try {
       const payload: LoginPayload = {
-        identifier: formData.phone_number, // ✅ use phone number instead of email
+        identifier: formData.phone_number,
         password: formData.password,
       };
 
       const res = await loginStudent(payload);
-
       if (!res.success || !res.data)
         throw new Error(res.message || "Login failed");
 
       const { access_token, refresh_token, ...userData } = res.data;
-
       await login({
         user: userData,
         accessToken: access_token,
         refreshToken: refresh_token,
       });
 
-      toast({
-        title: "Welcome back!",
-        description: "Successfully logged in to your account.",
-      });
+      toast({ title: "Welcome back!", description: "Logged in successfully." });
       router.push("/select-subject");
     } catch (err: any) {
       toast({
         title: "Login failed",
-        description: err?.message || "Please check your credentials.",
+        description: err?.message || "Check your credentials.",
         variant: "destructive",
       });
     } finally {
@@ -105,26 +94,27 @@ export default function AuthPage() {
     }
   };
 
+  /* --------------------- REGISTER --------------------- */
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
 
-    // --- NEW: Phone Number Validation ---
-    const phoneRegex = /^(09\d{8}|\+2519\d{8})$/; // Validates 09... (10 digits) or +2519... (12 digits)
+    // ---- Phone validation ----
+    const phoneRegex = /^(09\d{8}|\+2519\d{8})$/;
     if (!phoneRegex.test(formData.phone_number)) {
-      const errorMsg =
+      const msg =
         "Invalid phone. Use 09... (10 digits) or +2519... (12 digits).";
-      setPhoneError(errorMsg);
+      setPhoneError(msg);
       toast({
         title: "Registration failed",
-        description: errorMsg,
+        description: msg,
         variant: "destructive",
       });
       setIsSubmitting(false);
       return;
     }
-    // --- END NEW ---
 
+    // ---- Password match (still client-side) ----
     if (formData.password !== formData.password_confirm) {
       toast({
         title: "Registration failed",
@@ -136,24 +126,28 @@ export default function AuthPage() {
     }
 
     try {
-      const res = await registerStudent(formData);
+      // SEND **password_confirm** to the backend
+      const payload = { ...formData }; // includes password_confirm
+
+      const res = await registerStudent(payload as any); // `any` because BE now expects password_confirm
 
       if (!res.success) throw new Error(res.message || "Registration failed");
 
       toast({
         title: "Account created!",
-        description:
-          "Welcome! Your account has been created successfully. Please log in to continue.",
+        description: "Your account is ready. Please log in to continue.",
       });
 
-      // prefill email for login
-      setFormData((prev) => ({ ...prev, password: "", password_confirm: "" }));
-      setMode("login"); // <-- This switches to the login tab
+      setFormData((prev) => ({
+        ...prev,
+        password: "",
+        password_confirm: "",
+      }));
+      setMode("login");
     } catch (err: any) {
       toast({
         title: "Registration failed",
-        description:
-          err?.message || "Please try again with different credentials.",
+        description: err?.message || "Try again with different credentials.",
         variant: "destructive",
       });
     } finally {
@@ -181,8 +175,8 @@ export default function AuthPage() {
           </div>
 
           <Tabs
-            value={mode} // --- MODIFIED: Control tab state ---
-            onValueChange={(val) => setMode(val as "login" | "register")}
+            value={mode}
+            onValueChange={(v) => setMode(v as "login" | "register")}
             className="w-full"
           >
             <TabsList className="grid w-full grid-cols-2">
@@ -190,6 +184,7 @@ export default function AuthPage() {
               <TabsTrigger value="register">Sign Up</TabsTrigger>
             </TabsList>
 
+            {/* ------------------- LOGIN TAB ------------------- */}
             <TabsContent value="login">
               <Card>
                 <CardHeader>
@@ -213,7 +208,6 @@ export default function AuthPage() {
                       />
                     </div>
 
-                    {/* --- NEW: Password with Show/Hide --- */}
                     <div className="space-y-2">
                       <Label htmlFor="login-password">Password</Label>
                       <div className="relative">
@@ -225,7 +219,7 @@ export default function AuthPage() {
                           value={formData.password}
                           onChange={handleInputChange}
                           required
-                          className="pr-10" // Make space for icon
+                          className="pr-10"
                         />
                         <Button
                           type="button"
@@ -233,7 +227,7 @@ export default function AuthPage() {
                           size="sm"
                           className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
                           onClick={() => setShowPassword(!showPassword)}
-                          tabIndex={-1} // Prevent tabbing to it
+                          tabIndex={-1}
                         >
                           {showPassword ? (
                             <EyeOff className="h-4 w-4" />
@@ -243,7 +237,7 @@ export default function AuthPage() {
                         </Button>
                       </div>
                     </div>
-                    {/* --- END NEW --- */}
+
                     <Button
                       type="submit"
                       className="w-full"
@@ -256,6 +250,7 @@ export default function AuthPage() {
               </Card>
             </TabsContent>
 
+            {/* ------------------- REGISTER TAB ------------------- */}
             <TabsContent value="register">
               <Card>
                 <CardHeader>
@@ -266,21 +261,7 @@ export default function AuthPage() {
                 </CardHeader>
                 <CardContent>
                   <form onSubmit={handleRegister} className="space-y-4">
-                    {/* Username */}
-                    <div className="space-y-2">
-                      <Label htmlFor="username">Username</Label>
-                      <Input
-                        id="username"
-                        type="text"
-                        name="username"
-                        placeholder="Username"
-                        value={formData.username}
-                        onChange={handleInputChange}
-                        required
-                      />
-                    </div>
-
-                    {/* First Name and Last Name on same row */}
+                    {/* First / Last name */}
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label htmlFor="first_name">First Name</Label>
@@ -322,7 +303,7 @@ export default function AuthPage() {
                       />
                     </div>
 
-                    {/* Phone Number with Validation */}
+                    {/* Phone */}
                     <div className="space-y-2">
                       <Label htmlFor="phone_number">Phone Number</Label>
                       <Input
@@ -333,19 +314,20 @@ export default function AuthPage() {
                         value={formData.phone_number}
                         onChange={handleInputChange}
                         required
-                        className={phoneError ? "border-red-500" : ""} // --- NEW ---
+                        className={phoneError ? "border-red-500" : ""}
                       />
-                      {phoneError && ( // --- NEW ---
+                      {phoneError && (
                         <p className="text-xs text-red-500">{phoneError}</p>
                       )}
                     </div>
-                    {/* Field Type (Natural / Social) */}
+
+                    {/* Field Type */}
                     <div className="space-y-2">
                       <Label htmlFor="stream">Field Type</Label>
                       <select
                         id="stream"
                         name="stream"
-                        value={formData.stream || ""}
+                        value={formData.stream}
                         onChange={(e) =>
                           setFormData((prev) => ({
                             ...prev,
@@ -363,7 +345,7 @@ export default function AuthPage() {
                       </select>
                     </div>
 
-                    {/* Student ID and Date of Birth on same row */}
+                    {/* Student ID + DOB */}
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label htmlFor="student_id">Student ID</Label>
@@ -383,7 +365,6 @@ export default function AuthPage() {
                           id="date_of_birth"
                           type="date"
                           name="date_of_birth"
-                          placeholder="Date of Birth"
                           value={formData.date_of_birth}
                           onChange={handleInputChange}
                           required
@@ -391,19 +372,18 @@ export default function AuthPage() {
                       </div>
                     </div>
 
-                    {/* School Selection */}
+                    {/* School */}
                     <SchoolSelect
                       value={formData.school_id}
-                      onValueChange={(value) =>
-                        setFormData((prev) => ({ ...prev, school_id: value }))
+                      onValueChange={(v) =>
+                        setFormData((prev) => ({ ...prev, school_id: v }))
                       }
                       disabled={isSubmitting}
                     />
 
-                    {/* Password with Show/Hide */}
+                    {/* Password */}
                     <div className="space-y-2">
                       <Label htmlFor="password">Password</Label>
-                      {/* --- NEW: Wrapper --- */}
                       <div className="relative">
                         <Input
                           id="password"
@@ -431,10 +411,10 @@ export default function AuthPage() {
                         </Button>
                       </div>
                     </div>
-                    {/* Confirm Password with Show/Hide */}
+
+                    {/* Confirm Password – **sent to BE** */}
                     <div className="space-y-2">
                       <Label htmlFor="password_confirm">Confirm Password</Label>
-                      {/* --- NEW: Wrapper --- */}
                       <div className="relative">
                         <Input
                           id="password_confirm"
@@ -464,6 +444,7 @@ export default function AuthPage() {
                         </Button>
                       </div>
                     </div>
+
                     <Button
                       type="submit"
                       className="w-full"
