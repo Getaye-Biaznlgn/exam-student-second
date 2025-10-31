@@ -15,9 +15,23 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { registerStudent, loginStudent, type LoginPayload } from "@/lib/api";
+import {
+  registerStudent,
+  loginStudent,
+  requestPhoneOtp, // Added
+  verifyPhoneOtp, // Added
+  type LoginPayload,
+  // Assuming these types are exported from your api file
+  type PhoneOtpRequest,
+  type PhoneOtpVerify,
+} from "@/lib/api";
 import { SchoolSelect } from "@/components/school-select";
 import { Eye, EyeOff } from "lucide-react";
+
+// Helper for phone validation
+const PHONE_REGEX = /^(09\d{8}|\+2519\d{8})$/;
+const INVALID_PHONE_MSG =
+  "Invalid phone. Use 09... (10 digits) or +2519... (12 digits).";
 
 export default function AuthPage() {
   const { user, login, loading: authLoading } = useAuth();
@@ -49,14 +63,43 @@ export default function AuthPage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [phoneError, setPhoneError] = useState<string | null>(null);
 
+  // --- OTP State ---
+  const [otpCode, setOtpCode] = useState("");
+  const [isOtpSent, setIsOtpSent] = useState(false);
+  const [isOtpVerified, setIsOtpVerified] = useState(false);
+  const [isSendingOtp, setIsSendingOtp] = useState(false);
+  const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
+  // --- End OTP State ---
+
   useEffect(() => {
     if (user && !authLoading) router.push("/select-subject");
   }, [user, authLoading, router]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    if (name === "phone_number") setPhoneError(null);
+
+    if (name === "phone_number") {
+      setPhoneError(null);
+      // Reset OTP status if phone number changes
+      setIsOtpSent(false);
+      setIsOtpVerified(false);
+      setOtpCode("");
+    }
     setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const validatePhone = () => {
+    if (!PHONE_REGEX.test(formData.phone_number)) {
+      setPhoneError(INVALID_PHONE_MSG);
+      toast({
+        title: "Invalid Phone Number",
+        description: INVALID_PHONE_MSG,
+        variant: "destructive",
+      });
+      return false;
+    }
+    setPhoneError(null);
+    return true;
   };
 
   /* --------------------- LOGIN --------------------- */
@@ -94,27 +137,97 @@ export default function AuthPage() {
     }
   };
 
+  /* --------------------- OTP HANDLERS --------------------- */
+  const handleSendOtp = async (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    if (!validatePhone()) return;
+
+    setIsSendingOtp(true);
+    try {
+      const payload: PhoneOtpRequest = {
+        phone_number: formData.phone_number,
+      };
+      await requestPhoneOtp(payload);
+
+      toast({
+        title: "OTP Sent!",
+        description: "A verification code has been sent to your phone.",
+      });
+      setIsOtpSent(true);
+      setIsOtpVerified(false); // Reset verification status
+      setOtpCode(""); // Clear old code
+    } catch (err: any) {
+      toast({
+        title: "Failed to send OTP",
+        description:
+          err?.message || "Please check the phone number and try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSendingOtp(false);
+    }
+  };
+
+  const handleVerifyOtp = async (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    if (otpCode.length !== 6) {
+      toast({
+        title: "Invalid Code",
+        description: "Please enter the 6-digit code.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsVerifyingOtp(true);
+    try {
+      const payload: PhoneOtpVerify = {
+        phone_number: formData.phone_number,
+        code: otpCode,
+      };
+      await verifyPhoneOtp(payload);
+
+      toast({
+        title: "Phone Verified!",
+        description: "Your phone number has been successfully verified.",
+      });
+      setIsOtpVerified(true);
+    } catch (err: any) {
+      toast({
+        title: "Verification Failed",
+        description: err?.message || "The code is incorrect or has expired.",
+        variant: "destructive",
+      });
+      setIsOtpVerified(false);
+    } finally {
+      setIsVerifyingOtp(false);
+    }
+  };
+
   /* --------------------- REGISTER --------------------- */
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
 
-    // ---- Phone validation ----
-    const phoneRegex = /^(09\d{8}|\+2519\d{8})$/;
-    if (!phoneRegex.test(formData.phone_number)) {
-      const msg =
-        "Invalid phone. Use 09... (10 digits) or +2519... (12 digits).";
-      setPhoneError(msg);
+    // ---- 1. OTP Verification Check ----
+    if (!isOtpVerified) {
       toast({
-        title: "Registration failed",
-        description: msg,
+        title: "Verification Required",
+        description:
+          "Please verify your phone number before creating an account.",
         variant: "destructive",
       });
       setIsSubmitting(false);
       return;
     }
 
-    // ---- Password match (still client-side) ----
+    // ---- 2. Phone validation (redundant if OTP is verified, but good practice) ----
+    if (!validatePhone()) {
+      setIsSubmitting(false);
+      return;
+    }
+
+    // ---- 3. Password match ----
     if (formData.password !== formData.password_confirm) {
       toast({
         title: "Registration failed",
@@ -125,11 +238,10 @@ export default function AuthPage() {
       return;
     }
 
+    // ---- 4. Submit Registration ----
     try {
-      // SEND **password_confirm** to the backend
-      const payload = { ...formData }; // includes password_confirm
-
-      const res = await registerStudent(payload as any); // `any` because BE now expects password_confirm
+      const payload = { ...formData };
+      const res = await registerStudent(payload as any);
 
       if (!res.success) throw new Error(res.message || "Registration failed");
 
@@ -138,11 +250,15 @@ export default function AuthPage() {
         description: "Your account is ready. Please log in to continue.",
       });
 
+      // Reset fields and switch to login
       setFormData((prev) => ({
         ...prev,
         password: "",
         password_confirm: "",
       }));
+      setIsOtpSent(false);
+      setIsOtpVerified(false);
+      setOtpCode("");
       setMode("login");
     } catch (err: any) {
       toast({
@@ -184,7 +300,7 @@ export default function AuthPage() {
               <TabsTrigger value="register">Sign Up</TabsTrigger>
             </TabsList>
 
-            {/* ------------------- LOGIN TAB ------------------- */}
+            {/* ------------------- LOGIN TAB (Unchanged) ------------------- */}
             <TabsContent value="login">
               <Card>
                 <CardHeader>
@@ -250,7 +366,7 @@ export default function AuthPage() {
               </Card>
             </TabsContent>
 
-            {/* ------------------- REGISTER TAB ------------------- */}
+            {/* ------------------- REGISTER TAB (Modified) ------------------- */}
             <TabsContent value="register">
               <Card>
                 <CardHeader>
@@ -272,6 +388,7 @@ export default function AuthPage() {
                           placeholder="First Name"
                           value={formData.first_name}
                           onChange={handleInputChange}
+                          disabled={isOtpVerified} // Optional: disable after verification
                           required
                         />
                       </div>
@@ -284,6 +401,7 @@ export default function AuthPage() {
                           placeholder="Last Name"
                           value={formData.last_name}
                           onChange={handleInputChange}
+                          disabled={isOtpVerified} // Optional: disable after verification
                           required
                         />
                       </div>
@@ -299,27 +417,105 @@ export default function AuthPage() {
                         placeholder="Email"
                         value={formData.email}
                         onChange={handleInputChange}
+                        disabled={isOtpVerified} // Optional: disable after verification
                         required
                       />
                     </div>
 
-                    {/* Phone */}
+                    {/* Phone - MODIFIED */}
                     <div className="space-y-2">
                       <Label htmlFor="phone_number">Phone Number</Label>
-                      <Input
-                        id="phone_number"
-                        type="tel"
-                        name="phone_number"
-                        placeholder="0912345678 or +251912345678"
-                        value={formData.phone_number}
-                        onChange={handleInputChange}
-                        required
-                        className={phoneError ? "border-red-500" : ""}
-                      />
+                      <div className="flex items-center gap-2">
+                        <Input
+                          id="phone_number"
+                          type="tel"
+                          name="phone_number"
+                          placeholder="0912345678 or +251912345678"
+                          value={formData.phone_number}
+                          onChange={handleInputChange}
+                          required
+                          className={phoneError ? "border-red-500" : ""}
+                          disabled={isOtpSent} // Disable after sending to prevent changes
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          className="shrink-0"
+                          onClick={handleSendOtp}
+                          disabled={
+                            isSendingOtp ||
+                            isOtpVerified ||
+                            !PHONE_REGEX.test(formData.phone_number)
+                          }
+                        >
+                          {isSendingOtp
+                            ? "Sending..."
+                            : isOtpVerified
+                            ? "Verified"
+                            : isOtpSent
+                            ? "Resend"
+                            : "Send OTP"}
+                        </Button>
+                      </div>
                       {phoneError && (
                         <p className="text-xs text-red-500">{phoneError}</p>
                       )}
+                      {isOtpSent && !isOtpVerified && (
+                        <p className="text-xs text-muted-foreground">
+                          Phone number locked.{" "}
+                          <button
+                            type="button"
+                            className="text-primary underline"
+                            onClick={() => {
+                              setIsOtpSent(false);
+                              setPhoneError(null);
+                            }}
+                          >
+                            Edit
+                          </button>
+                        </p>
+                      )}
                     </div>
+
+                    {/* OTP Input - NEW */}
+                    {isOtpSent && (
+                      <div className="space-y-2 rounded-md border bg-muted p-3">
+                        <Label htmlFor="otp_code">Verification Code</Label>
+                        <div className="flex items-center gap-2">
+                          <Input
+                            id="otp_code"
+                            type="text"
+                            name="otp_code"
+                            placeholder="123456"
+                            maxLength={6}
+                            value={otpCode}
+                            onChange={(e) => setOtpCode(e.target.value)}
+                            disabled={isVerifyingOtp || isOtpVerified}
+                          />
+                          <Button
+                            type="button"
+                            className="shrink-0"
+                            onClick={handleVerifyOtp}
+                            disabled={
+                              isVerifyingOtp ||
+                              isOtpVerified ||
+                              otpCode.length !== 6
+                            }
+                          >
+                            {isVerifyingOtp
+                              ? "Verifying..."
+                              : isOtpVerified
+                              ? "Verified"
+                              : "Verify"}
+                          </Button>
+                        </div>
+                        {isOtpVerified && (
+                          <p className="text-sm font-medium text-green-600">
+                            ✓ Phone number verified successfully!
+                          </p>
+                        )}
+                      </div>
+                    )}
 
                     {/* Field Type */}
                     <div className="space-y-2">
@@ -336,6 +532,7 @@ export default function AuthPage() {
                         }
                         className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                         required
+                        disabled={isOtpVerified} // Optional: disable after verification
                       >
                         <option value="" disabled>
                           Select your field
@@ -357,6 +554,7 @@ export default function AuthPage() {
                           value={formData.student_id}
                           onChange={handleInputChange}
                           required
+                          disabled={isOtpVerified} // Optional: disable after verification
                         />
                       </div>
                       <div className="space-y-2">
@@ -368,6 +566,7 @@ export default function AuthPage() {
                           value={formData.date_of_birth}
                           onChange={handleInputChange}
                           required
+                          disabled={isOtpVerified} // Optional: disable after verification
                         />
                       </div>
                     </div>
@@ -378,7 +577,7 @@ export default function AuthPage() {
                       onValueChange={(v) =>
                         setFormData((prev) => ({ ...prev, school_id: v }))
                       }
-                      disabled={isSubmitting}
+                      disabled={isSubmitting || isOtpVerified} // Optional: disable after verification
                     />
 
                     {/* Password */}
@@ -412,7 +611,7 @@ export default function AuthPage() {
                       </div>
                     </div>
 
-                    {/* Confirm Password – **sent to BE** */}
+                    {/* Confirm Password */}
                     <div className="space-y-2">
                       <Label htmlFor="password_confirm">Confirm Password</Label>
                       <div className="relative">
@@ -439,19 +638,26 @@ export default function AuthPage() {
                           {showConfirmPassword ? (
                             <EyeOff className="h-4 w-4" />
                           ) : (
-                            <Eye className="h-4 w-4" />
+                            <Eye className="h-4 w-g4" />
                           )}
                         </Button>
                       </div>
                     </div>
 
+                    {/* Create Account Button - MODIFIED */}
                     <Button
                       type="submit"
                       className="w-full"
-                      disabled={isSubmitting}
+                      disabled={isSubmitting || !isOtpVerified} // <-- IMPORTANT CHANGE
                     >
                       {isSubmitting ? "Creating account..." : "Create Account"}
                     </Button>
+                    {!isOtpVerified && (
+                      <p className="text-center text-xs text-muted-foreground">
+                        Please verify your phone number to enable account
+                        creation.
+                      </p>
+                    )}
                   </form>
                 </CardContent>
               </Card>

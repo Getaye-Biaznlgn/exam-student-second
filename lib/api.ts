@@ -272,6 +272,27 @@ export interface AIExplanationResponse {
   explanation: AIExplanation;
   cached: boolean;
 }
+export interface ApiResponse<T> {
+  success: boolean;
+  message: string;
+  data?: T;
+}
+
+// Payload for OTP request
+export interface PhoneOtpRequest {
+  phone_number: string; // e.g. "+251939456708"
+}
+
+// Payload for OTP verification (form-data style)
+export interface PhoneOtpVerify {
+  phone_number: string;
+  code: string;
+}
+// Response from OTP request
+export interface OtpRequestData {
+  otp_expires_in: number; // minutes
+  debug_otp: string; // only in dev
+}
 
 /** -------- Helper: handle responses -------- */
 
@@ -362,12 +383,42 @@ export function fetchSchools(): Promise<ApiResponse<School[]>> {
 export function registerStudent(
   payload: RegisterPayload
 ): Promise<ApiResponse<any>> {
-  return apiFetch<any>("/auth/register", {
+  return apiFetch<any>("/auth/student/signup", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+/* ---------- 1. Request OTP ---------- */
+export async function requestPhoneOtp(
+  payload: PhoneOtpRequest
+): Promise<ApiResponse<OtpRequestData>> {
+  return apiFetch<OtpRequestData>("/auth/otp/phone/request", {
     method: "POST",
     body: JSON.stringify(payload),
   });
 }
 
+/* ---------- 2. Verify OTP ---------- */
+export async function verifyPhoneOtp(
+  payload: PhoneOtpVerify
+): Promise<ApiResponse<null>> {
+  // Backend expects form-data (phone_number=+251...&code=123456)
+  const form = new URLSearchParams();
+  form.append("phone_number", payload.phone_number);
+  form.append("code", payload.code);
+
+  return fetch(`${BASE_URL}/auth/otp/phone/verify`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
+    body: form,
+  }).then(async (res) => {
+    const json = await res.json();
+    if (!res.ok) throw new Error(json.message ?? "Verification failed");
+    return json as ApiResponse<null>;
+  });
+}
 export function startExam(
   payload: StartExamPayload
 ): Promise<ApiResponse<StartExamResponse>> {
