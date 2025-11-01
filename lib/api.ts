@@ -1,4 +1,4 @@
-const BASE_URL = "http://65.1.135.121:8000/api";
+const BASE_URL = "https://examapi.pro.et/api";
 import { School } from "./types";
 
 export interface RegisterPayload {
