@@ -123,22 +123,33 @@ export function ExamQuestionCard({
                   );
 
                   return (
-                    <div key={opt.id} className={optionClasses}>
-                      {/* Only radio is clickable */}
+                    <div
+                      key={opt.id}
+                      className={cn(
+                        optionClasses,
+                        "flex items-center gap-3 py-2 px-3 rounded-md cursor-pointer"
+                      )}
+                    >
                       <RadioGroupItem
                         id={opt.id}
                         value={opt.id}
                         className="cursor-pointer"
                       />
-                      {/* Label NOT clickable */}
-                      <div className="text-gray-800 select-none pointer-events-none">
-                        {opt.option_key ? `${opt.option_key}. ` : ""}
+                      <label
+                        htmlFor={opt.id}
+                        className="flex items-center text-gray-800 select-none cursor-pointer"
+                      >
+                        {opt.option_key && (
+                          <span className="font-medium mr-2">
+                            {opt.option_key}.
+                          </span>
+                        )}
                         <span
                           dangerouslySetInnerHTML={{
                             __html: opt.option_text || "",
                           }}
                         />
-                      </div>
+                      </label>
                     </div>
                   );
                 })}
