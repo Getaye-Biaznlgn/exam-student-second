@@ -11,6 +11,7 @@ import {
   getUserProfile,
 } from "@/lib/api";
 import { useLayout } from "@/lib/layout-context";
+import { IncompleteQuestionsModal } from "@/components/exam/IncompleteQuestionsModal";
 
 import { ExamQuestionCard } from "@/components/exam-question-card";
 import { ExamStartCard } from "@/components/exam/ExamStartCard";
@@ -65,6 +66,9 @@ export default function ExamPage() {
 
   const timeRef = useRef<NodeJS.Timeout | null>(null);
   const startTimeRef = useRef<number>(0);
+
+  const [showIncompleteModal, setShowIncompleteModal] = useState(false);
+  const [incompleteCount, setIncompleteCount] = useState(0);
 
   // ── NEW: Central exam timer (counts down once) ───────────────────────
   const durationSeconds = (examData?.exam?.duration_minutes ?? 0) * 60;
@@ -337,9 +341,18 @@ export default function ExamPage() {
   };
 
   const handleFinalSubmit = () => {
-    const cnt = examData!.questions.length - Object.keys(answers).length;
-    setUnansweredCount(cnt);
-    cnt > 0 ? setShowConfirmModal(true) : executeSubmit();
+    const unanswered = examData!.questions.filter(
+      (q) => !answers[q.question.id] && !flagged.has(q.question.id)
+    );
+
+    if (unanswered.length > 0) {
+      setIncompleteCount(unanswered.length);
+      setShowIncompleteModal(true);
+      return; // stop here — don’t submit
+    }
+
+    // All questions are either answered or flagged → allow submit
+    executeSubmit();
   };
 
   const handleFetchAI = async () => {
@@ -413,7 +426,11 @@ export default function ExamPage() {
         onConfirm={executeSubmit}
         isSubmitting={isSubmitting}
       />
-
+      <IncompleteQuestionsModal
+        open={showIncompleteModal}
+        count={incompleteCount}
+        onClose={() => setShowIncompleteModal(false)}
+      />
       {/* Pass remainingSeconds to header */}
       <ExamHeader
         profile={profileData}
@@ -492,22 +509,25 @@ export default function ExamPage() {
             )}
           </div>
 
-          <ExamNavigationBar
-            canPrev={currentIdx > 0}
-            canNext={currentIdx < examData!.questions.length - 1}
-            onPrev={handlePrev}
-            onNext={handleNext}
-            onClear={handleClear}
-            onFlag={toggleFlag}
-            isFlagged={flagged.has(currentQuestion!.question.id)}
-            clearDisabled={!answers[currentQuestion!.question.id]}
-            showSummaryBtn={!showSummary}
-            onSummary={() => {
-              updateCurrentTime();
-              setShowSummary(true);
-            }}
-            isSubmitting={isSubmitting}
-          />
+          {/* Hide navigation bar (including Submit Exam button) when summary is shown */}
+          {!showSummary && (
+            <ExamNavigationBar
+              canPrev={currentIdx > 0}
+              canNext={currentIdx < examData!.questions.length - 1}
+              onPrev={handlePrev}
+              onNext={handleNext}
+              onClear={handleClear}
+              onFlag={toggleFlag}
+              isFlagged={flagged.has(currentQuestion!.question.id)}
+              clearDisabled={!answers[currentQuestion!.question.id]}
+              showSummaryBtn={!showSummary}
+              onSummary={() => {
+                updateCurrentTime();
+                setShowSummary(true);
+              }}
+              isSubmitting={isSubmitting}
+            />
+          )}
         </main>
 
         <QuestionSidebar
