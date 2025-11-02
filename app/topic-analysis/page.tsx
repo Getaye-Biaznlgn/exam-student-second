@@ -12,7 +12,8 @@ import { Badge } from "@/components/ui/badge";
 import { fetchTopicAnalysis } from "@/lib/api";
 import type { TopicAnalysisResponse } from "@/types";
 import { Loader2 } from "lucide-react";
-import { cn } from "@/lib/utils"; // make sure you have this utility (ShadCN includes it)
+import { cn } from "@/lib/utils";
+import { DashboardHeader } from "@/components/dashboard-header";
 
 export default function TopicAnalysisPage() {
   const [data, setData] = useState<TopicAnalysisResponse | null>(null);
@@ -65,8 +66,12 @@ export default function TopicAnalysisPage() {
   );
 
   return (
-    <div className="p-6 space-y-6 no-scrollbar overflow-y-auto h-screen">
-      <h1 className="text-2xl font-bold mb-4">Topic Analysis</h1>
+    <div className="flex flex-col h-full">
+      <DashboardHeader
+        title="Topic Analysis"
+        description="Analyze your performance by topics and subjects"
+      />
+      <div className="flex-1 p-4 sm:p-6 space-y-4 sm:space-y-6 overflow-y-auto">
 
       {/* --- Overall Insights --- */}
       <Card className="border border-muted shadow-sm">
@@ -74,7 +79,7 @@ export default function TopicAnalysisPage() {
           <CardTitle>Overall Insights</CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
             <Card className="bg-muted p-4 text-center">
               <p className="text-sm text-muted-foreground">Total Subjects</p>
               <h3 className="text-lg font-semibold">
@@ -245,6 +250,7 @@ export default function TopicAnalysisPage() {
           No subject selected.
         </p>
       )}
+      </div>
     </div>
   );
 }

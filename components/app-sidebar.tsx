@@ -14,9 +14,19 @@ const navigation = [
   { name: "Progress", href: "/progress", icon: TrendingUp },
 ];
 
-export function AppSidebar() {
+interface AppSidebarProps {
+  onClose?: () => void;
+}
+
+export function AppSidebar({ onClose }: AppSidebarProps = {}) {
   const pathname = usePathname();
   const { user, logout } = useAuth();
+
+  const handleLinkClick = () => {
+    if (onClose) {
+      onClose();
+    }
+  };
 
   return (
     <div className="flex h-full w-64 flex-col border-r border-border bg-card">
@@ -44,6 +54,7 @@ export function AppSidebar() {
             <Link
               key={item.name}
               href={item.href}
+              onClick={handleLinkClick}
               className={cn(
                 "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
                 isActive

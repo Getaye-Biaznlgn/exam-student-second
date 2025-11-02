@@ -80,19 +80,19 @@ export default function DashboardPage() {
         }! Here’s your latest progress.`}
       />
 
-      <div className="flex-1 p-6 space-y-6">
+      <div className="flex-1 p-4 sm:p-6 space-y-4 sm:space-y-6">
         {/* Stats Grid */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
           {/* Questions Attempted */}
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
+              <CardTitle className="text-xs sm:text-sm font-medium">
                 Questions Attempted
               </CardTitle>
-              <BookOpen className="h-4 w-4 text-muted-foreground" />
+              <BookOpen className="h-4 w-4 text-muted-foreground shrink-0" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">
+              <div className="text-xl sm:text-2xl font-bold">
                 {overview.total_questions_attempted}
               </div>
               <p className="text-xs text-muted-foreground">
@@ -108,13 +108,13 @@ export default function DashboardPage() {
           {/* Average Score */}
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
+              <CardTitle className="text-xs sm:text-sm font-medium">
                 Average Score
               </CardTitle>
-              <TrendingUp className="h-4 w-4 text-muted-foreground" />
+              <TrendingUp className="h-4 w-4 text-muted-foreground shrink-0" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">
+              <div className="text-xl sm:text-2xl font-bold">
                 {overview.overall_average_score.toFixed(2)}%
               </div>
               <p className="text-xs text-muted-foreground">
@@ -130,13 +130,13 @@ export default function DashboardPage() {
           {/* Completed Exams */}
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
+              <CardTitle className="text-xs sm:text-sm font-medium">
                 Completed Exams
               </CardTitle>
-              <Award className="h-4 w-4 text-muted-foreground" />
+              <Award className="h-4 w-4 text-muted-foreground shrink-0" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">
+              <div className="text-xl sm:text-2xl font-bold">
                 {overview.completed_exams} / {overview.total_exams_taken}
               </div>
               <p className="text-xs text-muted-foreground">Keep going!</p>
@@ -146,13 +146,13 @@ export default function DashboardPage() {
           {/* Time Management */}
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
+              <CardTitle className="text-xs sm:text-sm font-medium">
                 Time Efficiency
               </CardTitle>
-              <Clock className="h-4 w-4 text-muted-foreground" />
+              <Clock className="h-4 w-4 text-muted-foreground shrink-0" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">
+              <div className="text-xl sm:text-2xl font-bold">
                 {dashboard.time_management.efficiency_rating}
               </div>
               <p className="text-xs text-muted-foreground">
@@ -163,16 +163,16 @@ export default function DashboardPage() {
         </div>
 
         {/* Quick Actions */}
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
           <Card className="bg-primary/5 border-primary/20">
             <CardHeader>
               <div className="flex items-center gap-3">
-                <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center">
-                  <Brain className="h-6 w-6 text-primary" />
+                <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                  <Brain className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
                 </div>
-                <div>
-                  <CardTitle>Practice Mode</CardTitle>
-                  <CardDescription>
+                <div className="min-w-0 flex-1">
+                  <CardTitle className="text-base sm:text-lg">Practice Mode</CardTitle>
+                  <CardDescription className="text-xs sm:text-sm">
                     Self-paced learning with AI tutor support
                   </CardDescription>
                 </div>
@@ -180,7 +180,7 @@ export default function DashboardPage() {
             </CardHeader>
             <CardContent>
               <Link href="/select-subject">
-                <Button className="w-full">
+                <Button className="w-full text-sm sm:text-base">
                   Start Practice
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
@@ -191,12 +191,12 @@ export default function DashboardPage() {
           <Card className="bg-accent/5 border-accent/20">
             <CardHeader>
               <div className="flex items-center gap-3">
-                <div className="h-12 w-12 rounded-lg bg-accent/10 flex items-center justify-center">
-                  <Clock className="h-6 w-6 text-accent-foreground" />
+                <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-lg bg-accent/10 flex items-center justify-center shrink-0">
+                  <Clock className="h-5 w-5 sm:h-6 sm:w-6 text-accent-foreground" />
                 </div>
-                <div>
-                  <CardTitle>Exam Mode</CardTitle>
-                  <CardDescription>
+                <div className="min-w-0 flex-1">
+                  <CardTitle className="text-base sm:text-lg">Exam Mode</CardTitle>
+                  <CardDescription className="text-xs sm:text-sm">
                     Timed simulations to test your readiness
                   </CardDescription>
                 </div>
@@ -204,7 +204,7 @@ export default function DashboardPage() {
             </CardHeader>
             <CardContent>
               <Link href="/select-subject">
-                <Button variant="secondary" className="w-full">
+                <Button variant="secondary" className="w-full text-sm sm:text-base">
                   Take Exam
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>

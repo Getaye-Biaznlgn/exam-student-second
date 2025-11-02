@@ -159,7 +159,7 @@ export default function ExamHistoryPage() {
         description="View your previous exam and practice sessions"
       />
 
-      <div className="flex-1 p-6 space-y-6">
+      <div className="flex-1 p-4 sm:p-6 space-y-4 sm:space-y-6">
         {/* Toggle for Mode Selection - Hide if reviewing an item */}
         {!selectedHistoryItem && (
           <div className="flex justify-between items-center">
