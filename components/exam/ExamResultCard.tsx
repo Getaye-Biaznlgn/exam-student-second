@@ -1,4 +1,6 @@
-// components/exam/ExamResultCard.tsx
+"use client";
+
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 
@@ -12,12 +14,12 @@ interface Result {
 interface Props {
   result: Result | null;
   exam: { passing_marks: number };
-  onReview: () => void;
   onHome: () => void;
 }
 
-export function ExamResultCard({ result, exam, onReview, onHome }: Props) {
+export function ExamResultCard({ result, exam, onHome }: Props) {
   const hasDetails = result && typeof result.score === "number";
+  const router = useRouter();
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
@@ -58,7 +60,7 @@ export function ExamResultCard({ result, exam, onReview, onHome }: Props) {
         )}
 
         <div className="flex gap-4 flex-col sm:flex-row justify-center mt-6">
-          <Button variant="outline" onClick={onReview}>
+          <Button variant="outline" onClick={() => router.push("/dashboard")}>
             Review Exam
           </Button>
           <Button onClick={onHome}>Back to Home</Button>
