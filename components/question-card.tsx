@@ -113,17 +113,17 @@ export function QuestionCard({
               <Button onClick={handleSubmit} disabled={!selectedOption} className="flex-1">
                 Submit Answer
               </Button>
+              {showExplanation && question.explanation && (
+                <Button variant="outline" onClick={() => setShowHint(!showHint)}>
+                  <Lightbulb className="h-4 w-4 mr-2" />
+                  Hint
+                </Button>
+              )}
               {showExplanation && (
-                <>
-                  <Button variant="outline" onClick={() => setShowHint(!showHint)}>
-                    <Lightbulb className="h-4 w-4 mr-2" />
-                    Hint
-                  </Button>
-                  <Button variant="outline" onClick={() => setShowAITutor(true)}>
-                    <Brain className="h-4 w-4 mr-2" />
-                    AI Tutor
-                  </Button>
-                </>
+                <Button variant="outline" onClick={() => setShowAITutor(true)}>
+                  <Brain className="h-4 w-4 mr-2" />
+                  AI Tutor
+                </Button>
               )}
             </div>
           )}
