@@ -12,7 +12,7 @@ import {
 } from "@/lib/api";
 import { useLayout } from "@/lib/layout-context";
 import { IncompleteQuestionsModal } from "@/components/exam/IncompleteQuestionsModal";
-
+import { PracticeQuestionCard } from "@/components/PracticeQuestionCard";
 import { ExamQuestionCard } from "@/components/exam-question-card";
 import { ExamStartCard } from "@/components/exam/ExamStartCard";
 import { ExamResultCard } from "@/components/exam/ExamResultCard";
@@ -478,23 +478,36 @@ export default function ExamPage() {
                 />
 
                 <div className="flex-1 h-20px">
-                  <ExamQuestionCard
-                    key={currentQuestion!.question.id}
-                    question={currentQuestion!.question}
-                    questionNumber={currentIdx + 1}
-                    totalQuestions={examData!.questions.length}
-                    selectedOption={
-                      answers[currentQuestion!.question.id] ?? null
-                    }
-                    onSelectOption={handleAnswer}
-                    isPracticeMode={isPracticeMode}
-                    correctOptionKey={
-                      currentQuestion!.question.correct_option ?? null
-                    }
-                    remainingTime={remainingSeconds} // ← PASS TO CARD
-                  />
+                  {isPracticeMode ? (
+                    <PracticeQuestionCard
+                      key={currentQuestion!.question.id}
+                      question={currentQuestion!.question}
+                      questionNumber={currentIdx + 1}
+                      totalQuestions={examData!.questions.length}
+                      selectedOption={
+                        answers[currentQuestion!.question.id] ?? null
+                      }
+                      onSelectOption={handleAnswer}
+                      correctOptionKey={
+                        currentQuestion!.question.correct_option ?? null
+                      }
+                      remainingTime={remainingSeconds}
+                    />
+                  ) : (
+                    <ExamQuestionCard
+                      key={currentQuestion!.question.id}
+                      question={currentQuestion!.question}
+                      questionNumber={currentIdx + 1}
+                      totalQuestions={examData!.questions.length}
+                      selectedOption={
+                        answers[currentQuestion!.question.id] ?? null
+                      }
+                      onSelectOption={handleAnswer}
+                      remainingTime={remainingSeconds}
+                    />
+                  )}
 
-                  {/* === BOTH EXPLANATIONS (Practice Mode Only) === */}
+                  {/* Practice-only explanation section */}
                   {isPracticeMode && currentQuestion && (
                     <QuestionExplanations
                       staticExplanation={currentQuestion.question.explanation}
