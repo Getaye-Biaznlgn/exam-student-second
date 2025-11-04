@@ -476,7 +476,6 @@ export default function ExamPage() {
                   questionNumber={currentIdx + 1}
                   onFlag={toggleFlag}
                 />
-
                 <div className="flex-1 h-20px">
                   {isPracticeMode ? (
                     <PracticeQuestionCard
