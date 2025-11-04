@@ -506,6 +506,20 @@ export function submitAnswer(answer: SubmitAnswer): Promise<ApiResponse<any>> {
   });
 }
 
+export function clearAnswer(question_id: string): Promise<ApiResponse<any>> {
+  const payload = {
+    question_id,
+    selected_option: null,
+    is_flagged: false,
+    time_spent_seconds: 0, // ✅ added time spent
+  };
+
+  return apiFetch<any>("/student-exams/submit-answer", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
 export function loginStudent(payload: LoginPayload): Promise<ApiResponse<any>> {
   return apiFetch<any>("/auth/login/student", {
     method: "POST",

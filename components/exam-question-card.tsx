@@ -109,50 +109,58 @@ export function ExamQuestionCard({
                 value={localSelection || ""}
                 onValueChange={(value) => handleOptionSelect(value)}
               >
-                {question.options.map((opt) => {
-                  const isSelected = localSelection === opt.id;
-                  const isCorrect = opt.is_correct;
-                  const showFeedback = mode === "practice" && answered;
+                {question.options
+                  .slice()
+                  .sort((a, b) =>
+                    (a.option_key ?? "").localeCompare(b.option_key ?? "")
+                  )
+                  .map((opt) => {
+                    const isSelected = localSelection === opt.id;
+                    const isCorrect = opt.is_correct;
+                    const showFeedback = mode === "practice" && answered;
 
-                  const optionClasses = cn(
-                    "flex items-center space-x-3 mb-3 rounded-md transition-colors select-none",
-                    showFeedback && isCorrect && "bg-green-100/50",
-                    showFeedback && isSelected && !isCorrect && "bg-red-100/50",
-                    !showFeedback &&
-                      (isSelected ? "bg-primary/5" : "hover:bg-gray-100")
-                  );
+                    const optionClasses = cn(
+                      "flex items-center space-x-3 mb-3 rounded-md transition-colors select-none",
+                      showFeedback && isCorrect && "bg-green-100/50",
+                      showFeedback &&
+                        isSelected &&
+                        !isCorrect &&
+                        "bg-red-100/50",
+                      !showFeedback &&
+                        (isSelected ? "bg-primary/5" : "hover:bg-gray-100")
+                    );
 
-                  return (
-                    <div
-                      key={opt.id}
-                      className={cn(
-                        optionClasses,
-                        "flex items-center gap-3 py-2 px-3 rounded-md cursor-pointer"
-                      )}
-                    >
-                      <RadioGroupItem
-                        id={opt.id}
-                        value={opt.id}
-                        className="cursor-pointer"
-                      />
-                      <label
-                        htmlFor={opt.id}
-                        className="flex items-center text-gray-800 select-none cursor-pointer"
-                      >
-                        {opt.option_key && (
-                          <span className="font-medium mr-2">
-                            {opt.option_key}.
-                          </span>
+                    return (
+                      <div
+                        key={opt.id}
+                        className={cn(
+                          optionClasses,
+                          "flex items-center gap-3 py-2 px-3 rounded-md cursor-pointer"
                         )}
-                        <span
-                          dangerouslySetInnerHTML={{
-                            __html: opt.option_text || "",
-                          }}
+                      >
+                        <RadioGroupItem
+                          id={opt.id}
+                          value={opt.id}
+                          className="cursor-pointer"
                         />
-                      </label>
-                    </div>
-                  );
-                })}
+                        <label
+                          htmlFor={opt.id}
+                          className="flex items-center text-gray-800 select-none cursor-pointer"
+                        >
+                          {opt.option_key && (
+                            <span className="font-medium mr-2">
+                              {opt.option_key}.
+                            </span>
+                          )}
+                          <span
+                            dangerouslySetInnerHTML={{
+                              __html: opt.option_text || "",
+                            }}
+                          />
+                        </label>
+                      </div>
+                    );
+                  })}
               </RadioGroup>
             </div>
 

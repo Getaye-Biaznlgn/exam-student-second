@@ -80,51 +80,57 @@ export function PracticeQuestionCard({
                 value={localSelection || ""}
                 onValueChange={(value) => handleOptionSelect(value)}
               >
-                {question.options.map((opt) => {
-                  const isSelected = localSelection === opt.id;
-                  const isCorrect = opt.option_key === question.correct_option;
-                  const showFeedback = answered;
+                {question.options
+                  .slice() // make a copy (to avoid mutating original)
+                  .sort((a, b) =>
+                    (a.option_key ?? "").localeCompare(b.option_key ?? "")
+                  )
+                  .map((opt) => {
+                    const isSelected = localSelection === opt.id;
+                    const isCorrect =
+                      opt.option_key === question.correct_option;
+                    const showFeedback = answered;
 
-                  const optionClasses = cn(
-                    "flex items-center space-x-3 mb-3 rounded-md transition-colors select-none py-2 px-3 cursor-pointer",
-                    showFeedback &&
-                      isCorrect &&
-                      "bg-green-100 border border-green-400",
-                    showFeedback &&
-                      isSelected &&
-                      !isCorrect &&
-                      "bg-red-100 border border-red-400",
-                    !showFeedback &&
-                      (isSelected
-                        ? "bg-primary/5 border border-primary/20"
-                        : "hover:bg-gray-100 border border-transparent")
-                  );
+                    const optionClasses = cn(
+                      "flex items-center space-x-3 mb-3 rounded-md transition-colors select-none py-2 px-3 cursor-pointer",
+                      showFeedback &&
+                        isCorrect &&
+                        "bg-green-100 border border-green-400",
+                      showFeedback &&
+                        isSelected &&
+                        !isCorrect &&
+                        "bg-red-100 border border-red-400",
+                      !showFeedback &&
+                        (isSelected
+                          ? "bg-primary/5 border border-primary/20"
+                          : "hover:bg-gray-100 border border-transparent")
+                    );
 
-                  return (
-                    <div key={opt.id} className={optionClasses}>
-                      <RadioGroupItem
-                        id={opt.id}
-                        value={opt.id}
-                        className="cursor-pointer"
-                      />
-                      <label
-                        htmlFor={opt.id}
-                        className="flex items-center text-gray-800 select-none cursor-pointer"
-                      >
-                        {opt.option_key && (
-                          <span className="font-medium mr-2">
-                            {opt.option_key}.
-                          </span>
-                        )}
-                        <span
-                          dangerouslySetInnerHTML={{
-                            __html: opt.option_text || "",
-                          }}
+                    return (
+                      <div key={opt.id} className={optionClasses}>
+                        <RadioGroupItem
+                          id={opt.id}
+                          value={opt.id}
+                          className="cursor-pointer"
                         />
-                      </label>
-                    </div>
-                  );
-                })}
+                        <label
+                          htmlFor={opt.id}
+                          className="flex items-center text-gray-800 select-none cursor-pointer"
+                        >
+                          {opt.option_key && (
+                            <span className="font-medium mr-2">
+                              {opt.option_key}.
+                            </span>
+                          )}
+                          <span
+                            dangerouslySetInnerHTML={{
+                              __html: opt.option_text || "",
+                            }}
+                          />
+                        </label>
+                      </div>
+                    );
+                  })}
               </RadioGroup>
             </div>
           </div>

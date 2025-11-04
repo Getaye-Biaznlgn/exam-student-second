@@ -9,6 +9,7 @@ import {
   submitAnswer,
   fetchAIExplanation,
   getUserProfile,
+  clearAnswer,
 } from "@/lib/api";
 import { useLayout } from "@/lib/layout-context";
 import { IncompleteQuestionsModal } from "@/components/exam/IncompleteQuestionsModal";
@@ -247,14 +248,23 @@ export default function ExamPage() {
     }
   };
 
-  const handleClear = () => {
+  const handleClear = async () => {
     if (!currentQuestion) return;
+
+    // remove local answer
     setAnswers((prev) => {
-      const n = { ...prev };
-      delete n[currentQuestion.question.id];
-      return n;
+      const updated = { ...prev };
+      delete updated[currentQuestion.question.id];
+      return updated;
     });
+
     updateCurrentTime();
+
+    try {
+      await clearAnswer(currentQuestion.question.id);
+    } catch (e) {
+      console.error("Error clearing answer:", e);
+    }
   };
 
   const handlePrev = () => {
@@ -501,6 +511,7 @@ export default function ExamPage() {
                       selectedOption={
                         answers[currentQuestion!.question.id] ?? null
                       }
+                      onClearChoice={handleClear}
                       onSelectOption={handleAnswer}
                       remainingTime={remainingSeconds}
                     />
