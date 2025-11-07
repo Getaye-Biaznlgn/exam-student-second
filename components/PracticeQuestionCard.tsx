@@ -36,8 +36,7 @@ export function PracticeQuestionCard({
   );
 
   const handleOptionSelect = (optionId: string) => {
-    if (answered) return; // Prevent any change after answer
-
+    if (answered) return;
     setLocalSelection(optionId);
     setAnswered(true);
     onSelectOption(optionId);
@@ -61,9 +60,8 @@ export function PracticeQuestionCard({
         </div>
       </div>
 
-      {/* Main Question Area */}
-      <div className="w-full max-w-2xl bg-blue-50 border border-blue-200 rounded-lg p-5 pb-0 shadow-sm">
-        {/* Question Header */}
+      {/* Question */}
+      <div className="w-full max-w-2xl bg-blue-50 border border-blue-200 rounded-lg p-5 pb-3 shadow-sm">
         <div className="flex items-start justify-between">
           <h2 className="text-base sm:text-lg font-semibold text-gray-800 leading-relaxed">
             <span
@@ -95,7 +93,7 @@ export function PracticeQuestionCard({
                 const showFeedback = answered;
 
                 const optionClasses = cn(
-                  "flex items-center space-x-3 rounded-md transition-colors select-none py-2 px-3 cursor-pointer border text-sm sm:text-base",
+                  "flex items-start space-x-3 rounded-md transition-colors select-none py-2 px-3 cursor-pointer border text-sm sm:text-base",
                   showFeedback && isCorrect && "bg-green-100 border-green-400",
                   showFeedback &&
                     isSelected &&
@@ -106,7 +104,7 @@ export function PracticeQuestionCard({
                       ? "bg-primary/5 border-primary/20"
                       : "hover:bg-gray-100 border-transparent"),
                   answered && "cursor-not-allowed opacity-90",
-                  idx === arr.length - 1 ? "mb-0" : "mb-2" // remove bottom space after last option
+                  idx === arr.length - 1 ? "mb-0" : "mb-2"
                 );
 
                 return (
@@ -115,21 +113,22 @@ export function PracticeQuestionCard({
                       id={opt.id}
                       value={opt.id}
                       disabled={answered}
-                      className="cursor-pointer data-[state=checked]:cursor-not-allowed"
+                      className="mt-1 cursor-pointer data-[state=checked]:cursor-not-allowed"
                     />
                     <label
                       htmlFor={opt.id}
                       className={cn(
-                        "flex items-center text-gray-800 select-none cursor-pointer flex-1",
+                        "flex items-start text-gray-800 select-none cursor-pointer flex-1",
                         answered && "cursor-not-allowed"
                       )}
                     >
                       {opt.option_key && (
-                        <span className="font-medium mr-2">
+                        <span className="font-medium mr-2 shrink-0">
                           {opt.option_key}.
                         </span>
                       )}
                       <span
+                        className="flex-1"
                         dangerouslySetInnerHTML={{
                           __html: opt.option_text || "",
                         }}

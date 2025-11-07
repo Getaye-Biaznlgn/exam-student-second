@@ -44,7 +44,20 @@ export default function ExamPage() {
   const [currentIdx, setCurrentIdx] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [flagged, setFlagged] = useState<Set<string>>(new Set());
+
+  // ── REFS to avoid stale closures ─────────────────────────────────────
+  const answersRef = useRef<Record<string, string>>({});
+  const flaggedRef = useRef<Set<string>>(new Set());
   const timeSpentRef = useRef<Record<string, number>>({});
+
+  // Sync state → refs
+  useEffect(() => {
+    answersRef.current = answers;
+  }, [answers]);
+
+  useEffect(() => {
+    flaggedRef.current = new Set(flagged);
+  }, [flagged]);
 
   const [examStarted, setExamStarted] = useState(false);
   const [examCompleted, setExamCompleted] = useState(false);
@@ -71,10 +84,10 @@ export default function ExamPage() {
   const [showIncompleteModal, setShowIncompleteModal] = useState(false);
   const [incompleteCount, setIncompleteCount] = useState(0);
 
-  // ── NEW: Time-up modal state ───────────────────────────────────────
+  // ── Time-up modal state ──────────────────────────────────────────────
   const [showTimeUpModal, setShowTimeUpModal] = useState(false);
 
-  // ── Central exam timer (counts down once) ───────────────────────────
+  // ── Central exam timer ───────────────────────────────────────────────
   const durationSeconds = (examData?.exam?.duration_minutes ?? 0) * 60;
   const [remainingSeconds, setRemainingSeconds] = useState(durationSeconds);
 
@@ -91,10 +104,25 @@ export default function ExamPage() {
 
       if (left <= 0) {
         clearInterval(timer);
-        // Auto-submit when time is up
         (async () => {
-          await executeSubmit();
-          setShowTimeUpModal(true);
+          // Final time capture for current question
+          if (currentQuestion && examStarted) {
+            const elapsed = Math.floor(
+              (Date.now() - startTimeRef.current) / 1000
+            );
+            const qId = currentQuestion.question.id;
+            timeSpentRef.current[qId] =
+              (timeSpentRef.current[qId] ?? 0) + elapsed;
+          }
+
+          if (!isPracticeMode) {
+            // Auto-submit only in exam mode
+            await executeSubmit();
+            setShowTimeUpModal(true);
+          } else {
+            // In practice mode, just freeze timer at 0
+            setRemainingSeconds(0);
+          }
         })();
       }
     }, 1000);
@@ -129,6 +157,8 @@ export default function ExamPage() {
           setExamData(res.data);
           setAnswers({});
           setFlagged(new Set());
+          answersRef.current = {};
+          flaggedRef.current = new Set();
           timeSpentRef.current = {};
         } else setError(res.message ?? "Failed to start exam.");
       } catch {
@@ -154,7 +184,7 @@ export default function ExamPage() {
     })();
   }, []);
 
-  // ── Per-question time tracking (unchanged) ───────────────────────────
+  // ── Per-question time tracking ───────────────────────────────────────
   const currentQuestion = examData?.questions?.[currentIdx];
 
   useEffect(() => {
@@ -244,7 +274,7 @@ export default function ExamPage() {
         selected_option: opt.option_key,
         time_spent_seconds:
           timeSpentRef.current[currentQuestion.question.id] ?? 0,
-        is_flagged: flagged.has(currentQuestion.question.id),
+        is_flagged: flaggedRef.current.has(currentQuestion.question.id),
       });
     } catch (e) {
       console.error(e);
@@ -319,6 +349,7 @@ export default function ExamPage() {
     }
   };
 
+  // ── FIXED: Use refs in executeSubmit ─────────────────────────────────
   const executeSubmit = async () => {
     if (isSubmitting) return;
     setIsSubmitting(true);
@@ -327,15 +358,16 @@ export default function ExamPage() {
 
     try {
       const payload = examData!.questions.map((q) => {
-        const selId = answers[q.question.id];
+        const selId = answersRef.current[q.question.id]; // ← Use ref
         const selKey = selId
           ? q.question.options.find((o) => o.id === selId)?.option_key ?? null
           : null;
+
         return {
           ...q,
           selected_option: selKey,
           time_spent_seconds: timeSpentRef.current[q.question.id] ?? 0,
-          is_flagged: flagged.has(q.question.id),
+          is_flagged: flaggedRef.current.has(q.question.id), // ← Use ref
         };
       });
 
@@ -356,7 +388,9 @@ export default function ExamPage() {
 
   const handleFinalSubmit = () => {
     const unanswered = examData!.questions.filter(
-      (q) => !answers[q.question.id] && !flagged.has(q.question.id)
+      (q) =>
+        !answersRef.current[q.question.id] &&
+        !flaggedRef.current.has(q.question.id)
     );
 
     if (unanswered.length > 0) {
@@ -481,6 +515,7 @@ export default function ExamPage() {
         showSidebarMobile={showSidebarMobile}
         toggleSidebar={() => setShowSidebarMobile((v) => !v)}
         onTimeUp={executeSubmit}
+        isPracticeMode={isPracticeMode}
       />
 
       <div className="flex flex-1 flex-col lg:flex-row p-4 gap-4">

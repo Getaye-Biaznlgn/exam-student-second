@@ -1,7 +1,6 @@
-// components/exam/QuestionExplanations.tsx
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
@@ -47,9 +46,22 @@ export function QuestionExplanations({
   const [showStatic, setShowStatic] = useState(false);
   const [showAI, setShowAI] = useState(false);
 
+  // ✅ Reset buttons when question changes
+  useEffect(() => {
+    setShowStatic(false);
+    setShowAI(false);
+  }, [staticExplanation, aiExplanation]);
+
+  // ✅ Automatically show AI explanation once it's fetched
+  useEffect(() => {
+    if (aiExplanation && !isFetchingAI) {
+      setShowAI(true);
+    }
+  }, [aiExplanation, isFetchingAI]);
+
   return (
-    <div className=" space-y-6">
-      {/* === Buttons Row (Horizontal) === */}
+    <div className="mt-6 space-y-6">
+      {/* === Buttons Row === */}
       <div className="flex flex-col sm:flex-row gap-3">
         {/* Static Explanation Button */}
         <Button
@@ -66,8 +78,13 @@ export function QuestionExplanations({
           variant="outline"
           size="sm"
           onClick={() => {
-            setShowAI((v) => !v);
-            if (!aiExplanation && !isFetchingAI) onFetchAI();
+            // If we already have AI explanation, just toggle
+            if (aiExplanation) {
+              setShowAI((v) => !v);
+            } else {
+              // Otherwise, fetch it and show loader
+              onFetchAI();
+            }
           }}
           disabled={isFetchingAI}
           className="w-full sm:w-auto"
@@ -77,7 +94,7 @@ export function QuestionExplanations({
         </Button>
       </div>
 
-      {/* === Static Explanation Content === */}
+      {/* === Static Explanation === */}
       {showStatic && staticExplanation && (
         <Card className="p-4 bg-muted/10 border border-primary/20">
           <h4 className="font-semibold text-primary mb-3">Explanation</h4>
@@ -85,7 +102,7 @@ export function QuestionExplanations({
         </Card>
       )}
 
-      {/* === AI Explanation Content === */}
+      {/* === AI Explanation === */}
       {showAI && (
         <div className="space-y-3">
           {isFetchingAI && (
@@ -107,15 +124,13 @@ export function QuestionExplanations({
                 AI Explanation
               </h4>
 
-              {/* Main Content */}
               {aiExplanation.content && (
                 <div className="mb-4">
                   <SafeHtml html={aiExplanation.content} />
                 </div>
               )}
 
-              {/* Steps */}
-              {aiExplanation.steps && aiExplanation.steps.length > 0 && (
+              {aiExplanation.steps?.length ? (
                 <div className="mt-4">
                   <h5 className="font-medium text-sm text-primary mb-2">
                     Step-by-step:
@@ -128,9 +143,8 @@ export function QuestionExplanations({
                     ))}
                   </ol>
                 </div>
-              )}
+              ) : null}
 
-              {/* Why Correct */}
               {aiExplanation.why_correct && (
                 <div className="mt-4 p-3 bg-green-50 rounded border border-green-200">
                   <p className="font-medium text-green-800 text-sm">
@@ -142,24 +156,21 @@ export function QuestionExplanations({
                 </div>
               )}
 
-              {/* Key Concepts */}
-              {aiExplanation.key_concepts &&
-                aiExplanation.key_concepts.length > 0 && (
-                  <div className="mt-4">
-                    <h5 className="font-medium text-sm text-primary mb-2">
-                      Key Concepts:
-                    </h5>
-                    <ul className="list-disc list-inside text-sm text-muted-foreground space-y-1">
-                      {aiExplanation.key_concepts.map((kc, i) => (
-                        <li key={i}>
-                          <SafeHtml html={kc} />
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
+              {aiExplanation.key_concepts?.length ? (
+                <div className="mt-4">
+                  <h5 className="font-medium text-sm text-primary mb-2">
+                    Key Concepts:
+                  </h5>
+                  <ul className="list-disc list-inside text-sm text-muted-foreground space-y-1">
+                    {aiExplanation.key_concepts.map((kc, i) => (
+                      <li key={i}>
+                        <SafeHtml html={kc} />
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ) : null}
 
-              {/* Tips */}
               {aiExplanation.tips && (
                 <div className="mt-4 p-3 bg-blue-50 rounded border border-blue-200">
                   <p className="font-medium text-blue-800 text-sm">Exam Tip:</p>

@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { ExamTimer } from "@/components/exam-timer";
 import { List, X } from "lucide-react";
 import {
   Dialog,
@@ -22,6 +21,7 @@ interface Props {
   showSidebarMobile: boolean;
   toggleSidebar: () => void;
   onTimeUp: () => void;
+  isPracticeMode?: boolean; // 👈 Added
 }
 
 export function ExamHeader({
@@ -32,6 +32,7 @@ export function ExamHeader({
   showSidebarMobile,
   toggleSidebar,
   onTimeUp,
+  isPracticeMode = false, // 👈 Default false
 }: Props) {
   const router = useRouter();
   const [showExitModal, setShowExitModal] = useState(false);
@@ -41,26 +42,30 @@ export function ExamHeader({
     router.push("/dashboard");
   };
 
-  const fullName = profile
-    ? `${profile.first_name || ""} ${profile.last_name || ""}`.toUpperCase()
-    : user.name?.toUpperCase() || "...";
-
   return (
     <header className="border-b p-3 sticky top-0 bg-white z-20 flex justify-between items-center shadow-md">
-      {/* Desktop info – horizontal layout */}
-      <div className="hidden sm:flex items-center gap-6 text-xs text-gray-700">
-        <div className="flex items-center gap-2">
-          <span className="font-semibold w-20">Full Name:</span>
-          <span className="truncate max-w-40">{fullName}</span>
+      {/* Desktop info */}
+      <div
+        className={`hidden sm:flex text-xs text-gray-700 ${
+          isPracticeMode ? "flex-row items-center gap-6" : "flex-col space-y-1"
+        }`}
+      >
+        <div className="flex gap-2 items-center">
+          <span className="font-semibold w-24">Full Name:</span>
+          <span>
+            {profile
+              ? `${profile.first_name || ""} ${
+                  profile.last_name || ""
+                }`.toUpperCase()
+              : user.name?.toUpperCase() || "..."}
+          </span>
         </div>
-
-        <div className="flex items-center gap-2">
-          <span className="font-semibold w-14">Stream:</span>
+        <div className="flex gap-2 items-center">
+          <span className="font-semibold w-20">Stream:</span>
           <span>{profile?.stream || "..."}</span>
         </div>
-
-        <div className="flex items-center gap-2">
-          <span className="font-semibold w-20">Student ID:</span>
+        <div className="flex gap-2 items-center">
+          <span className="font-semibold w-24">Student ID:</span>
           <span>{profile?.student_id || "..."}</span>
         </div>
       </div>
@@ -82,7 +87,7 @@ export function ExamHeader({
         </Button>
 
         {/* Title */}
-        <div className="text-right flex-1 sm:flex-none">
+        <div className="text-right">
           <div className="text-xs sm:text-sm text-muted-foreground">
             {title}
           </div>
