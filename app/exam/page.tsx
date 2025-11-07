@@ -71,7 +71,10 @@ export default function ExamPage() {
   const [showIncompleteModal, setShowIncompleteModal] = useState(false);
   const [incompleteCount, setIncompleteCount] = useState(0);
 
-  // ── NEW: Central exam timer (counts down once) ───────────────────────
+  // ── NEW: Time-up modal state ───────────────────────────────────────
+  const [showTimeUpModal, setShowTimeUpModal] = useState(false);
+
+  // ── Central exam timer (counts down once) ───────────────────────────
   const durationSeconds = (examData?.exam?.duration_minutes ?? 0) * 60;
   const [remainingSeconds, setRemainingSeconds] = useState(durationSeconds);
 
@@ -89,8 +92,10 @@ export default function ExamPage() {
       if (left <= 0) {
         clearInterval(timer);
         // Auto-submit when time is up
-        alert("Time is up! Submitting automatically.");
-        // You can trigger submit here if needed
+        (async () => {
+          await executeSubmit();
+          setShowTimeUpModal(true);
+        })();
       }
     }, 1000);
 
@@ -181,20 +186,18 @@ export default function ExamPage() {
   }, [user, authLoading, router]);
 
   // ── Hide/Show Main Nav Bar ───────────────────────────────────────────
-  const { setShowNav } = useLayout(); // ← NEW
+  const { setShowNav } = useLayout();
 
   useEffect(() => {
     if (examStarted) {
-      setShowNav(false); // Hide nav when exam starts
+      setShowNav(false);
     } else {
-      setShowNav(true); // Show nav on "Start" screen
+      setShowNav(true);
     }
-
-    // Cleanup function to show nav when leaving the page
     return () => {
       setShowNav(true);
     };
-  }, [examStarted, setShowNav]); // ← NEW
+  }, [examStarted, setShowNav]);
 
   // ── Loading / error screens ───────────────────────────────────────────
   if (isLoading || authLoading) {
@@ -251,7 +254,6 @@ export default function ExamPage() {
   const handleClear = async () => {
     if (!currentQuestion) return;
 
-    // remove local answer
     setAnswers((prev) => {
       const updated = { ...prev };
       delete updated[currentQuestion.question.id];
@@ -341,7 +343,9 @@ export default function ExamPage() {
       if (res.success && res.data) {
         setFinalResult(res.data);
         setExamCompleted(true);
-      } else setError(res.message ?? "Submit failed.");
+      } else {
+        setError(res.message ?? "Submit failed.");
+      }
     } catch (e) {
       setError("Unexpected submit error.");
       console.error(e);
@@ -358,10 +362,9 @@ export default function ExamPage() {
     if (unanswered.length > 0) {
       setIncompleteCount(unanswered.length);
       setShowIncompleteModal(true);
-      return; // stop here — don’t submit
+      return;
     }
 
-    // All questions are either answered or flagged → allow submit
     executeSubmit();
   };
 
@@ -407,10 +410,12 @@ export default function ExamPage() {
   // ── Render ─────────────────────────────────────────────────────────────
   if (!examStarted) {
     return (
-      <ExamStartCard
-        exam={examData!.exam}
-        onStart={() => setExamStarted(true)}
-      />
+      <div className="fixed inset-0 flex items-center justify-center bg-white overflow-hidden">
+        <ExamStartCard
+          exam={examData!.exam}
+          onStart={() => setExamStarted(true)}
+        />
+      </div>
     );
   }
 
@@ -429,6 +434,7 @@ export default function ExamPage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-100">
+      {/* Modals */}
       <ConfirmSubmitModal
         open={showConfirmModal}
         unanswered={unansweredCount}
@@ -441,13 +447,37 @@ export default function ExamPage() {
         count={incompleteCount}
         onClose={() => setShowIncompleteModal(false)}
       />
-      {/* Pass remainingSeconds to header */}
+
+      {/* Time-up Modal */}
+      {showTimeUpModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-sm w-full mx-4 text-center shadow-xl">
+            <h2 className="text-xl font-semibold mb-4 text-red-600">
+              Time is up!
+            </h2>
+            <p className="text-gray-700 mb-6">
+              The exam has been submitted due to time up.
+            </p>
+            <button
+              onClick={() => {
+                setShowTimeUpModal(false);
+                setExamCompleted(true);
+              }}
+              className="bg-primary text-white px-6 py-2 rounded hover:bg-primary/90 transition"
+            >
+              Show Exam Result
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Header */}
       <ExamHeader
         profile={profileData}
         user={user}
         title={examData!.exam.title}
         duration={examData!.exam.duration_minutes}
-        remainingSeconds={remainingSeconds} // ← NEW
+        remainingSeconds={remainingSeconds}
         showSidebarMobile={showSidebarMobile}
         toggleSidebar={() => setShowSidebarMobile((v) => !v)}
         onTimeUp={executeSubmit}
@@ -486,7 +516,7 @@ export default function ExamPage() {
                   questionNumber={currentIdx + 1}
                   onFlag={toggleFlag}
                 />
-                <div className="flex-1 h-20px">
+                <div className="flex-1">
                   {isPracticeMode ? (
                     <PracticeQuestionCard
                       key={currentQuestion!.question.id}
@@ -517,7 +547,6 @@ export default function ExamPage() {
                     />
                   )}
 
-                  {/* Practice-only explanation section */}
                   {isPracticeMode && currentQuestion && (
                     <QuestionExplanations
                       staticExplanation={currentQuestion.question.explanation}
@@ -532,7 +561,6 @@ export default function ExamPage() {
             )}
           </div>
 
-          {/* Hide navigation bar (including Submit Exam button) when summary is shown */}
           {!showSummary && (
             <ExamNavigationBar
               canPrev={currentIdx > 0}

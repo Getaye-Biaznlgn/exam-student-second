@@ -58,7 +58,9 @@ export function ExamQuestionCard({
     return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
   };
 
+  // ✅ Prevent selecting another option unless cleared first
   const handleOptionSelect = (optionId: string) => {
+    if (localSelection) return; // already selected, must clear first
     setLocalSelection(optionId);
     if (mode === "practice") setAnswered(true);
     onSelectOption(optionId);
@@ -105,10 +107,7 @@ export function ExamQuestionCard({
 
             {/* Options */}
             <div className="mt-4">
-              <RadioGroup
-                value={localSelection || ""}
-                onValueChange={(value) => handleOptionSelect(value)}
-              >
+              <RadioGroup value={localSelection || ""}>
                 {question.options
                   .slice()
                   .sort((a, b) =>
@@ -127,7 +126,10 @@ export function ExamQuestionCard({
                         !isCorrect &&
                         "bg-red-100/50",
                       !showFeedback &&
-                        (isSelected ? "bg-primary/5" : "hover:bg-gray-100")
+                        (isSelected ? "bg-primary/5" : "hover:bg-gray-100"),
+                      localSelection &&
+                        localSelection !== opt.id &&
+                        "opacity-50 cursor-not-allowed"
                     );
 
                     return (
@@ -135,13 +137,22 @@ export function ExamQuestionCard({
                         key={opt.id}
                         className={cn(
                           optionClasses,
-                          "flex items-center gap-3 py-2 px-3 rounded-md cursor-pointer"
+                          "flex items-center gap-3 py-2 px-3 rounded-md"
                         )}
+                        onClick={() => {
+                          if (!localSelection) handleOptionSelect(opt.id);
+                        }}
                       >
                         <RadioGroupItem
                           id={opt.id}
                           value={opt.id}
-                          className="cursor-pointer"
+                          disabled={
+                            !!localSelection && localSelection !== opt.id
+                          }
+                          className={cn(
+                            "cursor-pointer",
+                            localSelection && "cursor-not-allowed"
+                          )}
                         />
                         <label
                           htmlFor={opt.id}
@@ -168,7 +179,7 @@ export function ExamQuestionCard({
             <div className="mt-3 text-left">
               <button
                 onClick={handleClearChoice}
-                className="text-sm text-blue-600 hover:underline"
+                className="text-sm text-blue-600 hover:underline transition"
                 type="button"
               >
                 Clear my choice
