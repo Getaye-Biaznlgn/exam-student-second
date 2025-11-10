@@ -49,7 +49,7 @@ export function AppBar() {
           <nav className="hidden md:flex items-center gap-6">
             <div className="relative group">
               <Link
-                href="/"
+                href="/#features"
                 className="text-sm font-medium hover:text-primary transition-colors"
               >
                 Features
@@ -58,7 +58,7 @@ export function AppBar() {
 
             <div className="relative group">
               <Link
-                href="/"
+                href="/#how-it-works"
                 className="text-sm font-medium hover:text-primary transition-colors"
               >
                 How it works
@@ -66,7 +66,7 @@ export function AppBar() {
             </div>
             <div className="relative group">
               <Link
-                href="/"
+                href="/#success-stories"
                 className="text-sm font-medium hover:text-primary transition-colors"
               >
                 Success Stories
@@ -74,7 +74,7 @@ export function AppBar() {
             </div>
             <div className="relative group">
               <Link
-                href="/"
+                href="/#hero"
                 className="text-sm font-medium hover:text-primary transition-colors"
               >
                 our mission

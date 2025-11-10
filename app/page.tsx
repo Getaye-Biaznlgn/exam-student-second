@@ -151,6 +151,7 @@ export default function LandingPage() {
 
       {/* How it Works */}
       <section
+        id="how-it-works"
         className="py-12 sm:py-16 relative bg-cover bg-center bg-no-repeat overflow-hidden"
         style={{
           backgroundImage: `url('/photo_2025-11-07_11-33-10.jpg')`,
@@ -226,6 +227,7 @@ export default function LandingPage() {
 
       {/* Past Exam Library */}
       <section
+        id="past-exams"
         className="py-12 sm:py-16 relative bg-cover bg-center bg-no-repeat"
         style={{
           backgroundImage: `url('/Screenshot 2025-11-09 215846.png')`,
@@ -330,7 +332,10 @@ export default function LandingPage() {
       </section>
 
       {/* What You Get */}
-      <section className="py-12 sm:py-16 bg-cover bg-center bg-no-repeat text-white relative">
+      <section
+        id="features"
+        className="py-12 sm:py-16 bg-cover bg-center bg-no-repeat text-white relative"
+      >
         {/* Full-width background image */}
         <div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
@@ -384,7 +389,10 @@ export default function LandingPage() {
         </div>
       </section>
       {/* Success Stories */}
-      <section className="py-12 sm:py-16 bg-gradient-to-b from-blue-50 to-white">
+      <section
+        id="success-stories"
+        className="py-12 sm:py-16 bg-gradient-to-b from-blue-50 to-white"
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl sm:text-4xl font-bold text-center text-gray-900 mb-10 sm:mb-12">
             Success Stories
