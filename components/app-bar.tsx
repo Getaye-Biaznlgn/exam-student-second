@@ -35,7 +35,7 @@ export function AppBar() {
             <Link href="/" className="flex items-center gap-2">
               <div className="h-12 w-24 rounded-lg overflow-hidden">
                 <Image
-                  src="/photo_2025-11-06_13-44-32.jpg"
+                  src="/Screenshot 2025-11-10 045055.png"
                   alt="SmartPrep Logo"
                   width={250}
                   height={150}
@@ -77,7 +77,7 @@ export function AppBar() {
                 href="/#hero"
                 className="text-sm font-medium hover:text-primary transition-colors"
               >
-                our mission
+                Our Mission
               </Link>
             </div>
             {user && (

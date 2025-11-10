@@ -15,7 +15,7 @@ export function SiteFooter() {
             <div className="flex items-center gap-3 mb-3">
               <div className="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center">
                 <Image
-                  src="/photo_2025-11-06_13-44-32.jpg" // Replace with your actual logo
+                  src="/Screenshot 2025-11-10 045055.png"
                   alt="SmartPrep Logo"
                   width={32}
                   height={32}

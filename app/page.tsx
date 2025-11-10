@@ -59,19 +59,23 @@ export default function LandingPage() {
 
               {/* Buttons side by side on all screens */}
               <div className="flex flex-row justify-center sm:justify-start gap-3 flex-wrap">
-                <Button
-                  size="lg"
-                  className="bg-orange-500 hover:bg-orange-600 text-white font-semibold px-6 py-5 rounded-xl text-lg sm:text-lg w-auto"
-                >
-                  Start Practice
-                </Button>
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className="border-blue-600 text-blue-600 hover:bg-blue-50 font-semibold px-6 py-5 rounded-xl text-lg sm:text-lg w-auto"
-                >
-                  See how it works
-                </Button>
+                <Link href="/auth">
+                  <Button
+                    size="lg"
+                    className="bg-orange-500 hover:bg-orange-600 text-white font-semibold px-6 py-5 rounded-xl text-lg sm:text-lg w-auto"
+                  >
+                    Start Practice
+                  </Button>
+                </Link>
+                <Link href="/#how-it-works">
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    className="border-blue-600 text-blue-600 hover:bg-blue-50 font-semibold px-6 py-5 rounded-xl text-lg sm:text-lg w-auto"
+                  >
+                    See how it works
+                  </Button>
+                </Link>
               </div>
             </div>
 
@@ -191,7 +195,9 @@ export default function LandingPage() {
             ].map((step, i) => (
               <div
                 key={i}
-                className="bg-white/60 rounded-[22px] p-8 text-left shadow-lg hover:shadow-2xl transition-transform duration-300 hover:-translate-y-2 border border-blue-900/90"
+                className="bg-white/60 rounded-[22px] p-8 text-center shadow-lg hover:shadow-2xl 
+             transition-transform duration-300 hover:-translate-y-2 border border-blue-900/90 
+             flex flex-col items-center justify-center"
               >
                 <div className="w-10 h-10 rounded bg-blue-500/30 flex items-center justify-center mb-2 shadow-md">
                   <img
@@ -204,6 +210,7 @@ export default function LandingPage() {
                 <h3 className="font-semibold text-lg text-[#0056B3] mb-2">
                   {step.title}
                 </h3>
+
                 <p className="text-black text-sm leading-relaxed">
                   {step.desc}
                 </p>
@@ -290,19 +297,33 @@ export default function LandingPage() {
                   {item.desc}
                 </p>
 
-                <Link href="/select-subject">
-                  <button className="text-[#007BFF] mt-4 font-semibold text-sm sm:text-base hover:underline">
-                    See More
-                  </button>
-                </Link>
+                <button
+                  onClick={() => {
+                    const token =
+                      localStorage.getItem("token") ||
+                      document.cookie.includes("authToken");
+                    if (token) {
+                      // user is logged in → navigate to page
+                      window.location.href = "/select-subject";
+                    } else {
+                      // not logged in → redirect to login
+                      window.location.href = "/auth";
+                    }
+                  }}
+                  className="text-[#007BFF] mt-4 font-semibold text-sm sm:text-base hover:underline"
+                >
+                  See More
+                </button>
               </div>
             ))}
           </div>
 
           <div className="text-center mt-12 sm:mt-14">
-            <button className="bg-[#FF8A00] hover:bg-[#ff9f33] text-white px-6 sm:px-8 py-3 sm:py-4 rounded-full shadow-lg font-semibold text-base sm:text-lg transition">
-              SignUp to Explore More
-            </button>
+            <Link href="/auth">
+              <button className="bg-[#FF8A00] hover:bg-[#ff9f33] text-white px-6 sm:px-8 py-3 sm:py-4 rounded-full shadow-lg font-semibold text-base sm:text-lg transition">
+                SignUp to Explore More
+              </button>
+            </Link>
           </div>
         </div>
       </section>
@@ -363,9 +384,13 @@ export default function LandingPage() {
       {/* Success Stories */}
       <section
         id="success-stories"
-        className="py-12 sm:py-16 bg-gradient-to-b from-blue-50 to-white"
+        className="relative py-12 sm:py-16 bg-[url('/photo_2025-11-08_08-03-34.jpg')] bg-cover bg-center bg-no-repeat"
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Gradient overlay for readability */}
+        <div className="absolute inset-0 bg-gradient-to-b from-blue-50/70 to-white/80"></div>
+
+        {/* Content */}
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl sm:text-4xl font-bold text-center text-gray-900 mb-10 sm:mb-12">
             Success Stories
           </h2>
@@ -399,7 +424,7 @@ export default function LandingPage() {
             ].map((story, i) => (
               <Card
                 key={i}
-                className="p-6 bg-white border-0 shadow-lg hover:shadow-xl transition-shadow duration-300"
+                className="p-6 bg-white/90 backdrop-blur-sm border-0 shadow-lg hover:shadow-xl transition-shadow duration-300"
               >
                 {/* Stars */}
                 <div className="flex items-center gap-1 mb-3">
@@ -504,18 +529,20 @@ export default function LandingPage() {
 
         {/* MOBILE: Image Section on top */}
         <div className="block lg:hidden bg-white pb-10">
-          <div className="relative flex justify-center w-full pt-10">
+          <div className="relative flex justify-center w-full pt-6">
+            {" "}
+            {/* UPDATED: reduced top padding */}
             {/* Outer Circle */}
-            <div className="absolute top-1/2 -translate-y-1/2 w-[260px] h-[260px] bg-[#0057C2] rounded-full z-0"></div>
-
+            <div className="absolute top-[45%] -translate-y-1/2 w-[280px] h-[280px] bg-[#0057C2] rounded-full z-0"></div>{" "}
+            {/* UPDATED: slightly larger & moved up */}
             {/* Inner White Circle */}
-            <div className="absolute top-1/2 -translate-y-1/2 w-[200px] h-[200px] bg-white rounded-full z-10 overflow-hidden"></div>
-
+            <div className="absolute top-[45%] -translate-y-1/2 w-[220px] h-[220px] bg-white rounded-full z-10 overflow-hidden"></div>{" "}
+            {/* UPDATED */}
             {/* Image */}
             <img
               src="/1111.png"
               alt="Student learning"
-              className="relative z-20 w-[220px] object-contain drop-shadow-xl"
+              className="relative z-20 w-[240px] object-contain drop-shadow-xl -mt-2" // UPDATED: slightly bigger & nudged up
             />
           </div>
         </div>
@@ -551,16 +578,16 @@ export default function LandingPage() {
             {/* DESKTOP: Image Section */}
             <div className="relative hidden lg:flex justify-center w-full lg:w-auto order-1 lg:order-2">
               {/* Outer Circle */}
-              <div className="absolute top-[40%] -translate-y-1/2 w-[420px] h-[420px] bg-[#0057C2] rounded-full -mt-20 z-0"></div>
-
+              <div className="absolute top-[35%] -translate-y-1/2 w-[440px] h-[440px] bg-[#0057C2] rounded-full -mt-20 z-0"></div>{" "}
+              {/* UPDATED */}
               {/* Inner White Circle */}
-              <div className="absolute top-[35%] -translate-y-1/2 w-[320px] h-[320px] bg-white rounded-full z-10 -mt-19 overflow-hidden"></div>
-
+              <div className="absolute top-[30%] -translate-y-1/2 w-[340px] h-[340px] bg-white rounded-full z-10 -mt-20 overflow-hidden"></div>{" "}
+              {/* UPDATED */}
               {/* Image */}
               <img
                 src="/1111.png"
                 alt="Student learning"
-                className="relative z-20 w-[520px] object-contain drop-shadow-xl"
+                className="relative z-20 w-[760px] object-contain drop-shadow-xl -mt-6" // UPDATED: bigger & slightly up
               />
             </div>
           </div>
