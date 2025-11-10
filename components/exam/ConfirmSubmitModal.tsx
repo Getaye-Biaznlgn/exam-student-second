@@ -1,4 +1,3 @@
-// components/exam/ConfirmSubmitModal.tsx
 import {
   Dialog,
   DialogContent,

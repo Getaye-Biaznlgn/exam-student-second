@@ -59,6 +59,7 @@ export function ExamQuestionCard({
   };
 
   const handleOptionSelect = (optionId: string) => {
+    if (localSelection) return;
     setLocalSelection(optionId);
     if (mode === "practice") setAnswered(true);
     onSelectOption(optionId);
@@ -86,10 +87,11 @@ export function ExamQuestionCard({
         </div>
       </div>
 
+      {/* Main Card */}
       <Card className="w-full max-w-3xl shadow-lg border border-gray-200">
         <CardContent className="p-6">
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6">
-            {/* Question */}
+            {/* Question Header */}
             <div className="flex items-start justify-between">
               <h2 className="text-lg font-semibold text-gray-800 leading-relaxed">
                 <span
@@ -105,62 +107,78 @@ export function ExamQuestionCard({
 
             {/* Options */}
             <div className="mt-4">
-              <RadioGroup
-                value={localSelection || ""}
-                onValueChange={(value) => handleOptionSelect(value)}
-              >
-                {question.options.map((opt) => {
-                  const isSelected = localSelection === opt.id;
-                  const isCorrect = opt.is_correct;
-                  const showFeedback = mode === "practice" && answered;
+              <RadioGroup value={localSelection || ""}>
+                {question.options
+                  .slice()
+                  .sort((a, b) =>
+                    (a.option_key ?? "").localeCompare(b.option_key ?? "")
+                  )
+                  .map((opt, idx, arr) => {
+                    const isSelected = localSelection === opt.id;
+                    const isCorrect = opt.is_correct;
+                    const showFeedback = mode === "practice" && answered;
 
-                  const optionClasses = cn(
-                    "flex items-center space-x-3 mb-3 rounded-md transition-colors select-none",
-                    showFeedback && isCorrect && "bg-green-100/50",
-                    showFeedback && isSelected && !isCorrect && "bg-red-100/50",
-                    !showFeedback &&
-                      (isSelected ? "bg-primary/5" : "hover:bg-gray-100")
-                  );
+                    const optionClasses = cn(
+                      "flex items-start gap-3 py-2 px-3 mb-3 rounded-md transition-colors select-none border",
+                      showFeedback &&
+                        isCorrect &&
+                        "bg-green-100/50 border-green-300",
+                      showFeedback &&
+                        isSelected &&
+                        !isCorrect &&
+                        "bg-red-100/50 border-red-300",
+                      !showFeedback &&
+                        (isSelected
+                          ? "bg-primary/5 border-primary/20"
+                          : "hover:bg-gray-100 border-transparent"),
+                      localSelection &&
+                        localSelection !== opt.id &&
+                        "opacity-50 cursor-not-allowed"
+                    );
 
-                  return (
-                    <div
-                      key={opt.id}
-                      className={cn(
-                        optionClasses,
-                        "flex items-center gap-3 py-2 px-3 rounded-md cursor-pointer"
-                      )}
-                    >
-                      <RadioGroupItem
-                        id={opt.id}
-                        value={opt.id}
-                        className="cursor-pointer"
-                      />
-                      <label
-                        htmlFor={opt.id}
-                        className="flex items-center text-gray-800 select-none cursor-pointer"
+                    return (
+                      <div
+                        key={opt.id}
+                        className={optionClasses}
+                        onClick={() => {
+                          if (!localSelection) handleOptionSelect(opt.id);
+                        }}
                       >
-                        {opt.option_key && (
-                          <span className="font-medium mr-2">
-                            {opt.option_key}.
-                          </span>
-                        )}
-                        <span
-                          dangerouslySetInnerHTML={{
-                            __html: opt.option_text || "",
-                          }}
+                        <RadioGroupItem
+                          id={opt.id}
+                          value={opt.id}
+                          disabled={
+                            !!localSelection && localSelection !== opt.id
+                          }
+                          className="mt-1 cursor-pointer data-[state=checked]:cursor-not-allowed"
                         />
-                      </label>
-                    </div>
-                  );
-                })}
+                        <label
+                          htmlFor={opt.id}
+                          className="flex items-start text-gray-800 select-none cursor-pointer flex-1"
+                        >
+                          {opt.option_key && (
+                            <span className="font-medium mr-2 shrink-0">
+                              {opt.option_key}.
+                            </span>
+                          )}
+                          <span
+                            className="flex-1"
+                            dangerouslySetInnerHTML={{
+                              __html: opt.option_text || "",
+                            }}
+                          />
+                        </label>
+                      </div>
+                    );
+                  })}
               </RadioGroup>
             </div>
 
-            {/* Clear choice (left side) */}
+            {/* Clear choice button */}
             <div className="mt-3 text-left">
               <button
                 onClick={handleClearChoice}
-                className="text-sm text-blue-600 hover:underline"
+                className="text-sm text-blue-600 hover:underline transition"
                 type="button"
               >
                 Clear my choice

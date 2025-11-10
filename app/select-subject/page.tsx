@@ -3,10 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { fetchSubjects, getUserProfile } from "@/lib/api";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-
-import { Progress } from "@/components/ui/progress";
 
 function AnimatedLoadingIndicator() {
   return (
@@ -69,61 +66,53 @@ export default function SelectSubjectPage() {
   }, []);
 
   const handleSubjectClick = (subject: any) => {
-    // Save the subject data in sessionStorage
     sessionStorage.setItem("selectedSubject", JSON.stringify(subject));
-    // Navigate to detail page with subject ID
     router.push(`/select-subject/${subject.id}`);
   };
 
   if (loading) return <AnimatedLoadingIndicator />;
 
   return (
-    <div className="max-w-4xl mx-auto mt-10">
-      <Card className="p-6 shadow-md rounded-2xl border">
-        <CardHeader>
-          <CardTitle className="text-xl font-semibold text-gray-800">
-            {userField
-              ? `Available ${
-                  userField.charAt(0).toUpperCase() + userField.slice(1)
-                } Field Subjects`
-              : "Available Subjects"}
-          </CardTitle>
-        </CardHeader>
+    <div className="max-w-5xl mx-auto mt-10 px-4">
+      <h2 className="text-2xl font-semibold text-gray-800 mb-6 text-center">
+        {userField
+          ? `Available ${
+              userField.charAt(0).toUpperCase() + userField.slice(1)
+            } Field Subjects`
+          : "Available Subjects"}
+      </h2>
 
-        <CardContent>
-          {message && (
-            <p className="text-red-500 text-sm mb-4 text-center">{message}</p>
-          )}
+      {message && (
+        <p className="text-red-500 text-sm mb-4 text-center">{message}</p>
+      )}
 
-          {filteredSubjects.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {filteredSubjects.map((subject) => (
-                <div
-                  key={subject.id}
-                  className="border rounded-xl p-4 hover:shadow-lg transition bg-white cursor-pointer"
-                  onClick={() => handleSubjectClick(subject)}
-                >
-                  <h3 className="font-semibold text-lg text-gray-800">
-                    {subject.name || "Unnamed Subject"}
-                  </h3>
-                  {subject.description && (
-                    <p className="text-sm text-gray-600 mt-1 line-clamp-2">
-                      {subject.description}
-                    </p>
-                  )}
-                  <div className="mt-3">
-                    <Button className="w-full">View Details</Button>
-                  </div>
-                </div>
-              ))}
+      {filteredSubjects.length > 0 ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {filteredSubjects.map((subject) => (
+            <div
+              key={subject.id}
+              className="border rounded-xl p-4 hover:shadow-lg transition bg-white cursor-pointer"
+              onClick={() => handleSubjectClick(subject)}
+            >
+              <h3 className="font-semibold text-lg text-gray-800">
+                {subject.name || "Unnamed Subject"}
+              </h3>
+              {subject.description && (
+                <p className="text-sm text-gray-600 mt-1 line-clamp-2">
+                  {subject.description}
+                </p>
+              )}
+              <div className="mt-3">
+                <Button className="w-full">View Exams</Button>
+              </div>
             </div>
-          ) : (
-            <p className="text-gray-500 text-center mt-6">
-              No subjects found for your field type.
-            </p>
-          )}
-        </CardContent>
-      </Card>
+          ))}
+        </div>
+      ) : (
+        <p className="text-gray-500 text-center mt-6">
+          No subjects found for your field type.
+        </p>
+      )}
     </div>
   );
 }

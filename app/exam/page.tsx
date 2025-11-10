@@ -9,6 +9,7 @@ import {
   submitAnswer,
   fetchAIExplanation,
   getUserProfile,
+  clearAnswer,
 } from "@/lib/api";
 import { useLayout } from "@/lib/layout-context";
 import { IncompleteQuestionsModal } from "@/components/exam/IncompleteQuestionsModal";
@@ -43,7 +44,20 @@ export default function ExamPage() {
   const [currentIdx, setCurrentIdx] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [flagged, setFlagged] = useState<Set<string>>(new Set());
+
+  // ── REFS to avoid stale closures ─────────────────────────────────────
+  const answersRef = useRef<Record<string, string>>({});
+  const flaggedRef = useRef<Set<string>>(new Set());
   const timeSpentRef = useRef<Record<string, number>>({});
+
+  // Sync state → refs
+  useEffect(() => {
+    answersRef.current = answers;
+  }, [answers]);
+
+  useEffect(() => {
+    flaggedRef.current = new Set(flagged);
+  }, [flagged]);
 
   const [examStarted, setExamStarted] = useState(false);
   const [examCompleted, setExamCompleted] = useState(false);
@@ -70,7 +84,10 @@ export default function ExamPage() {
   const [showIncompleteModal, setShowIncompleteModal] = useState(false);
   const [incompleteCount, setIncompleteCount] = useState(0);
 
-  // ── NEW: Central exam timer (counts down once) ───────────────────────
+  // ── Time-up modal state ──────────────────────────────────────────────
+  const [showTimeUpModal, setShowTimeUpModal] = useState(false);
+
+  // ── Central exam timer ───────────────────────────────────────────────
   const durationSeconds = (examData?.exam?.duration_minutes ?? 0) * 60;
   const [remainingSeconds, setRemainingSeconds] = useState(durationSeconds);
 
@@ -87,9 +104,26 @@ export default function ExamPage() {
 
       if (left <= 0) {
         clearInterval(timer);
-        // Auto-submit when time is up
-        alert("Time is up! Submitting automatically.");
-        // You can trigger submit here if needed
+        (async () => {
+          // Final time capture for current question
+          if (currentQuestion && examStarted) {
+            const elapsed = Math.floor(
+              (Date.now() - startTimeRef.current) / 1000
+            );
+            const qId = currentQuestion.question.id;
+            timeSpentRef.current[qId] =
+              (timeSpentRef.current[qId] ?? 0) + elapsed;
+          }
+
+          if (!isPracticeMode) {
+            // Auto-submit only in exam mode
+            await executeSubmit();
+            setShowTimeUpModal(true);
+          } else {
+            // In practice mode, just freeze timer at 0
+            setRemainingSeconds(0);
+          }
+        })();
       }
     }, 1000);
 
@@ -123,6 +157,8 @@ export default function ExamPage() {
           setExamData(res.data);
           setAnswers({});
           setFlagged(new Set());
+          answersRef.current = {};
+          flaggedRef.current = new Set();
           timeSpentRef.current = {};
         } else setError(res.message ?? "Failed to start exam.");
       } catch {
@@ -148,7 +184,7 @@ export default function ExamPage() {
     })();
   }, []);
 
-  // ── Per-question time tracking (unchanged) ───────────────────────────
+  // ── Per-question time tracking ───────────────────────────────────────
   const currentQuestion = examData?.questions?.[currentIdx];
 
   useEffect(() => {
@@ -180,20 +216,18 @@ export default function ExamPage() {
   }, [user, authLoading, router]);
 
   // ── Hide/Show Main Nav Bar ───────────────────────────────────────────
-  const { setShowNav } = useLayout(); // ← NEW
+  const { setShowNav } = useLayout();
 
   useEffect(() => {
     if (examStarted) {
-      setShowNav(false); // Hide nav when exam starts
+      setShowNav(false);
     } else {
-      setShowNav(true); // Show nav on "Start" screen
+      setShowNav(true);
     }
-
-    // Cleanup function to show nav when leaving the page
     return () => {
       setShowNav(true);
     };
-  }, [examStarted, setShowNav]); // ← NEW
+  }, [examStarted, setShowNav]);
 
   // ── Loading / error screens ───────────────────────────────────────────
   if (isLoading || authLoading) {
@@ -240,21 +274,29 @@ export default function ExamPage() {
         selected_option: opt.option_key,
         time_spent_seconds:
           timeSpentRef.current[currentQuestion.question.id] ?? 0,
-        is_flagged: flagged.has(currentQuestion.question.id),
+        is_flagged: flaggedRef.current.has(currentQuestion.question.id),
       });
     } catch (e) {
       console.error(e);
     }
   };
 
-  const handleClear = () => {
+  const handleClear = async () => {
     if (!currentQuestion) return;
+
     setAnswers((prev) => {
-      const n = { ...prev };
-      delete n[currentQuestion.question.id];
-      return n;
+      const updated = { ...prev };
+      delete updated[currentQuestion.question.id];
+      return updated;
     });
+
     updateCurrentTime();
+
+    try {
+      await clearAnswer(currentQuestion.question.id);
+    } catch (e) {
+      console.error("Error clearing answer:", e);
+    }
   };
 
   const handlePrev = () => {
@@ -307,6 +349,7 @@ export default function ExamPage() {
     }
   };
 
+  // ── FIXED: Use refs in executeSubmit ─────────────────────────────────
   const executeSubmit = async () => {
     if (isSubmitting) return;
     setIsSubmitting(true);
@@ -315,15 +358,16 @@ export default function ExamPage() {
 
     try {
       const payload = examData!.questions.map((q) => {
-        const selId = answers[q.question.id];
+        const selId = answersRef.current[q.question.id]; // ← Use ref
         const selKey = selId
           ? q.question.options.find((o) => o.id === selId)?.option_key ?? null
           : null;
+
         return {
           ...q,
           selected_option: selKey,
           time_spent_seconds: timeSpentRef.current[q.question.id] ?? 0,
-          is_flagged: flagged.has(q.question.id),
+          is_flagged: flaggedRef.current.has(q.question.id), // ← Use ref
         };
       });
 
@@ -331,7 +375,9 @@ export default function ExamPage() {
       if (res.success && res.data) {
         setFinalResult(res.data);
         setExamCompleted(true);
-      } else setError(res.message ?? "Submit failed.");
+      } else {
+        setError(res.message ?? "Submit failed.");
+      }
     } catch (e) {
       setError("Unexpected submit error.");
       console.error(e);
@@ -342,16 +388,17 @@ export default function ExamPage() {
 
   const handleFinalSubmit = () => {
     const unanswered = examData!.questions.filter(
-      (q) => !answers[q.question.id] && !flagged.has(q.question.id)
+      (q) =>
+        !answersRef.current[q.question.id] &&
+        !flaggedRef.current.has(q.question.id)
     );
 
     if (unanswered.length > 0) {
       setIncompleteCount(unanswered.length);
       setShowIncompleteModal(true);
-      return; // stop here — don’t submit
+      return;
     }
 
-    // All questions are either answered or flagged → allow submit
     executeSubmit();
   };
 
@@ -397,10 +444,12 @@ export default function ExamPage() {
   // ── Render ─────────────────────────────────────────────────────────────
   if (!examStarted) {
     return (
-      <ExamStartCard
-        exam={examData!.exam}
-        onStart={() => setExamStarted(true)}
-      />
+      <div className="fixed inset-0 flex items-center justify-center bg-white overflow-hidden">
+        <ExamStartCard
+          exam={examData!.exam}
+          onStart={() => setExamStarted(true)}
+        />
+      </div>
     );
   }
 
@@ -419,6 +468,7 @@ export default function ExamPage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-100">
+      {/* Modals */}
       <ConfirmSubmitModal
         open={showConfirmModal}
         unanswered={unansweredCount}
@@ -431,16 +481,41 @@ export default function ExamPage() {
         count={incompleteCount}
         onClose={() => setShowIncompleteModal(false)}
       />
-      {/* Pass remainingSeconds to header */}
+
+      {/* Time-up Modal */}
+      {showTimeUpModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-sm w-full mx-4 text-center shadow-xl">
+            <h2 className="text-xl font-semibold mb-4 text-red-600">
+              Time is up!
+            </h2>
+            <p className="text-gray-700 mb-6">
+              The exam has been submitted due to time up.
+            </p>
+            <button
+              onClick={() => {
+                setShowTimeUpModal(false);
+                setExamCompleted(true);
+              }}
+              className="bg-primary text-white px-6 py-2 rounded hover:bg-primary/90 transition"
+            >
+              Show Exam Result
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Header */}
       <ExamHeader
         profile={profileData}
         user={user}
         title={examData!.exam.title}
         duration={examData!.exam.duration_minutes}
-        remainingSeconds={remainingSeconds} // ← NEW
+        remainingSeconds={remainingSeconds}
         showSidebarMobile={showSidebarMobile}
         toggleSidebar={() => setShowSidebarMobile((v) => !v)}
         onTimeUp={executeSubmit}
+        isPracticeMode={isPracticeMode}
       />
 
       <div className="flex flex-1 flex-col lg:flex-row p-4 gap-4">
@@ -476,8 +551,7 @@ export default function ExamPage() {
                   questionNumber={currentIdx + 1}
                   onFlag={toggleFlag}
                 />
-
-                <div className="flex-1 h-20px">
+                <div className="flex-1">
                   {isPracticeMode ? (
                     <PracticeQuestionCard
                       key={currentQuestion!.question.id}
@@ -502,12 +576,12 @@ export default function ExamPage() {
                       selectedOption={
                         answers[currentQuestion!.question.id] ?? null
                       }
+                      onClearChoice={handleClear}
                       onSelectOption={handleAnswer}
                       remainingTime={remainingSeconds}
                     />
                   )}
 
-                  {/* Practice-only explanation section */}
                   {isPracticeMode && currentQuestion && (
                     <QuestionExplanations
                       staticExplanation={currentQuestion.question.explanation}
@@ -522,7 +596,6 @@ export default function ExamPage() {
             )}
           </div>
 
-          {/* Hide navigation bar (including Submit Exam button) when summary is shown */}
           {!showSummary && (
             <ExamNavigationBar
               canPrev={currentIdx > 0}
