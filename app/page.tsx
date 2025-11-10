@@ -40,7 +40,7 @@ export default function LandingPage() {
   return (
     <div className="flex flex-col bg-white">
       {/* Hero Section */}
-      <section className="bg-gradient-to-b from-blue-50/50 to-white min-h-screen flex items-start lg:items-center pt-0">
+      <section className="bg-gradient-to-b from-blue-50/50 to-white min-h-[80vh] lg:min-h-screen flex items-start lg:items-center pt-0">
         <div className="bg-white rounded-3xl shadow-xl overflow-hidden max-w-7xl mx-auto w-full h-full flex flex-col justify-between">
           {/* Main Content */}
           <div className="p-4 sm:p-8 lg:p-10 flex flex-col lg:grid lg:grid-cols-2 gap-6 lg:gap-12 items-center flex-grow">
@@ -52,7 +52,7 @@ export default function LandingPage() {
               </h1>
 
               <p className="text-base sm:text-base lg:text-lg text-gray-600 text-center sm:text-left">
-                Join 100+ Ethiopian students using SmartPrep to master their
+                Join 1000+ Ethiopian students using SmartPrep to master their
                 Grade 12 entrance exams, practice with real questions, and get
                 instant feedback — all in one smart learning platform.
               </p>
@@ -180,7 +180,7 @@ export default function LandingPage() {
               {
                 img: "/game-icons_click.png",
                 title: "Pick Subject",
-                desc: "Choose Math, Physics, Chemistry, Biology, English, and more.",
+                desc: "Choose Math, Physics, Chemistry, History, Geography, and more.",
               },
               {
                 img: "/Document.png",
@@ -391,8 +391,8 @@ export default function LandingPage() {
 
         {/* Content */}
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl sm:text-4xl font-bold text-center text-gray-900 mb-10 sm:mb-12">
-            Success Stories
+          <h2 className="text-center text-4xl sm:text-5xl font-extrabold tracking-tight mb-14">
+            Success <span className="text-[#007BFF]">Stories</span>
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
@@ -461,10 +461,9 @@ export default function LandingPage() {
       {/* FAQ */}
       <section className="py-12 sm:py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl sm:text-4xl font-bold text-center text-gray-900 mb-10 sm:mb-12">
-            Frequently Asked Questions
+          <h2 className="text-center text-4xl sm:text-5xl font-extrabold tracking-tight mb-14">
+            Frequently Asked <span className="text-[#007BFF]">Questions</span>
           </h2>
-
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
             {/* Left Column */}
             <Accordion type="single" collapsible className="space-y-4">
@@ -524,70 +523,72 @@ export default function LandingPage() {
       </section>
 
       {/* Newsletter */}
-      <section className="relative overflow-hidden bg-white">
-        <div className="pt-12 sm:pt-16 lg:pt-24"></div>
+      <section className="relative overflow-hidden bg-white py-12">
+        {/* Top spacing for large screens only */}
+        <div className="pt-8 sm:pt-12 lg:pt-20"></div>
 
-        {/* MOBILE: Image Section on top */}
-        <div className="block lg:hidden bg-white pb-10">
-          <div className="relative flex justify-center w-full pt-6">
-            {" "}
-            {/* UPDATED: reduced top padding */}
+        {/* MOBILE IMAGE SECTION */}
+        <div className="block lg:hidden bg-white pb-8 sm:pb-12">
+          <div className="relative flex justify-center w-full pt-4">
             {/* Outer Circle */}
-            <div className="absolute top-[45%] -translate-y-1/2 w-[280px] h-[280px] bg-[#0057C2] rounded-full z-0"></div>{" "}
-            {/* UPDATED: slightly larger & moved up */}
-            {/* Inner White Circle */}
-            <div className="absolute top-[45%] -translate-y-1/2 w-[220px] h-[220px] bg-white rounded-full z-10 overflow-hidden"></div>{" "}
-            {/* UPDATED */}
+            <div className="absolute top-1/2 -translate-y-1/2 w-[240px] h-[240px] bg-[#0057C2] rounded-full z-0"></div>
+            {/* Inner Circle */}
+            <div className="absolute top-1/2 -translate-y-1/2 w-[190px] h-[190px] bg-white rounded-full z-10 overflow-hidden"></div>
             {/* Image */}
             <img
               src="/1111.png"
               alt="Student learning"
-              className="relative z-20 w-[240px] object-contain drop-shadow-xl -mt-2" // UPDATED: slightly bigger & nudged up
+              className="relative z-20 w-[220px] object-contain drop-shadow-2xl"
             />
           </div>
         </div>
 
         {/* TEXT + FORM SECTION */}
-        <div className="relative bg-[#0057C2] px-4 sm:px-6 lg:px-12 py-12 sm:py-16">
-          <div className="max-w-7xl mx-auto flex flex-col lg:flex-row items-center justify-between gap-8 lg:gap-12">
-            {/* Left: Text + Form */}
+        <div className="relative bg-[#0057C2] px-5 sm:px-8 lg:px-12 py-12 sm:py-16">
+          <div className="max-w-7xl mx-auto flex flex-col lg:flex-row items-center justify-between gap-10 lg:gap-14">
+            {/* LEFT: TEXT + FORM */}
             <div className="max-w-xl w-full text-center lg:text-left z-10 order-2 lg:order-1">
-              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 sm:mb-6 text-white">
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 sm:mb-6 text-white leading-tight">
                 Subscribe for Updates
               </h2>
-              <p className="text-white/90 text-sm sm:text-base leading-relaxed mb-6 sm:mb-8 max-w-lg mx-auto lg:mx-0">
+              <p className="text-white/90 text-base sm:text-lg leading-relaxed mb-6 sm:mb-8 max-w-lg mx-auto lg:mx-0">
                 Don’t miss out on the latest updates and exclusive content.
                 Subscribe now and be the first to know when our scored practice
-                test is live. Stay ahead in your language learning journey!
+                test is live.
               </p>
-              <form className="flex flex-col sm:flex-row gap-3 sm:gap-4 max-w-md mx-auto lg:mx-0">
+
+              {/* FORM */}
+              <form className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full sm:max-w-md mx-auto lg:mx-0">
                 <input
                   type="email"
-                  placeholder="Enter your Email"
-                  className="flex-1 h-12 sm:h-14 rounded-full bg-white text-gray-700 placeholder-gray-400 px-5 sm:px-6 text-sm sm:text-base border border-gray-300 focus:outline-none focus:ring-2 focus:ring-orange-400"
+                  placeholder="Enter your email address"
+                  className="w-full sm:flex-1 h-12 sm:h-14 rounded-full bg-white text-gray-700 placeholder-gray-400 px-5 sm:px-6 text-base border border-gray-300 focus:outline-none focus:ring-2 focus:ring-orange-400 shadow-sm"
                 />
                 <button
                   type="submit"
-                  className="bg-[#F7931E] hover:bg-[#e58310] text-white px-6 sm:px-8 h-12 sm:h-14 rounded-full text-sm sm:text-base font-semibold transition-colors"
+                  className="w-full sm:w-auto bg-[#F7931E] hover:bg-[#e58310] text-white px-8 sm:px-10 h-12 sm:h-14 rounded-full text-base font-semibold transition-all shadow-md hover:shadow-lg"
                 >
                   Subscribe
                 </button>
               </form>
+
+              {/* Optional small text under input on mobile */}
+              <p className="text-xs text-white/70 mt-3 sm:mt-4">
+                We respect your privacy. Unsubscribe anytime.
+              </p>
             </div>
 
-            {/* DESKTOP: Image Section */}
+            {/* DESKTOP IMAGE SECTION */}
             <div className="relative hidden lg:flex justify-center w-full lg:w-auto order-1 lg:order-2">
               {/* Outer Circle */}
-              <div className="absolute top-[35%] -translate-y-1/2 w-[440px] h-[440px] bg-[#0057C2] rounded-full -mt-20 z-0"></div>{" "}
-              {/* UPDATED */}
+              <div className="absolute top-[35%] -translate-y-1/2 w-[440px] h-[440px] bg-[#0057C2] rounded-full -mt-20 z-0"></div>
               {/* Inner White Circle */}
-              <div className="absolute top-[30%] -translate-y-1/2 w-[340px] h-[340px] bg-white rounded-full z-10 -mt-20 overflow-hidden"></div>{" "}
-              {/* UPDATED */}
+              <div className="absolute top-[30%] -translate-y-1/2 w-[340px] h-[340px] bg-white rounded-full z-10 -mt-20 overflow-hidden"></div>
               {/* Image */}
               <img
                 src="/1111.png"
                 alt="Student learning"
-                className="relative z-20 w-[760px] object-contain drop-shadow-xl -mt-6" // UPDATED: bigger & slightly up
+                className="relative z-20 w-[720px] object-contain drop-shadow-xl -mt-6"
               />
             </div>
           </div>

@@ -1,4 +1,3 @@
-// components/SiteFooter.tsx
 "use client";
 
 import Link from "next/link";
@@ -87,7 +86,21 @@ export function SiteFooter() {
 
         {/* Bottom Bar */}
         <div className="mt-8 pt-6 border-t border-gray-200 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-gray-500">
-          <p>© 2025 All Copyrights reserved</p>
+          <p>© 2025 All rights reserved</p>
+          <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 text-center">
+            <span>
+              Designed and Developed by{" "}
+              <Link
+                href="https://pixeladdis.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-600 font-medium hover:underline"
+              >
+                PixelAddis Solutions
+              </Link>
+              .
+            </span>
+          </div>
           <div className="flex gap-4">
             <Link
               href="/terms"
