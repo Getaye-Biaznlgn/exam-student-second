@@ -40,84 +40,80 @@ export default function LandingPage() {
   return (
     <div className="flex flex-col bg-white">
       {/* Hero Section */}
-      <section className="bg-gradient-to-b from-blue-50/50 to-white -mt-1 min-h-screen flex items-center">
-        <div className="bg-white rounded-3xl shadow-xl overflow-hidden max-w-7xl mx-auto">
+      <section className="bg-gradient-to-b from-blue-50/50 to-white min-h-screen flex items-start lg:items-center pt-0">
+        <div className="bg-white rounded-3xl shadow-xl overflow-hidden max-w-7xl mx-auto w-full h-full flex flex-col justify-between">
           {/* Main Content */}
-          <div className="p-6 sm:p-8 lg:p-10 flex flex-col lg:grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
-            {/* Text Section - Always on top in mobile/tablet */}
-            <div className="space-y-4 sm:space-y-5 lg:order-1 order-1">
-              <h1 className="text-2xl sm:text-4xl lg:text-5xl font-bold text-gray-900 leading-tight">
+          <div className="p-4 sm:p-8 lg:p-10 flex flex-col lg:grid lg:grid-cols-2 gap-6 lg:gap-12 items-center flex-grow">
+            {/* Text Section */}
+            <div className="space-y-4 sm:space-y-5 lg:order-1 order-1 mt-0">
+              <h1 className="text-4xl sm:text-4xl lg:text-5xl font-bold text-gray-900 leading-tight  sm:text-left">
                 Your Dream University Is{" "}
                 <span className="text-blue-600">Closer Than You Think</span>
               </h1>
 
-              <p className="text-sm sm:text-base lg:text-lg text-gray-600">
+              <p className="text-base sm:text-base lg:text-lg text-gray-600 text-center sm:text-left">
                 Join 100+ Ethiopian students using SmartPrep to master their
                 Grade 12 entrance exams, practice with real questions, and get
                 instant feedback — all in one smart learning platform.
               </p>
 
-              <div className="flex flex-col sm:flex-row gap-3">
+              {/* Buttons side by side on all screens */}
+              <div className="flex flex-row justify-center sm:justify-start gap-3 flex-wrap">
                 <Button
                   size="lg"
-                  className="bg-orange-500 hover:bg-orange-600 text-white font-semibold px-6 py-5 rounded-xl text-base sm:text-lg w-full sm:w-auto"
+                  className="bg-orange-500 hover:bg-orange-600 text-white font-semibold px-6 py-5 rounded-xl text-lg sm:text-lg w-auto"
                 >
                   Start Practice
                 </Button>
                 <Button
                   size="lg"
                   variant="outline"
-                  className="border-blue-600 text-blue-600 hover:bg-blue-50 font-semibold px-6 py-5 rounded-xl text-base sm:text-lg w-full sm:w-auto"
+                  className="border-blue-600 text-blue-600 hover:bg-blue-50 font-semibold px-6 py-5 rounded-xl text-lg sm:text-lg w-auto"
                 >
                   See how it works
                 </Button>
               </div>
             </div>
 
-            {/* Image Section - Below text on mobile/tablet */}
-            <div className="relative flex justify-center lg:justify-end lg:order-2 order-2">
-              {/* Badge with Sharp Bottom-Right Triangle Pointer (No Shadow Anywhere) */}
+            {/* Image Section */}
+            <div className="relative flex justify-center lg:justify-end lg:order-2 order-2 mt-4 sm:mt-0">
+              {/* Badge */}
               <div className="absolute top-2 left-2 sm:top-4 sm:left-4 lg:top-12 lg:left-8 z-20">
-                <div className="relative bg-white rounded-full px-2.5 py-1.5 sm:px-3 sm:py-1.5 lg:px-4 lg:py-2 flex items-center gap-1.5 sm:gap-2 border border-blue-100 text-xs sm:text-sm lg:text-base overflow-visible shadow-none">
-                  <Check className="h-3.5 w-3.5 sm:h-4 sm:w-4 lg:h-5 lg:w-5 text-blue-600" />
+                <div className="relative bg-white rounded-full px-3 py-1.5 sm:px-3 sm:py-1.5 lg:px-4 lg:py-2 flex items-center gap-2 border border-blue-100 text-sm sm:text-sm lg:text-base overflow-visible shadow-none">
+                  <Check className="h-4 w-4 lg:h-5 lg:w-5 text-blue-600" />
                   <span className="font-bold text-gray-800">
                     Got 500+ Score
                   </span>
-
-                  {/* Sharp triangle pointer (bottom-right, no shadow) */}
                   <div
                     className="absolute -bottom-2 right-3 w-0 h-0 
-                      border-l-[10px] border-l-transparent 
-                      border-t-[14px] border-t-white 
-                      border-r-[10px] border-r-transparent 
-                      border-b-0"
+                border-l-[10px] border-l-transparent 
+                border-t-[14px] border-t-white 
+                border-r-[10px] border-r-transparent 
+                border-b-0"
                   />
                 </div>
               </div>
 
-              {/* Background Circles */}
-              <div className="absolute top-5 sm:top-16 lg:top-12 left-12 sm:left-20 w-[180px] h-[180px] sm:w-[240px] sm:h-[240px] lg:w-[360px] lg:h-[360px] bg-blue-500 rounded-full opacity-10 z-0"></div>
-              <div
-                className="absolute top-10 sm:top-20 left-16 sm:left-28 w-[140px] h-[140px] sm:w-[190px] sm:h-[190px] lg:w-[300px] lg:h-[300px] bg-blue-600
-          rounded-full opacity-30 z-10"
-              ></div>
+              {/* Bigger Circles */}
+              <div className="absolute top-3 sm:top-14 lg:top-10 left-10 sm:left-18 w-[200px] h-[200px] sm:w-[270px] sm:h-[270px] lg:w-[400px] lg:h-[400px] bg-blue-500 rounded-full opacity-10 z-0"></div>
+              <div className="absolute top-8 sm:top-18 left-14 sm:left-26 w-[160px] h-[160px] sm:w-[220px] sm:h-[220px] lg:w-[340px] lg:h-[340px] bg-blue-600 rounded-full opacity-30 z-10"></div>
 
-              {/* Image */}
-              <div className="relative z-20 w-full max-w-[220px] sm:max-w-[300px] lg:max-w-[500px]">
+              {/* Slightly Larger Image */}
+              <div className="relative z-20 w-full max-w-[270px] sm:max-w-[340px] lg:max-w-[520px]">
                 <Image
                   src="/111.png"
                   alt="Ethiopian student using SmartPrep"
-                  width={650}
-                  height={800}
-                  className="w-full h-auto object-contain drop-shadow-2xl scale-105"
+                  width={700}
+                  height={850}
+                  className="w-full h-auto object-contain drop-shadow-2xl scale-110"
                   priority
                 />
               </div>
             </div>
           </div>
 
-          {/* Stats - Always at bottom */}
-          <div className="bg-blue-50/70 rounded-2xl p-4 sm:p-5 lg:p-6 mx-4 sm:mx-6 lg:mx-10 lg:-mt-6 order-3">
+          {/* Stats */}
+          <div className="bg-blue-50/70 rounded-2xl p-4 sm:p-5 lg:p-6 mx-4 sm:mx-6 lg:mx-10 mb-0">
             <div className="grid grid-cols-3 gap-3 sm:gap-4 text-center">
               <div>
                 <div className="text-lg sm:text-xl lg:text-3xl font-bold text-blue-600">
