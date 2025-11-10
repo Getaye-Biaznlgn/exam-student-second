@@ -238,10 +238,10 @@ export default function LandingPage() {
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 z-10">
           <div className="text-center mb-10 sm:mb-12">
-            <h2 className="text-3xl sm:text-4xl font-bold text-white drop-shadow-lg">
+            <h2 className="text-3xl sm:text-4xl font-bold text-black drop-shadow-lg">
               Past Exam Practice Library
             </h2>
-            <p className="text-gray-100 mt-3 text-sm sm:text-base max-w-3xl mx-auto drop-shadow-md">
+            <p className="text-black  mt-3 text-sm sm:text-base max-w-3xl mx-auto drop-shadow-md">
               Practice with real Ethiopian Secondary Education Leaving Exams
               (ESLE) — the same style, structure, and level of difficulty you'll
               face on test day.
