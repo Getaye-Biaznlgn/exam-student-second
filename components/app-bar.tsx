@@ -35,7 +35,7 @@ export function AppBar() {
             <Link href="/" className="flex items-center gap-2">
               <div className="h-12 w-24 rounded-lg overflow-hidden">
                 <Image
-                  src="/logo.png"
+                  src="/photo_2025-11-06_13-44-32.jpg"
                   alt="SmartPrep Logo"
                   width={250}
                   height={150}
@@ -47,25 +47,39 @@ export function AppBar() {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-6">
-            <Link
-              href="/"
-              className="text-sm font-medium hover:text-primary transition-colors"
-            >
-              Home
-            </Link>
+            <div className="relative group">
+              <Link
+                href="/#features"
+                className="text-sm font-medium hover:text-primary transition-colors"
+              >
+                Features
+              </Link>
+            </div>
 
-            <Link
-              href="/#about"
-              className="text-sm font-medium hover:text-primary transition-colors"
-            >
-              About
-            </Link>
-            <Link
-              href="/#contact"
-              className="text-sm font-medium hover:text-primary transition-colors"
-            >
-              Contact
-            </Link>
+            <div className="relative group">
+              <Link
+                href="/#how-it-works"
+                className="text-sm font-medium hover:text-primary transition-colors"
+              >
+                How it works
+              </Link>
+            </div>
+            <div className="relative group">
+              <Link
+                href="/#success-stories"
+                className="text-sm font-medium hover:text-primary transition-colors"
+              >
+                Success Stories
+              </Link>
+            </div>
+            <div className="relative group">
+              <Link
+                href="/#hero"
+                className="text-sm font-medium hover:text-primary transition-colors"
+              >
+                our mission
+              </Link>
+            </div>
             {user && (
               <>
                 <Link
