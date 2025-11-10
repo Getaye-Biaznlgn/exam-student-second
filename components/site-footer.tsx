@@ -51,7 +51,7 @@ export function SiteFooter() {
               </li>
               <li>
                 <Link
-                  href="/#story"
+                  href="/#success-stories"
                   className="hover:text-blue-600 transition-colors"
                 >
                   Story
@@ -59,10 +59,10 @@ export function SiteFooter() {
               </li>
               <li>
                 <Link
-                  href="/#services"
+                  href="/#past-exams"
                   className="hover:text-blue-600 transition-colors"
                 >
-                  Services
+                  Past Exam Library
                 </Link>
               </li>
             </ul>
