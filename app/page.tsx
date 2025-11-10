@@ -40,8 +40,8 @@ export default function LandingPage() {
   return (
     <div className="flex flex-col bg-white">
       {/* Hero Section */}
-      <section className="bg-gradient-to-b from-blue-50/50 to-white -mt-1">
-        <div className="bg-white rounded-3xl shadow-xl overflow-hidden">
+      <section className="bg-gradient-to-b from-blue-50/50 to-white -mt-1 min-h-screen flex items-center">
+        <div className="bg-white rounded-3xl shadow-xl overflow-hidden max-w-7xl mx-auto">
           {/* Main Content */}
           <div className="p-6 sm:p-8 lg:p-10 flex flex-col lg:grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
             {/* Text Section - Always on top in mobile/tablet */}
