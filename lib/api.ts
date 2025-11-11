@@ -536,6 +536,20 @@ export function submitLiveExam(
     body: JSON.stringify(payload),
   });
 }
+export function fetchMyCompletedLiveExams(): Promise<
+  ApiResponse<LiveExamsResponse>
+> {
+  return apiFetch<LiveExamsResponse>("/student-exams/live/my-completed", {
+    method: "GET",
+  });
+}
+export function fetchLiveExamResults(
+  studentExamId: string
+): Promise<ApiResponse<any>> {
+  return apiFetch<any>(`/student-exams/live/results/${studentExamId}`, {
+    method: "GET",
+  });
+}
 export function fetchMyProgress(): Promise<ApiResponse<MyProgressResponse>> {
   return apiFetch<MyProgressResponse>("/student-exams/my-progress", {
     method: "GET",

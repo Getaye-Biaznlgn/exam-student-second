@@ -293,12 +293,23 @@ export default function SelectSubjectPage() {
       try {
         setLiveLoading(true);
         const res = await fetchAvailableLiveExams();
-        if (res.success && Array.isArray(res.data) && res.data.length) {
-          const exam = res.data.find((e) => e.can_take);
+
+        // unify both server shapes:
+        // - res.data = LiveExam[] (older/unwrapped)
+        // - res.data = { data: LiveExam[], meta: ... } (wrapped)
+        const list: LiveExam[] = Array.isArray(res.data)
+          ? res.data
+          : res.data?.data ?? [];
+
+        if (res.success && Array.isArray(list) && list.length > 0) {
+          const exam = list.find((e) => e.can_take);
           setLiveExam(exam ?? null);
+        } else {
+          setLiveExam(null);
         }
       } catch (err) {
         console.error("Failed to fetch live exams", err);
+        setLiveExam(null);
       } finally {
         setLiveLoading(false);
       }

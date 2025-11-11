@@ -29,6 +29,8 @@ import { ExamSummary } from "@/components/exam/ExamSummary";
 import { ConfirmSubmitModal } from "@/components/exam/ConfirmSubmitModal";
 import { QuestionExplanations } from "@/components/exam/QuestionExplanation";
 
+// ...existing code...
+
 function stripHtmlTags(html: string | null | undefined): string {
   if (typeof html !== "string") return "";
   return html.replace(/<[^>]*>/g, "").trim();
@@ -95,11 +97,28 @@ export default function ExamPage() {
   const durationSeconds = (examData?.exam?.duration_minutes ?? 0) * 60;
   const [remainingSeconds, setRemainingSeconds] = useState(durationSeconds);
 
+  // Helper: compute remaining seconds for live exams accounting for scheduled start_time
+  const computeInitialRemaining = (): number => {
+    if (!examData) return durationSeconds;
+    if (!isLiveMode) return durationSeconds;
+    const startTimeStr = examData.exam?.start_time;
+    if (!startTimeStr) return durationSeconds;
+    const scheduledStart = new Date(startTimeStr).getTime();
+    const elapsedSinceScheduled = Math.floor(
+      (Date.now() - scheduledStart) / 1000
+    );
+    return Math.max(0, durationSeconds - elapsedSinceScheduled);
+  };
+
   useEffect(() => {
     if (!examStarted || durationSeconds === 0) return;
 
-    const startTime = Date.now();
-    const endTime = startTime + durationSeconds * 1000;
+    // Compute remaining seconds at the moment the student starts the exam.
+    // For live exams, reduce remaining time by the delay since scheduled start_time.
+    const initialRemaining = computeInitialRemaining();
+    setRemainingSeconds(initialRemaining);
+
+    const endTime = Date.now() + initialRemaining * 1000;
 
     const timer = setInterval(() => {
       const now = Date.now();
@@ -132,14 +151,16 @@ export default function ExamPage() {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [examStarted, durationSeconds]);
+  }, [examStarted, durationSeconds, examData, isLiveMode]);
 
   // Reset timer when exam starts
   useEffect(() => {
     if (examStarted) {
-      setRemainingSeconds(durationSeconds);
+      // use same logic as above to set remainingSeconds when examStarted flips
+      const initialRemaining = computeInitialRemaining();
+      setRemainingSeconds(initialRemaining);
     }
-  }, [examStarted, durationSeconds]);
+  }, [examStarted, durationSeconds, examData, isLiveMode]);
 
   // ── Fetch exam & profile ─────────────────────────────────────────────
   useEffect(() => {
