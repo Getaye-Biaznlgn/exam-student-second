@@ -113,7 +113,6 @@ export default function ExamPage() {
   useEffect(() => {
     if (!examStarted || durationSeconds === 0) return;
 
-    // Compute remaining seconds at the moment the student starts the exam.
     // For live exams, reduce remaining time by the delay since scheduled start_time.
     const initialRemaining = computeInitialRemaining();
     setRemainingSeconds(initialRemaining);
@@ -185,9 +184,6 @@ export default function ExamPage() {
         if (type === "live") {
           res = await startLiveExam({ exam_id: examId, mode: mode! });
           if (res.success && res.data) {
-            // Backend shape (example) uses top-level question fields:
-            // student_question_id, question_id, question_text, options [{ option_id, option_key, option_text }, ...]
-            // Map that shape into StartExamResponse -> StudentQuestion[]
             const questions = (res.data.questions || []).map((q: any) => {
               const studentQuestionId =
                 q.student_question_id ?? q.id ?? q.student_question_id;
@@ -229,12 +225,12 @@ export default function ExamPage() {
               questions,
             } as StartExamResponse);
 
-            // Prefill UI answers using selected_option_id (which maps to option.id we created above)
+            // Prefill UI answers using selected_option_id
             const preAnswers: Record<string, string> = {};
             const preFlagged = new Set<string>();
             questions.forEach((pq: any) => {
               if (pq.selected_option) {
-                // The backend returns selected_option_id which we mapped to option.id above.
+                // The backend returns selected_option_id
                 preAnswers[pq.question.id] = pq.selected_option;
               }
               if (pq.is_flagged) preFlagged.add(pq.question.id);
@@ -251,7 +247,7 @@ export default function ExamPage() {
           res = await startExam({ exam_id: examId, mode: mode! });
           if (res.success && res.data) {
             setExamData(res.data);
-            // For non-live we intentionally don't map selected_option -> option id because server may return option_key
+            // For non-live we intentionally don't map selected_option
             setAnswers({});
             answersRef.current = {};
             setFlagged(new Set());
@@ -294,7 +290,7 @@ export default function ExamPage() {
     if (examStarted && currentQuestion) {
       startTimeRef.current = Date.now();
       if (timeRef.current) clearInterval(timeRef.current);
-      // interval kept only to keep consistent behaviour; no op inside
+
       timeRef.current = setInterval(() => {}, 1000);
     }
     return () => {
@@ -610,6 +606,49 @@ export default function ExamPage() {
   }
 
   if (examCompleted) {
+    // Show success modal only for LIVE exams
+    if (isLiveMode) {
+      return (
+        <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
+          <div className="bg-white rounded-2xl p-8 w-full max-w-sm text-center shadow-xl animate-fadeIn">
+            <div className="flex justify-center mb-4">
+              <div className="h-14 w-14 rounded-full bg-green-100 flex items-center justify-center">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-8 w-8 text-green-600"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M5 13l4 4L19 7"
+                  />
+                </svg>
+              </div>
+            </div>
+
+            <h2 className="text-2xl font-semibold text-green-600 mb-2">
+              Exam Submitted Successfully!
+            </h2>
+            <p className="text-gray-700 mb-6">
+              Your live exam has been submitted successfully. Thank you for
+              participating.
+            </p>
+
+            <button
+              onClick={() => router.push("/")}
+              className="bg-primary text-white px-6 py-2 rounded-lg hover:bg-primary/90 transition"
+            >
+              Go to Home
+            </button>
+          </div>
+        </div>
+      );
+    }
+
     return (
       <ExamResultCard
         result={finalResult}
