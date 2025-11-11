@@ -83,7 +83,10 @@ export default function LandingPage() {
             <div className="relative flex justify-center lg:justify-end lg:order-2 order-2 mt-4 sm:mt-0">
               {/* Badge */}
               <div className="absolute top-2 left-2 sm:top-4 sm:left-4 lg:top-12 lg:left-8 z-20">
-                <div className="relative bg-white rounded-full px-3 py-1.5 sm:px-3 sm:py-1.5 lg:px-4 lg:py-2 flex items-center gap-2 border border-blue-100 text-sm sm:text-sm lg:text-base overflow-visible shadow-none">
+                <div
+                  className="relative bg-white rounded-full px-3 py-1.5 flex items-center gap-2 border border-blue-100 text-sm overflow-visible shadow-none
+  -translate-x-14 sm:translate-x-0"
+                >
                   <Check className="h-4 w-4 lg:h-5 lg:w-5 text-blue-600" />
                   <span className="font-bold text-gray-800">
                     Got 500+ Score

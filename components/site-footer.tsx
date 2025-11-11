@@ -1,7 +1,13 @@
 "use client";
-
 import Link from "next/link";
-import { Mail, Phone } from "lucide-react";
+import {
+  Mail,
+  Phone,
+  Facebook,
+  MessageCircle,
+  Twitter,
+  Linkedin,
+} from "lucide-react";
 import Image from "next/image";
 
 export function SiteFooter() {
@@ -24,8 +30,8 @@ export function SiteFooter() {
               <span className="text-xl font-bold text-gray-900">SmartPrep</span>
             </div>
             <p className="text-sm text-gray-600 max-w-xs">
-              Join SmartPrep to master their Grade 12 entrance exams, practice
-              with real questions, and get instant feedback
+              Join SmartPrep to master Grade 12 entrance exams, practice with
+              real questions, and get instant feedback.
             </p>
           </div>
 
@@ -87,6 +93,7 @@ export function SiteFooter() {
         {/* Bottom Bar */}
         <div className="mt-8 pt-6 border-t border-gray-200 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-gray-500">
           <p>© 2025 All rights reserved</p>
+
           <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 text-center">
             <span>
               Designed and Developed by{" "}
@@ -101,6 +108,40 @@ export function SiteFooter() {
               .
             </span>
           </div>
+
+          {/* Social Media Icons */}
+          <div className="flex gap-3">
+            <Link
+              href="#"
+              aria-label="Facebook"
+              className="text-gray-500 hover:text-blue-600 transition-colors"
+            >
+              <Facebook className="h-5 w-5" />
+            </Link>
+            <Link
+              href="#"
+              aria-label="Telegram"
+              className="text-gray-500 hover:text-blue-600 transition-colors"
+            >
+              <MessageCircle className="h-5 w-5" />
+            </Link>
+            <Link
+              href="#"
+              aria-label="Twitter"
+              className="text-gray-500 hover:text-blue-600 transition-colors"
+            >
+              <Twitter className="h-5 w-5" />
+            </Link>
+            <Link
+              href="#"
+              aria-label="LinkedIn"
+              className="text-gray-500 hover:text-blue-600 transition-colors"
+            >
+              <Linkedin className="h-5 w-5" />
+            </Link>
+          </div>
+
+          {/* Legal Links */}
           <div className="flex gap-4">
             <Link
               href="/terms"
