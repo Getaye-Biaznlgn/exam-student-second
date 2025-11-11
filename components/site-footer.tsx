@@ -1,4 +1,3 @@
-// components/SiteFooter.tsx
 "use client";
 
 import Link from "next/link";
@@ -15,7 +14,7 @@ export function SiteFooter() {
             <div className="flex items-center gap-3 mb-3">
               <div className="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center">
                 <Image
-                  src="/photo_2025-11-06_13-44-32.jpg" // Replace with your actual logo
+                  src="/Screenshot 2025-11-10 045055.png"
                   alt="SmartPrep Logo"
                   width={32}
                   height={32}
@@ -52,7 +51,7 @@ export function SiteFooter() {
               </li>
               <li>
                 <Link
-                  href="/#story"
+                  href="/#success-stories"
                   className="hover:text-blue-600 transition-colors"
                 >
                   Story
@@ -60,10 +59,10 @@ export function SiteFooter() {
               </li>
               <li>
                 <Link
-                  href="/#services"
+                  href="/#past-exams"
                   className="hover:text-blue-600 transition-colors"
                 >
-                  Services
+                  Past Exam Library
                 </Link>
               </li>
             </ul>
@@ -87,7 +86,21 @@ export function SiteFooter() {
 
         {/* Bottom Bar */}
         <div className="mt-8 pt-6 border-t border-gray-200 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-gray-500">
-          <p>© 2025 All Copyrights reserved</p>
+          <p>© 2025 All rights reserved</p>
+          <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 text-center">
+            <span>
+              Designed and Developed by{" "}
+              <Link
+                href="https://pixeladdis.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-600 font-medium hover:underline"
+              >
+                PixelAddis Solutions
+              </Link>
+              .
+            </span>
+          </div>
           <div className="flex gap-4">
             <Link
               href="/terms"
