@@ -273,7 +273,7 @@ export default function LandingPage() {
                 subject: "Biology",
                 year: "ESSLCE 2019-2020",
                 desc: "Study genetics, ecosystems, and biology-based reasoning...",
-                icon: "/group.png",
+                icon: "/hugeicons_biology.png",
               },
             ].map((item, i) => (
               <div
