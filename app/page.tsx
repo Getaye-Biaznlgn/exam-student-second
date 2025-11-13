@@ -93,13 +93,13 @@ export default function LandingPage() {
   return (
     <div className="flex flex-col bg-white">
       {/* Hero Section */}
-      <section className="bg-gradient-to-b from-blue-50/50 to-white min-h-[80vh] lg:min-h-screen flex items-start lg:items-center pt-0">
-        <div className="bg-white rounded-3xl shadow-xl overflow-hidden max-w-7xl mx-auto w-full h-full flex flex-col justify-between ">
+      <section className="bg-gradient-to-b from-blue-50/50 to-white min-h-[60vh] lg:min-h-[75vh] flex items-start lg:items-center pt-0">
+        <div className="bg-white rounded-3xl shadow-xl overflow-hidden max-w-7xl mx-auto w-full h-full flex flex-col mt-0">
           {/* Main Content */}
-          <div className="p-4 sm:p-8 lg:p-10 flex flex-col lg:grid lg:grid-cols-2 gap-6 lg:gap-12 items-center flex-grow">
+          <div className="p-4 sm:p-5 lg:p-6 flex flex-col lg:grid lg:grid-cols-2 gap-6 lg:gap-10 items-center">
             {/* Text Section */}
-            <div className="space-y-4 sm:space-y-5 lg:order-1 order-1 mt-0">
-              <h1 className="text-4xl sm:text-4xl lg:text-5xl font-bold text-gray-900 leading-tight  sm:text-left">
+            <div className="space-y-4 sm:space-y-5 lg:order-1 order-1 mt-0 animate-fadeIn">
+              <h1 className="text-4xl sm:text-4xl lg:text-5xl font-bold text-gray-900 leading-tight sm:text-left">
                 {t("landing.hero.titleStart")}{" "}
                 <span className="text-blue-600">
                   {t("landing.hero.titleHighlight")}
@@ -110,21 +110,30 @@ export default function LandingPage() {
                 {t("landing.hero.description")}
               </p>
 
-              {/* Buttons side by side on all screens */}
+              {/* Buttons */}
               <div className="flex flex-row justify-center sm:justify-start gap-3 flex-wrap">
                 <Link href="/auth">
                   <Button
                     size="lg"
-                    className="bg-orange-500 hover:bg-orange-600 text-white font-semibold px-6 py-5 rounded-xl text-lg sm:text-lg w-auto"
+                    className="relative bg-orange-500 hover:bg-orange-600 text-white font-semibold px-6 py-5 rounded-xl text-lg sm:text-lg w-auto
+                 transition-transform duration-300 hover:scale-105
+                 before:content-[''] before:absolute before:inset-0 before:rounded-xl before:opacity-0 before:transition-opacity before:duration-500 before:blur-md
+                 before:bg-orange-400 hover:before:opacity-60
+                 animate-button-bounce-glow"
                   >
                     {t("landing.hero.primaryCta")}
                   </Button>
                 </Link>
+
                 <Link href="/#how-it-works">
                   <Button
                     size="lg"
                     variant="outline"
-                    className="border-blue-600 text-blue-600 hover:bg-blue-50 font-semibold px-6 py-5 rounded-xl text-lg sm:text-lg w-auto"
+                    className="relative border-blue-600 text-blue-600 hover:bg-blue-50 font-semibold px-6 py-5 rounded-xl text-lg sm:text-lg w-auto
+                 transition-transform duration-300 hover:scale-105
+                 before:content-[''] before:absolute before:inset-0 before:rounded-xl before:opacity-0 before:transition-opacity before:duration-500 before:blur-md
+                 before:border before:border-blue-400 hover:before:opacity-60
+                 animate-button-bounce-glow-blue"
                   >
                     {t("landing.hero.secondaryCta")}
                   </Button>
@@ -133,12 +142,12 @@ export default function LandingPage() {
             </div>
 
             {/* Image Section */}
-            <div className="relative flex justify-center lg:justify-end lg:order-2 order-2 mt-4 sm:mt-0">
+            <div className="relative flex justify-center lg:justify-end lg:order-2 order-2 mt-4 sm:mt-0 lg:ml-8 lg:mr-0 animate-fadeUp">
               {/* Badge */}
-              <div className="absolute top-2 left-2 sm:top-4 sm:left-4 lg:top-12 lg:left-8 z-20">
+              <div className="absolute top-2 left-2 sm:top-4 sm:left-4 lg:top-12 lg:left-8 z-20 animate-slideIn">
                 <div
-                  className="relative bg-white rounded-full px-3 py-1.5 flex items-center gap-2 border border-blue-100 text-sm overflow-visible shadow-none
-  -translate-x-14 sm:translate-x-0"
+                  className="relative bg-white rounded px-3 py-1.5 flex items-center gap-2 border border-blue-100 text-sm overflow-visible shadow-none 
+    ml-[-3.5rem] sm:ml-0"
                 >
                   <Check className="h-4 w-4 lg:h-5 lg:w-5 text-blue-600" />
                   <span className="font-bold text-gray-800">
@@ -146,25 +155,25 @@ export default function LandingPage() {
                   </span>
                   <div
                     className="absolute -bottom-2 right-3 w-0 h-0 
-                border-l-[10px] border-l-transparent 
-                border-t-[14px] border-t-white 
-                border-r-[10px] border-r-transparent 
-                border-b-0"
+                  border-l-[10px] border-l-transparent 
+                  border-t-[14px] border-t-white 
+                  border-r-[10px] border-r-transparent 
+                  border-b-0"
                   />
                 </div>
               </div>
 
-              {/* Bigger Circles */}
-              <div className="absolute top-3 sm:top-14 lg:top-10 left-10 sm:left-18 w-[200px] h-[200px] sm:w-[270px] sm:h-[270px] lg:w-[400px] lg:h-[400px] bg-blue-500 rounded-full opacity-10 z-0"></div>
+              {/* Glowing Circles */}
+              <div className="absolute top-3 sm:top-14 lg:top-10 left-10 sm:left-18 w-[200px] h-[200px] sm:w-[270px] sm:h-[270px] lg:w-[400px] lg:h-[400px] bg-blue-500 rounded-full opacity-10 z-0 animate-glow-slow"></div>
               <div
                 className="absolute top-8 sm:top-18 left-14 sm:left-26 
-             w-[160px] h-[160px] sm:w-[220px] sm:h-[220px] 
-             lg:w-[340px] lg:h-[340px] rounded-full opacity-90 z-10"
-                style={{ backgroundColor: "#004B84" }}
+              w-[160px] h-[160px] sm:w-[220px] sm:h-[220px] 
+              lg:w-[340px] lg:h-[340px] rounded-full opacity-90 z-10 animate-glow-pulse"
+                style={{ backgroundColor: "#0263C1" }}
               ></div>
 
-              {/* Slightly Larger Image */}
-              <div className="relative z-20 w-full max-w-[270px] sm:max-w-[340px] lg:max-w-[520px]">
+              {/* Image */}
+              <div className="relative z-20 w-full max-w-[270px] sm:max-w-[340px] lg:max-w-[520px] animate-float">
                 <Image
                   src="/111.png"
                   alt={t("landing.hero.imageAlt")}
@@ -178,8 +187,8 @@ export default function LandingPage() {
           </div>
 
           {/* Stats */}
-          <div className="bg-blue-50/70 rounded-2xl p-4 sm:p-5 lg:p-6 mx-4 sm:mx-6 lg:mx-10 mb-0">
-            <div className="grid grid-cols-3 gap-3 sm:gap-4 text-center">
+          <div className="px-4 sm:px-6 lg:px-10 pb-1 animate-fadeInSlow">
+            <div className="max-w-3xl mx-auto grid grid-cols-3 gap-3 sm:gap-4 text-center rounded-2xl bg-blue-50/70 p-4 sm:p-5">
               {stats.map((stat) => (
                 <div key={stat.label}>
                   <div className="text-lg sm:text-xl lg:text-3xl font-bold text-blue-600">

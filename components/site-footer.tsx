@@ -21,7 +21,7 @@ export function SiteFooter() {
           {/* Brand Section */}
           <div className="flex flex-col items-center md:items-start text-center md:text-left">
             <div className="flex items-center gap-3 mb-3">
-              <div className="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center">
+              <div className="w-12 h-12 bg-blue-200 rounded-lg flex items-center justify-center">
                 <Image
                   src="/new.png"
                   alt={t("branding.logoAlt")}

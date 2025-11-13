@@ -29,11 +29,11 @@ export function AppBar() {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 overflow-visible">
-      <div className="max-w-screen-xl mx-auto px-2 sm:px-6 lg:px-10">
-        <div className="flex h-20 md:h-24 items-center justify-between relative">
+      <div className="max-w-screen-xl mx-auto px-2 sm:px-5 lg:px-8">
+        <div className="flex h-16 md:h-20 items-center justify-between relative">
           {/* Logo & Brand */}
-          <Link href="/" className="relative flex items-center gap-4 shrink-0">
-            <div className="relative  translate-y-5 md:translate-y-6 h-20 w-20 md:h-24 md:w-24 overflow-visible z-50">
+          <Link href="/" className="relative flex items-center gap-3 sm:gap-4 shrink-0">
+            <div className="relative h-20 w-20 md:h-24 md:w-24 overflow-visible z-50 -mb-6 md:-mb-8">
               <Image
                 src="/new.png"
                 alt={t("branding.logoAlt")}
@@ -42,7 +42,7 @@ export function AppBar() {
                 className="w-full h-full object-contain"
               />
             </div>
-            <span className="text-xl px-2 mt-5 md:text-3xl font-extrabold tracking-tight text-[#004B84] leading-none">
+            <span className="text-xl px-2 md:text-3xl font-extrabold tracking-tight text-[#004B84] leading-none">
               SmartPrep
             </span>
           </Link>
