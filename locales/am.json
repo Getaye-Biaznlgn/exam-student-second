@@ -1,0 +1,334 @@
+{
+  "common": {
+    "appName": "ስማርትፕረፕ",
+    "loading": "በመጫን ላይ...",
+    "error": "ችግኝ ተፈጥሯል",
+    "cancel": "ሰርዝ",
+    "confirm": "አረጋግጥ",
+    "close": "ዝጋ",
+    "save": "አስቀምጥ",
+    "edit": "ያስተካክል",
+    "delete": "አጥፋ",
+    "back": "ወደ ኋላ",
+    "next": "ቀጣይ",
+    "previous": "ቀዳሚ",
+    "yes": "አዎ",
+    "no": "አይ",
+    "apply": "ተግብር",
+    "reset": "ዳግም ጀምር",
+    "search": "ፈልግ",
+    "viewAll": "ሁሉንም እይ",
+    "learnMore": "ተጨማሪ ይወቁ",
+    "submit": "አስገባ",
+    "start": "ጀምር"
+  },
+  "navigation": {
+    "features": "ባህርያት",
+    "howItWorks": "እንዴት እንደሚሰራ",
+    "successStories": "የስኬት ታሪኮች",
+    "ourMission": "ተልዕኳችን",
+    "exam": "ፈተና",
+    "dashboard": "ዳሽቦርድ",
+    "profile": "መገለጫ",
+    "history": "ታሪክ",
+    "topicAnalysis": "ጉዳይ ትንታኔ",
+    "home": "መነሻ ገጽ",
+    "about": "ስለእኛ",
+    "contact": "ያነጋግሩን",
+    "progress": "ሂደት"
+  },
+  "auth": {
+    "signIn": "ግባ",
+    "getStarted": "ተጀምር",
+    "logout": "ውጣ"
+  },
+  "exam": {
+    "startExam": "ፈተና ጀምር"
+  },
+  "language": {
+    "switchLabel": "ቋንቋ",
+    "english": "እንግሊዝኛ",
+    "amharic": "አማርኛ"
+  },
+  "branding": {
+    "logoAlt": "የስማርትፕረፕ አርማ"
+  },
+  "landing": {
+    "hero": {
+      "titleStart": "ወደ ዩኒቨርሲቲ መግቢያ ፈተና ስኬት",
+      "titleHighlight": "የሚወስድዎት መንገድ።",
+      "description": "1000+ በላይ ኢትዮጵያውያን ተማሪዎችን ይቀላቀሉና ስማርትፕሬፕን (SmartPrep) በመጠቀም 12ኛ ክፍል የመግቢያ ፈተናዎን ፣ በእውነተኛ ጥያቄዎች ይለማመዱ፤ ፈጣን ምላሽ ያግኙ። ሁሉም በአንድ የመማሪያ መድረክ ላይ ያግኙ።",
+      "primaryCta": "ልምምድ ጀምር",
+      "secondaryCta": "እንዴት እንደሚሰራ ይመልከቱ",
+      "badge": "500+ ውጤት ተገኘ",
+      "imageAlt": "ስማርትፕረፕን በመጠቀም የሚማር የኢትዮጵያ ተማሪ"
+    },
+    "stats": {
+      "questionsLabel": "የልምምድ ጥያቄዎች",
+      "studentsLabel": "ንቁ ተማሪዎች",
+      "improvementLabel": "አማካይ ውጤት ማሻሻል"
+    },
+    "howItWorks": {
+      "title": "እንዴት ",
+      "highlight": "እንደሚሰራ",
+      "description": "የ12ኛ ክፍል መግቢያ ፈተናዎቻቸውን ለማሸነፍ ስማርትፕረፕን የሚጠቀሙ ከ100 በላይ የኢትዮጵያ ተማሪዎች ጋር ተቀላቀሉ።",
+      "steps": {
+        "signUp": {
+          "title": "ይመዝገቡ",
+          "description": "በሁለት ደቂቃ ውስጥ በስልክ ቁጥርዎ መለያ ይፍጠሩ።"
+        },
+        "pickSubject": {
+          "title": "እትም ይምረጡ",
+          "description": "ሂሳብ፣ ፊዚክስ፣ ኬሚስትሪ፣ ታሪክ፣ ጂኦግራፊ እና ሌሎችን ይምረጡ።"
+        },
+        "practice": {
+          "title": "ልምምድ ያድርጉ",
+          "description": "በሰዓት የተያዙ ፈተናዎችን ወይም በራስዎ ፍጥነት ልምምድ ያድርጉ።"
+        },
+        "learn": {
+          "title": "ይማሩ እና ይሻሻሉ",
+          "description": "የAI ማብራሪያዎችን፣ በእትም/ጉዳይ ትንታኔዎችን እና የግል የትምህርት ምክሮችን ይቀበሉ።"
+        }
+      }
+    },
+    "pastExams": {
+      "title": "የቀድሞ ፈተና",
+      "highlight": "የልምምድ መዝገብ",
+      "description": "በኢትዮጵያ የሁለተኛ ደረጃ ትምህርት መውጫ ፈተና (ESLE) በእውነት የተጠቃለሉ ጥያቄዎችን ይልማሙ — በፈተና ቀን የምታገኙትን እኩል አቀራረብ፣ መዋቅር እና ከባድነት ይዞ ይመጣል።",
+      "items": {
+        "english": {
+          "subject": "እንግሊዝኛ",
+          "year": "ESSLCE 2021-2022",
+          "description": "በእውነተኛ ፈተና ጥያቄዎች ጋር ግምገማዎን፣ ሰዋሰውን እና ቃላትን ያጠናክሩ።"
+        },
+        "mathematics": {
+          "subject": "ሂሳብ",
+          "year": "ESSLCE 2020-2021",
+          "description": "እውነተኛ የፈተና ጥያቄዎችን በመቀጠል የሂሳብ አስተሳሰብዎን ያበረታቱ።"
+        },
+        "history": {
+          "subject": "ታሪክ",
+          "year": "ESSLCE 2018-2019",
+          "description": "የኢትዮጵያን እና የዓለምን ታሪክ የሚፈትኑ ጥያቄዎች ጋር ራስዎን ይፈትኑ።"
+        },
+        "physics": {
+          "subject": "ፊዚክስ",
+          "year": "ESSLCE 2018-2019",
+          "description": "እኩል የሆነ የፊዚክስ ችሎታ ጥያቄዎችን በማስላት እንደ እውነቱ ፈተና ይልማሙ።"
+        },
+        "geography": {
+          "subject": "ጂኦግራፊ",
+          "year": "ESSLCE 2019-2020",
+          "description": "በእውነተኛ የካርታ እና የአካባቢ ጥያቄዎች ጋር ጂኦግራፊን ይረዱ።"
+        },
+        "biology": {
+          "subject": "ባዮሎጂ",
+          "year": "ESSLCE 2019-2020",
+          "description": "ጄኔቲክስ፣ ኢኮስስተም እና ባዮሎጂ ትንታኔን ያስለምኑ።"
+        }
+      },
+      "seeMore": "ተጨማሪ ይመልከቱ",
+      "cta": "ተጨማሪ ለማየት ይመዝገቡ"
+    },
+    "features": {
+      "title": "ከስማርትፕረፕ ጋር",
+      "highlight": "ምን ያገኛሉ",
+      "items": {
+        "masterSubjects": {
+          "title": "እያንዳንዱን ርዕሰ ጉዳይ በራስዎ ፍጥነት ይማሩ",
+          "description": "ለሁሉም የትምህርት ዓይነቶች በሺዎች የሚቆጠሩ እውነተኛ ያለፉ የፈተና ጥያቄዎችን ይድረሱ። በአዲስ አበባም ሆነ በገጠር መንደር ውስጥ ይሁኑ፣ SmartPrep በጣም ታዋቂ በሆኑ የግል ትምህርት ቤቶች ውስጥ ካሉ ተማሪዎች ጋር ተመሳሳይ የዝግጅት መሳሪያዎችን ይሰጥዎታል።"
+        },
+        "studyAnytime": {
+          "title": "በማንኛውም ጊዜ እና ቦታ ይማሩ",
+          "description": "የሚያስፈልግህ ስልክ እና ኢንተርኔት ብቻ ነው። በመጓጓዣዎ ጊዜ፣ ከትምህርት በኋላ ወይም በምሽት ልምምድ ማድረግ ይችላሉ። SmartPrep ከፕሮግራምዎ ጋር ይጣጣማል እንጂ በተቃራኒው አይደለም።"
+        },
+        "knowStanding": {
+          "title": "የት እንደቆሙ በትክክል ይወቁ",
+          "description": "ከእያንዳንዱ ልምምድ ፈተና በኋላ በቀጥታ አስተያየት ይቀበሉ። የእውቀትዎን ጠንካራነት እና ድንጋጤዎች የሚገልጽ የAI ትንታኔ ስለሚከተል ትምህርትዎን በጠቃሚው ቦታ ላይ ያተኩሩ።"
+        },
+        "community": {
+          "title": "የህልም ተማሪዎችን ማህበር ይቀላቀሉ",
+          "description": "በዚህ ጉዞ ብቻዎት አይደሉም። በኢትዮጵያ ዙሪያ በሚገኙ ሺዎች ተማሪዎች ጋር ይገናኙ፣ እርስ በርስ ይደግፉና ህልሞቻቸውን ወደ እውነት ይገናኙ።"
+        }
+      }
+    },
+    "successStories": {
+      "title": "የስኬት",
+      "highlight": "ታሪኮች",
+      "items": {
+        "liya": {
+          "name": "ሊያ",
+          "location": "ከመምህራን ጥቂት ያሉበት ትንሽ ከተማ",
+          "story": "ዲጂታል ክፍልን የግል መምህር አድርጋ SmartPrep ተጠቅመች 500+ ነጥብ አመጣች!"
+        },
+        "saron": {
+          "name": "ሳሮን",
+          "location": "ከሰባት ልጆች የተወጣች ቤተሰብ",
+          "story": "የSmartPrep በደረጃ የተደረጉ ትምህርቶችን በቤት ጉዳይ መካከል ተጠቅመች የህልማችዋን ትምህርት ቤት አገኘች።"
+        },
+        "mikiyas": {
+          "name": "ሚኪያስ",
+          "location": "ለመማር ጊዜ አልበቃውም የነበረ",
+          "story": "የSmartPrep በማንኛውም ጊዜ ለመማር ሞዴል በመጠቀም በአውቶቡስ ላይ ለመማር ተቻለው እና ከፍ ያለ ውጤት አመጣ።"
+        }
+      }
+    },
+    "faq": {
+      "title": "ተደጋጋሚ የሚጠየቁ",
+      "highlight": "ጥያቄዎች",
+      "items": {
+        "realExams": {
+          "question": "ጥያቄዎቹ እንደ እውነተኛ ፈተናዎች ናቸው?",
+          "answer": "አዎ። የSmartPrep ጥያቄዎች ሁሉ የብሔራዊ መግቢያ ፈተናዎችን መዋቅር እና ከባድነት በቅርብ የሚመስሉ እንዲሆኑ በጥንቃቄ ተዘጋጁ እንዲሁም እውነተኛውን ቀን ያለምንም ስንታይ እንዲገባችሁ ይረዳዎታል።"
+        },
+        "difference": {
+          "question": "SmartPrep ከሌሎች የመማሪያ መተግበሪያዎች በምን ይለያል?",
+          "answer": "SmartPrep ከተለመዱ ኩዊዝ መተግበሪያዎች ይልቅ ለኢትዮጵያ መግቢያ ፈተናዎች ብቻ የተሠራ ነው፣ የAI አስተያየት፣ ዝርዝር ትንታኔዎች እና አካባቢያዊ ይዘት ያቀርባል።"
+        },
+        "offline": {
+          "question": "SmartPrep ከመስመር ውጭ ሊሰራ ይችላል?",
+          "answer": "እስካሁን ድረስ አይቻልም፣ ነገር ግን በስራ ላይ ነን! ሙሉ እቃውን ለመድረስ የኢንተርኔት ግንኙነት ያስፈልጋል።"
+        },
+        "contentCreators": {
+          "question": "ጥያቄዎቹን እና የትምህርት ዕቃዎችን ማን ይዘጋጃል?",
+          "answer": "ይዘታችን በብዙ ተልእኮ ያለው የኢትዮጵያ መምህራን እና ባለሙያ ስለሆኑ በብሔራዊ እትም ላይ የሚታወቁ እንዲሁም በተሞክሮ የተሻሉ ባለሙያዎች ይዘጋጃሉ።"
+        }
+      }
+    },
+    "newsletter": {
+      "title": "ዜናዎችን ለመቀበል ይመዝገቡ",
+      "description": "ከአዳዲስ ዝመናትና ከብቃት ይዘቶች አትቈርጡ። አሁን ይመዝገቡ እና የተስተናጋጅ የነጥብ ውጤት ፈተናችን ሲጀምር በመጀመሪያ የሚያውቁ ይሁኑ።",
+      "emailPlaceholder": "የኢሜይል አድራሻዎን ያስገቡ",
+      "cta": "ይመዝገቡ",
+      "privacyNote": "ግላዊነትዎን እናስጠብቃለን። ማቋረጥ በየጊዜው ይቻላል።",
+      "imageAlt": "ስማርትፕረፕ በመጠቀም የሚማር ተማሪ"
+    }
+  },
+  "authPage": {
+    "welcomeTitle": "ወደ ስማርትፕረፕ እንኳን በደህና መጡ",
+    "welcomeSubtitle": "ወደ መለያዎ ይግቡ ወይም አዲስ ይፍጠሩ",
+    "tabs": {
+      "login": "ግባ",
+      "register": "ይመዝገቡ"
+    },
+    "login": {
+      "title": "ግባ",
+      "description": "መለያዎን ለመመለስ መረጃዎን ያስገቡ",
+      "phoneLabel": "ስልክ ቁጥር",
+      "phonePlaceholder": "912345678",
+      "passwordLabel": "የይለፍ ቃል",
+      "passwordPlaceholder": "የይለፍ ቃልዎን ያስገቡ",
+      "submit": "ግባ",
+      "submitting": "በመግባት ላይ..."
+    },
+    "register": {
+      "title": "መለያ ይፍጠሩ",
+      "stepDescriptions": {
+        "1": "ለመጀመር የስልክ ቁጥርዎን ያስገቡ",
+        "2": "ወደ ስልክዎ የተላከውን ኮድ በመጠቀም ይረጋገጡ",
+        "3": "መመዝገብዎን ያጠናቅቁ"
+      },
+      "phoneLabel": "ስልክ ቁጥር",
+      "sendCode": "የማረጋገጫ ኮድ ላክ",
+      "sending": "በመላክ ላይ...",
+      "otpLabel": "የማረጋገጫ ኮድ",
+      "otpPlaceholder": "123456",
+      "otpSentTo": "የማረጋገጫ ኮድ ወደ {phone} ልከናል",
+      "otpVerified": "✓ የስልክ ቁጥርዎ ተረጋገጠ!",
+      "back": "ወደ ኋላ",
+      "verify": "አረጋግጥ",
+      "verifying": "በመረጋገጥ ላይ...",
+      "verified": "ተረጋገጠ",
+      "resend": "ኮድ እንደገና ላክ",
+      "resending": "በመላክ ላይ...",
+      "backToPhone": "← ወደ ስልክ ቁጥር ተመለስ",
+      "firstName": "የመጀመሪያ ስም",
+      "lastName": "የአባት ስም",
+      "email": "ኢሜይል",
+      "verifiedPhone": "{phone} ✓ ተረጋገጠ",
+      "fieldLabel": "የትምህርት አቅጣጫ",
+      "fieldPlaceholder": "የትምህርት አቅጣጫዎን ይምረጡ",
+      "fieldOptions": {
+        "natural": "ፍጥረታዊ",
+        "social": "ማህበራዊ"
+      },
+      "studentId": "የተማሪ መለያ",
+      "dob": "የትውልድ ቀን",
+      "password": "የይለፍ ቃል",
+      "passwordPlaceholder": "የይለፍ ቃል",
+      "confirmPassword": "የይለፍ ቃል አረጋግጥ",
+      "confirmPasswordPlaceholder": "የይለፍ ቃሉን አረጋግጥ",
+      "submit": "መለያ ፍጠር",
+      "submitting": "መለያ በመፍጠር ላይ..."
+    },
+    "errors": {
+      "invalidPhoneTitle": "ልክ ያልሆነ የስልክ ቁጥር",
+      "invalidPhoneDescription": "እባክዎ 9 አሃዛት ያስገቡ (ለምሳሌ 912345678).",
+      "invalidCodeTitle": "ትክክለኛ ያልሆነ ኮድ",
+      "invalidCodeDescription": "6 አሃዝ ያለውን ኮድ ያስገቡ።",
+      "verificationRequiredTitle": "ማረጋገጫ ያስፈልጋል",
+      "verificationRequiredDescription": "መለያ ከመፍጠርዎ በፊት የስልክ ቁጥርዎን እባክዎ ያረጋግጡ።",
+      "passwordMismatchTitle": "መመዝገብ አልተሳካም",
+      "passwordMismatchDescription": "የይለፍ ቃሎቹ አይመሳሰሉም።"
+    },
+    "toast": {
+      "loginSuccessTitle": "እንኳን ደህና መጡ!",
+      "loginSuccessDescription": "በተሳካ ሁኔታ ገብተዋል።",
+      "loginFailedTitle": "መግባት አልተሳካም",
+      "loginFailedDescription": "መረጃዎን ያረጋግጡ።",
+      "otpSentTitle": "ኮድ ተልኳል!",
+      "otpSentDescription": "የማረጋገጫ ኮድ ወደ ስልክዎ ተልኳል።",
+      "otpSendFailedTitle": "ኮድ መላክ አልተሳካም",
+      "otpSendFailedDescription": "የስልክ ቁጥሩን ያረጋግጡና እንደገና ይሞክሩ።",
+      "otpVerifiedTitle": "ስልኩ ተረጋገጠ!",
+      "otpVerifiedDescription": "የስልክ ቁጥርዎ በተሳካ ሁኔታ ተረጋገጠ።",
+      "otpVerifyFailedTitle": "ማረጋገጫ አልተሳካም",
+      "otpVerifyFailedDescription": "ኮዱ ትክክል አይደለም ወይም ጊዜው አልፏል።",
+      "registrationFailedTitle": "መመዝገብ አልተሳካም",
+      "registrationFailedDescription": "እባክዎ እንደገና ይሞክሩ።",
+      "registrationSuccessTitle": "መለያ ተፈጠረ!",
+      "registrationSuccessDescription": "መለያዎ ዝግጁ ነው። ለመቀጠል እባክዎ ይግቡ።"
+    },
+    "loading": "በመጫን ላይ..."
+  },
+  "schoolSelect": {
+    "label": "ት/ቤት",
+    "loading": "ት/ቤቶችን በመጫን ላይ...",
+    "placeholder": "ትምህርት ቤትዎን ይምረጡ",
+    "errorTitle": "ት/ቤቶችን ማመልከት አልተሳካም",
+    "errorDefault": "ትምህርት ቤቶችን ማውረድ አልተሳካም",
+    "errorRetry": "ትምህርት ቤቶችን ማውረድ አልተቻለም። እባክዎ እንደገና ይሞክሩ።"
+  },
+  "footer": {
+    "description": "ስማርትፕረፕን በመቀላቀል የ12ኛ ክፍል መግቢያ ፈተናዎችን ይቆጥሩ፣ በእውነት ጥያቄዎች ይልማሙ እና በቀጥታ አስተያየት ይቀበሉ።",
+    "linksTitle": "አገናኞች",
+    "links": {
+      "home": "መነሻ ገጽ",
+      "features": "ባህርያት",
+      "stories": "ታሪክ",
+      "pastExams": "የቀድሞ ፈተና መዝገብ"
+    },
+    "contactTitle": "ያነጋግሩን",
+    "emailLabel": "ኢሜይል",
+    "emailAddress": "Smartprep@gmail.com",
+    "phoneLabel": "ስልክ",
+    "phoneNumber": "+251 114 34554",
+    "bottom": {
+      "copyright": "© 2025 መብቶች በሙሉ ተጠበቁ",
+      "designedBy": "በማበጠርና በማቀናበር የተሰራው",
+      "companyName": "PixelAddis Solutions",
+      "separator": "|",
+      "terms": "የአጠቃቀም ውሎች",
+      "privacy": "የግላዊነት ፖሊሲ"
+    },
+    "social": {
+      "facebook": "ፌስቡክ",
+      "telegram": "ቴሌግራም",
+      "twitter": "ትዊተር",
+      "linkedin": "ሊንክድኢን"
+    }
+  },
+  "dashboard": {
+    "notifications": "ማስታወቂያዎች"
+  }
+}

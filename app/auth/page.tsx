@@ -27,16 +27,17 @@ import {
 } from "@/lib/api";
 import { SchoolSelect } from "@/components/school-select";
 import { Eye, EyeOff } from "lucide-react";
+import { useLocale } from "@/lib/locale-context";
 
 // Helper for phone validation
 const PHONE_REGEX = /^\+2519\d{8}$/;
 const PHONE_PREFIX = "+251";
-const INVALID_PHONE_MSG = "Invalid phone. Please enter 9 digits (e.g., 912345678).";
 
 export default function AuthPage() {
   const { user, login, loading: authLoading } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
+  const { t } = useLocale();
 
   const [mode, setMode] = useState<"login" | "register">("login");
 
@@ -103,10 +104,11 @@ export default function AuthPage() {
 
   const validatePhone = () => {
     if (!PHONE_REGEX.test(formData.phone_number)) {
-      setPhoneError(INVALID_PHONE_MSG);
+      const message = t("authPage.errors.invalidPhoneDescription");
+      setPhoneError(message);
       toast({
-        title: "Invalid Phone Number",
-        description: INVALID_PHONE_MSG,
+        title: t("authPage.errors.invalidPhoneTitle"),
+        description: message,
         variant: "destructive",
       });
       return false;
@@ -133,7 +135,9 @@ export default function AuthPage() {
 
       const res = await loginStudent(payload);
       if (!res.success || !res.data)
-        throw new Error(res.message || "Login failed");
+        throw new Error(
+          res.message || t("authPage.toast.loginFailedDescription")
+        );
 
       const { access_token, refresh_token, ...userData } = res.data;
       await login({
@@ -142,12 +146,16 @@ export default function AuthPage() {
         refreshToken: refresh_token,
       });
 
-      toast({ title: "Welcome back!", description: "Logged in successfully." });
+      toast({
+        title: t("authPage.toast.loginSuccessTitle"),
+        description: t("authPage.toast.loginSuccessDescription"),
+      });
       router.push("/select-subject");
     } catch (err: any) {
       toast({
-        title: "Login failed",
-        description: err?.message || "Check your credentials.",
+        title: t("authPage.toast.loginFailedTitle"),
+        description:
+          err?.message ?? t("authPage.toast.loginFailedDescription"),
         variant: "destructive",
       });
     } finally {
@@ -168,8 +176,8 @@ export default function AuthPage() {
       await requestPhoneOtp(payload);
 
       toast({
-        title: "OTP Sent!",
-        description: "A verification code has been sent to your phone.",
+        title: t("authPage.toast.otpSentTitle"),
+        description: t("authPage.toast.otpSentDescription"),
       });
       setIsOtpSent(true);
       setIsOtpVerified(false); // Reset verification status
@@ -179,9 +187,9 @@ export default function AuthPage() {
       }
     } catch (err: any) {
       toast({
-        title: "Failed to send OTP",
+        title: t("authPage.toast.otpSendFailedTitle"),
         description:
-          err?.message || "Please check the phone number and try again.",
+          err?.message ?? t("authPage.toast.otpSendFailedDescription"),
         variant: "destructive",
       });
     } finally {
@@ -193,8 +201,8 @@ export default function AuthPage() {
     e.preventDefault();
     if (otpCode.length !== 6) {
       toast({
-        title: "Invalid Code",
-        description: "Please enter the 6-digit code.",
+        title: t("authPage.errors.invalidCodeTitle"),
+        description: t("authPage.errors.invalidCodeDescription"),
         variant: "destructive",
       });
       return;
@@ -209,16 +217,17 @@ export default function AuthPage() {
       await verifyPhoneOtp(payload);
 
       toast({
-        title: "Phone Verified!",
-        description: "Your phone number has been successfully verified.",
+        title: t("authPage.toast.otpVerifiedTitle"),
+        description: t("authPage.toast.otpVerifiedDescription"),
       });
       setIsOtpVerified(true);
       setVerifiedPhoneNumber(formData.phone_number); // Store verified phone number
       setRegistrationStep(3); // Move to registration form step
     } catch (err: any) {
       toast({
-        title: "Verification Failed",
-        description: err?.message || "The code is incorrect or has expired.",
+        title: t("authPage.toast.otpVerifyFailedTitle"),
+        description:
+          err?.message ?? t("authPage.toast.otpVerifyFailedDescription"),
         variant: "destructive",
       });
       setIsOtpVerified(false);
@@ -235,9 +244,8 @@ export default function AuthPage() {
     // ---- 1. OTP Verification Check (Safety check) ----
     if (!isOtpVerified || !verifiedPhoneNumber) {
       toast({
-        title: "Verification Required",
-        description:
-          "Please verify your phone number before creating an account.",
+        title: t("authPage.errors.verificationRequiredTitle"),
+        description: t("authPage.errors.verificationRequiredDescription"),
         variant: "destructive",
       });
       setIsSubmitting(false);
@@ -247,8 +255,8 @@ export default function AuthPage() {
     // ---- 2. Password match ----
     if (formData.password !== formData.password_confirm) {
       toast({
-        title: "Registration failed",
-        description: "Passwords do not match.",
+        title: t("authPage.errors.passwordMismatchTitle"),
+        description: t("authPage.errors.passwordMismatchDescription"),
         variant: "destructive",
       });
       setIsSubmitting(false);
@@ -260,11 +268,14 @@ export default function AuthPage() {
       const payload = { ...formData, phone_number: verifiedPhoneNumber }; // Use verified phone number
       const res = await registerStudent(payload as any);
 
-      if (!res.success) throw new Error(res.message || "Registration failed");
+      if (!res.success)
+        throw new Error(
+          res.message || t("authPage.toast.registrationFailedDescription")
+        );
 
       toast({
-        title: "Account created!",
-        description: "Your account is ready. Please log in to continue.",
+        title: t("authPage.toast.registrationSuccessTitle"),
+        description: t("authPage.toast.registrationSuccessDescription"),
       });
 
       // Reset fields and switch to login
@@ -282,8 +293,9 @@ export default function AuthPage() {
       setMode("login");
     } catch (err: any) {
       toast({
-        title: "Registration failed",
-        description: err?.message || "Try again with different credentials.",
+        title: t("authPage.toast.registrationFailedTitle"),
+        description:
+          err?.message ?? t("authPage.toast.registrationFailedDescription"),
         variant: "destructive",
       });
     } finally {
@@ -294,7 +306,13 @@ export default function AuthPage() {
   if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        <div
+          className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"
+          role="status"
+          aria-live="polite"
+        >
+          <span className="sr-only">{t("authPage.loading")}</span>
+        </div>
       </div>
     );
   }
@@ -304,9 +322,11 @@ export default function AuthPage() {
       <main className="flex-1 flex items-center justify-center px-4 py-12">
         <div className="w-full max-w-md">
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold mb-2">Welcome to SmartPrep</h1>
+            <h1 className="text-3xl font-bold mb-2">
+              {t("authPage.welcomeTitle")}
+            </h1>
             <p className="text-muted-foreground">
-              Sign in to your account or create a new one
+              {t("authPage.welcomeSubtitle")}
             </p>
           </div>
 
@@ -329,23 +349,29 @@ export default function AuthPage() {
             className="w-full"
           >
             <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="login">Sign In</TabsTrigger>
-              <TabsTrigger value="register">Sign Up</TabsTrigger>
+              <TabsTrigger value="login">
+                {t("authPage.tabs.login")}
+              </TabsTrigger>
+              <TabsTrigger value="register">
+                {t("authPage.tabs.register")}
+              </TabsTrigger>
             </TabsList>
 
             {/* ------------------- LOGIN TAB (Unchanged) ------------------- */}
             <TabsContent value="login">
               <Card>
                 <CardHeader>
-                  <CardTitle>Sign In</CardTitle>
+                  <CardTitle>{t("authPage.login.title")}</CardTitle>
                   <CardDescription>
-                    Enter your credentials to access your account
+                    {t("authPage.login.description")}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <form onSubmit={handleLogin} className="space-y-4">
                     <div className="space-y-2">
-                      <Label htmlFor="login-phone">Phone Number</Label>
+                      <Label htmlFor="login-phone">
+                        {t("authPage.login.phoneLabel")}
+                      </Label>
                       <div className="flex items-center">
                         <span className="inline-flex items-center px-3 h-10 rounded-l-md border border-r-0 border-input bg-muted text-sm">
                           {PHONE_PREFIX}
@@ -354,7 +380,7 @@ export default function AuthPage() {
                           id="login-phone"
                           type="tel"
                           name="phone_number"
-                          placeholder="912345678"
+                          placeholder={t("authPage.login.phonePlaceholder")}
                           value={getPhoneDisplay(formData.phone_number)}
                           onChange={handleInputChange}
                           maxLength={9}
@@ -365,13 +391,15 @@ export default function AuthPage() {
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="login-password">Password</Label>
+                      <Label htmlFor="login-password">
+                        {t("authPage.login.passwordLabel")}
+                      </Label>
                       <div className="relative">
                       <Input
                         id="login-password"
                           type={showPassword ? "text" : "password"}
                         name="password"
-                        placeholder="Enter your password"
+                        placeholder={t("authPage.login.passwordPlaceholder")}
                         value={formData.password}
                         onChange={handleInputChange}
                         required
@@ -399,7 +427,9 @@ export default function AuthPage() {
                       className="w-full"
                       disabled={isSubmitting}
                     >
-                      {isSubmitting ? "Signing in..." : "Sign In"}
+                      {isSubmitting
+                        ? t("authPage.login.submitting")
+                        : t("authPage.login.submit")}
                     </Button>
                   </form>
                 </CardContent>
@@ -410,11 +440,11 @@ export default function AuthPage() {
             <TabsContent value="register">
               <Card>
                 <CardHeader>
-                  <CardTitle>Create Account</CardTitle>
+                  <CardTitle>{t("authPage.register.title")}</CardTitle>
                   <CardDescription>
-                    {registrationStep === 1 && "Enter your phone number to get started"}
-                    {registrationStep === 2 && "Verify your phone number with the code sent"}
-                    {registrationStep === 3 && "Complete your registration"}
+                    {t(
+                      `authPage.register.stepDescriptions.${registrationStep.toString()}`
+                    )}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -422,7 +452,9 @@ export default function AuthPage() {
                   {registrationStep === 1 && (
                     <div className="space-y-4">
                       <div className="space-y-2">
-                        <Label htmlFor="phone_number">Phone Number</Label>
+                        <Label htmlFor="phone_number">
+                          {t("authPage.register.phoneLabel")}
+                        </Label>
                         <div className="flex items-center">
                           <span className="inline-flex items-center px-3 h-10 rounded-l-md border border-r-0 border-input bg-muted text-sm">
                             {PHONE_PREFIX}
@@ -431,7 +463,7 @@ export default function AuthPage() {
                             id="phone_number"
                             type="tel"
                             name="phone_number"
-                            placeholder="912345678"
+                            placeholder={t("authPage.login.phonePlaceholder")}
                             value={getPhoneDisplay(formData.phone_number)}
                             onChange={handleInputChange}
                             maxLength={9}
@@ -453,7 +485,9 @@ export default function AuthPage() {
                           !PHONE_REGEX.test(formData.phone_number)
                         }
                       >
-                        {isSendingOtp ? "Sending..." : "Send Verification Code"}
+                        {isSendingOtp
+                          ? t("authPage.register.sending")
+                          : t("authPage.register.sendCode")}
                       </Button>
                     </div>
                   )}
@@ -462,15 +496,19 @@ export default function AuthPage() {
                   {registrationStep === 2 && (
                     <div className="space-y-4">
                       <div className="space-y-2">
-                        <Label htmlFor="otp_code">Verification Code</Label>
+                        <Label htmlFor="otp_code">
+                          {t("authPage.register.otpLabel")}
+                        </Label>
                         <p className="text-sm text-muted-foreground">
-                          We sent a verification code to {formData.phone_number}
+                          {t("authPage.register.otpSentTo", {
+                            phone: formData.phone_number,
+                          })}
                         </p>
                         <Input
                           id="otp_code"
                           type="text"
                           name="otp_code"
-                          placeholder="123456"
+                          placeholder={t("authPage.register.otpPlaceholder")}
                           maxLength={6}
                           value={otpCode}
                           onChange={(e) => setOtpCode(e.target.value)}
@@ -479,7 +517,7 @@ export default function AuthPage() {
                         />
                         {isOtpVerified && (
                           <p className="text-sm font-medium text-green-600">
-                            ✓ Phone number verified successfully!
+                            {t("authPage.register.otpVerified")}
                           </p>
                         )}
                       </div>
@@ -494,7 +532,7 @@ export default function AuthPage() {
                             setIsOtpSent(false);
                           }}
                         >
-                          Back
+                          {t("authPage.register.back")}
                         </Button>
                         <Button
                           type="button"
@@ -507,10 +545,10 @@ export default function AuthPage() {
                           }
                         >
                           {isVerifyingOtp
-                            ? "Verifying..."
+                            ? t("authPage.register.verifying")
                             : isOtpVerified
-                            ? "Verified"
-                            : "Verify"}
+                            ? t("authPage.register.verified")
+                            : t("authPage.register.verify")}
                         </Button>
                       </div>
                       <Button
@@ -520,7 +558,9 @@ export default function AuthPage() {
                         onClick={handleSendOtp}
                         disabled={isSendingOtp}
                       >
-                        {isSendingOtp ? "Sending..." : "Resend Code"}
+                        {isSendingOtp
+                          ? t("authPage.register.resending")
+                          : t("authPage.register.resend")}
                       </Button>
                     </div>
                   )}
@@ -542,29 +582,33 @@ export default function AuthPage() {
                           setFormData((prev) => ({ ...prev, phone_number: PHONE_PREFIX }));
                         }}
                       >
-                        ← Back to Phone Number
+                        {t("authPage.register.backToPhone")}
                       </Button>
                       {/* First / Last name */}
                       <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
-                          <Label htmlFor="first_name">First Name</Label>
+                          <Label htmlFor="first_name">
+                            {t("authPage.register.firstName")}
+                          </Label>
                           <Input
                             id="first_name"
                             type="text"
                             name="first_name"
-                            placeholder="First Name"
+                            placeholder={t("authPage.register.firstName")}
                             value={formData.first_name}
                             onChange={handleInputChange}
                             required
                           />
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="last_name">Last Name</Label>
+                          <Label htmlFor="last_name">
+                            {t("authPage.register.lastName")}
+                          </Label>
                           <Input
                             id="last_name"
                             type="text"
                             name="last_name"
-                            placeholder="Last Name"
+                            placeholder={t("authPage.register.lastName")}
                             value={formData.last_name}
                             onChange={handleInputChange}
                             required
@@ -574,12 +618,14 @@ export default function AuthPage() {
 
                       {/* Email */}
                       <div className="space-y-2">
-                        <Label htmlFor="email">Email</Label>
+                        <Label htmlFor="email">
+                          {t("authPage.register.email")}
+                        </Label>
                         <Input
                           id="email"
                           type="email"
                           name="email"
-                          placeholder="Email"
+                          placeholder={t("authPage.register.email")}
                           value={formData.email}
                           onChange={handleInputChange}
                           required
@@ -588,15 +634,19 @@ export default function AuthPage() {
 
                       {/* Verified Phone Display (Read-only) */}
                       <div className="space-y-2">
-                        <Label>Phone Number</Label>
+                        <Label>{t("authPage.register.phoneLabel")}</Label>
                         <div className="rounded-md border border-input bg-muted px-3 py-2 text-sm text-muted-foreground">
-                          {verifiedPhoneNumber} ✓ Verified
+                          {t("authPage.register.verifiedPhone", {
+                            phone: verifiedPhoneNumber,
+                          })}
                         </div>
                       </div>
 
                       {/* Field Type */}
                       <div className="space-y-2">
-                        <Label htmlFor="stream">Field Type</Label>
+                        <Label htmlFor="stream">
+                          {t("authPage.register.fieldLabel")}
+                        </Label>
                         <select
                           id="stream"
                           name="stream"
@@ -611,29 +661,37 @@ export default function AuthPage() {
                           required
                         >
                           <option value="" disabled>
-                            Select your field
+                            {t("authPage.register.fieldPlaceholder")}
                           </option>
-                          <option value="Natural">Natural</option>
-                          <option value="Social">Social</option>
+                          <option value="Natural">
+                            {t("authPage.register.fieldOptions.natural")}
+                          </option>
+                          <option value="Social">
+                            {t("authPage.register.fieldOptions.social")}
+                          </option>
                         </select>
                       </div>
 
                       {/* Student ID + DOB */}
                       <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
-                          <Label htmlFor="student_id">Student ID</Label>
+                          <Label htmlFor="student_id">
+                            {t("authPage.register.studentId")}
+                          </Label>
                           <Input
                             id="student_id"
                             type="text"
                             name="student_id"
-                            placeholder="Student ID"
+                            placeholder={t("authPage.register.studentId")}
                             value={formData.student_id}
                             onChange={handleInputChange}
                             required
                           />
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="date_of_birth">Date of Birth</Label>
+                          <Label htmlFor="date_of_birth">
+                            {t("authPage.register.dob")}
+                          </Label>
                           <Input
                             id="date_of_birth"
                             type="date"
@@ -656,13 +714,15 @@ export default function AuthPage() {
 
                       {/* Password */}
                       <div className="space-y-2">
-                        <Label htmlFor="password">Password</Label>
+                        <Label htmlFor="password">
+                          {t("authPage.register.password")}
+                        </Label>
                         <div className="relative">
                           <Input
                             id="password"
                             type={showPassword ? "text" : "password"}
                             name="password"
-                            placeholder="Password"
+                            placeholder={t("authPage.register.passwordPlaceholder")}
                             value={formData.password}
                             onChange={handleInputChange}
                             required
@@ -687,13 +747,15 @@ export default function AuthPage() {
 
                       {/* Confirm Password */}
                       <div className="space-y-2">
-                        <Label htmlFor="password_confirm">Confirm Password</Label>
+                        <Label htmlFor="password_confirm">
+                          {t("authPage.register.confirmPassword")}
+                        </Label>
                         <div className="relative">
                           <Input
                             id="password_confirm"
                             type={showConfirmPassword ? "text" : "password"}
                             name="password_confirm"
-                            placeholder="Confirm Password"
+                            placeholder={t("authPage.register.confirmPasswordPlaceholder")}
                             value={formData.password_confirm}
                             onChange={handleInputChange}
                             required
@@ -724,7 +786,9 @@ export default function AuthPage() {
                       className="w-full"
                       disabled={isSubmitting}
                     >
-                      {isSubmitting ? "Creating account..." : "Create Account"}
+                      {isSubmitting
+                        ? t("authPage.register.submitting")
+                        : t("authPage.register.submit")}
                     </Button>
                   </form>
                   )}

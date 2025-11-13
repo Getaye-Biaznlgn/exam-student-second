@@ -1,0 +1,334 @@
+{
+  "common": {
+    "appName": "SmartPrep",
+    "loading": "Loading...",
+    "error": "Something went wrong",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "close": "Close",
+    "save": "Save",
+    "edit": "Edit",
+    "delete": "Delete",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "yes": "Yes",
+    "no": "No",
+    "apply": "Apply",
+    "reset": "Reset",
+    "search": "Search",
+    "viewAll": "View all",
+    "learnMore": "Learn more",
+    "submit": "Submit",
+    "start": "Start"
+  },
+  "navigation": {
+    "features": "Features",
+    "howItWorks": "How it works",
+    "successStories": "Success Stories",
+    "ourMission": "Our Mission",
+    "exam": "Exam",
+    "dashboard": "Dashboard",
+    "profile": "Profile",
+    "history": "History",
+    "topicAnalysis": "Topic Analysis",
+    "home": "Home",
+    "about": "About",
+    "contact": "Contact",
+    "progress": "Progress"
+  },
+  "auth": {
+    "signIn": "Sign In",
+    "getStarted": "Get Started",
+    "logout": "Logout"
+  },
+  "exam": {
+    "startExam": "Start Exam"
+  },
+  "language": {
+    "switchLabel": "Language",
+    "english": "English",
+    "amharic": "Amharic"
+  },
+  "branding": {
+    "logoAlt": "SmartPrep Logo"
+  },
+  "landing": {
+    "hero": {
+      "titleStart": "Your Path to University Entrance ",
+      "titleHighlight": "Exam Success.",
+      "description": "Join 1000+ Ethiopian students using SmartPrep to master their Grade 12 entrance exams, practice with real questions, and get instant feedback — all in one smart learning platform.",
+      "primaryCta": "Start Practice",
+      "secondaryCta": "See how it works",
+      "badge": "Got 500+ Score",
+      "imageAlt": "Ethiopian student using SmartPrep"
+    },
+    "stats": {
+      "questionsLabel": "Practice questions",
+      "studentsLabel": "Active Students",
+      "improvementLabel": "Avg. Score Improvement"
+    },
+    "howItWorks": {
+      "title": "How it",
+      "highlight": "Works",
+      "description": "Join 100+ Ethiopian students using SmartPrep to master their Grade 12 entrance exams",
+      "steps": {
+        "signUp": {
+          "title": "Sign Up",
+          "description": "Create an account with your phone number in 2 minutes."
+        },
+        "pickSubject": {
+          "title": "Pick Subject",
+          "description": "Choose Math, Physics, Chemistry, History, Geography, and more."
+        },
+        "practice": {
+          "title": "Practice",
+          "description": "Take timed exams or practice at your pace."
+        },
+        "learn": {
+          "title": "Learn & Improve",
+          "description": "Get AI explanations, analytics by subject/topic, and personalized study recommendations."
+        }
+      }
+    },
+    "pastExams": {
+      "title": "Past Exam",
+      "highlight": "Practice Library",
+      "description": "Practice with real Ethiopian Secondary Education Leaving Exams (ESLE) — the same style, structure, and level of difficulty you'll face on test day.",
+      "items": {
+        "english": {
+          "subject": "English",
+          "year": "ESSLCE 2021-2022",
+          "description": "Polish your comprehension, grammar, and vocabulary with authentic exam questions."
+        },
+        "mathematics": {
+          "subject": "Mathematics",
+          "year": "ESSLCE 2020-2021",
+          "description": "Sharpen your math logic with actual exam questions."
+        },
+        "history": {
+          "subject": "History",
+          "year": "ESSLCE 2018-2019",
+          "description": "Challenge your knowledge of Ethiopia and the world."
+        },
+        "physics": {
+          "subject": "Physics",
+          "year": "ESSLCE 2018-2019",
+          "description": "Solve authentic physics problems just like the real exam."
+        },
+        "geography": {
+          "subject": "Geography",
+          "year": "ESSLCE 2019-2020",
+          "description": "Understand geography with real world map and region questions."
+        },
+        "biology": {
+          "subject": "Biology",
+          "year": "ESSLCE 2019-2020",
+          "description": "Study genetics, ecosystems, and biology-based reasoning."
+        }
+      },
+      "seeMore": "See More",
+      "cta": "Sign Up to Explore More"
+    },
+    "features": {
+      "title": "What You Get with",
+      "highlight": "SmartPrep",
+      "items": {
+        "masterSubjects": {
+          "title": "Master Every Subject at Your Own Pace",
+          "description": "Access thousands of authentic past exam questions across all subjects. Whether you're in Addis Ababa or a rural village, SmartPrep gives you the same preparation tools as students in the most expensive private schools."
+        },
+        "studyAnytime": {
+          "title": "Study Anytime, Anywhere",
+          "description": "All you need is a phone and internet. Practice during your commute, after school, or late at night. SmartPrep works on your schedule, not the other way around."
+        },
+        "knowStanding": {
+          "title": "Know Exactly Where You Stand",
+          "description": "Get instant feedback after every practice test. Our AI identifies your strengths and weak points, helping you focus your study time where it matters most—just like having a personal tutor."
+        },
+        "community": {
+          "title": "Join a Community of Dreamers",
+          "description": "You're not alone in this journey. Connect with thousands of students across Ethiopia who are preparing together, supporting each other, and working toward their dreams."
+        }
+      }
+    },
+    "successStories": {
+      "title": "Success",
+      "highlight": "Stories",
+      "items": {
+        "liya": {
+          "name": "Liya",
+          "location": "from a small town with few tutors",
+          "story": "used SmartPrep to turn a digital classroom into her personal tutor and scored 500+!"
+        },
+        "saron": {
+          "name": "Saron",
+          "location": "from a family with seven kids",
+          "story": "used SmartPrep's step-by-step lessons to study between chores and got into her dream school."
+        },
+        "mikiyas": {
+          "name": "Mikiyas",
+          "location": "barely had time to study",
+          "story": "SmartPrep's learn-anytime model helped him study on the bus and pass with flying colors."
+        }
+      }
+    },
+    "faq": {
+      "title": "Frequently Asked",
+      "highlight": "Questions",
+      "items": {
+        "realExams": {
+          "question": "Are the questions similar to real exams?",
+          "answer": "Yes. All SmartPrep questions are carefully designed to mirror the structure and difficulty of the national entrance exams, so there are no surprises on test day."
+        },
+        "difference": {
+          "question": "How is SmartPrep different from other study apps?",
+          "answer": "Unlike generic quiz apps, SmartPrep is built specifically for Ethiopian entrance exams with AI feedback, detailed analytics, and localized content."
+        },
+        "offline": {
+          "question": "Can I use SmartPrep offline?",
+          "answer": "Not yet, but we’re working on it! You currently need an internet connection to access the full experience."
+        },
+        "contentCreators": {
+          "question": "Who creates the questions and study materials?",
+          "answer": "Our content is created by experienced Ethiopian teachers and subject-matter experts who know the national curriculum."
+        }
+      }
+    },
+    "newsletter": {
+      "title": "Subscribe for Updates",
+      "description": "Don’t miss out on the latest updates and exclusive content. Subscribe now and be the first to know when our scored practice test is live.",
+      "emailPlaceholder": "Enter your email address",
+      "cta": "Subscribe",
+      "privacyNote": "We respect your privacy. Unsubscribe anytime.",
+      "imageAlt": "Student learning with SmartPrep"
+    }
+  },
+  "authPage": {
+    "welcomeTitle": "Welcome to SmartPrep",
+    "welcomeSubtitle": "Sign in to your account or create a new one",
+    "tabs": {
+      "login": "Sign In",
+      "register": "Sign Up"
+    },
+    "login": {
+      "title": "Sign In",
+      "description": "Enter your credentials to access your account",
+      "phoneLabel": "Phone Number",
+      "phonePlaceholder": "912345678",
+      "passwordLabel": "Password",
+      "passwordPlaceholder": "Enter your password",
+      "submit": "Sign In",
+      "submitting": "Signing in..."
+    },
+    "register": {
+      "title": "Create Account",
+      "stepDescriptions": {
+        "1": "Enter your phone number to get started",
+        "2": "Verify your phone number with the code sent",
+        "3": "Complete your registration"
+      },
+      "phoneLabel": "Phone Number",
+      "sendCode": "Send Verification Code",
+      "sending": "Sending...",
+      "otpLabel": "Verification Code",
+      "otpPlaceholder": "123456",
+      "otpSentTo": "We sent a verification code to {phone}",
+      "otpVerified": "✓ Phone number verified successfully!",
+      "back": "Back",
+      "verify": "Verify",
+      "verifying": "Verifying...",
+      "verified": "Verified",
+      "resend": "Resend Code",
+      "resending": "Sending...",
+      "backToPhone": "← Back to Phone Number",
+      "firstName": "First Name",
+      "lastName": "Last Name",
+      "email": "Email",
+      "verifiedPhone": "{phone} ✓ Verified",
+      "fieldLabel": "Field Type",
+      "fieldPlaceholder": "Select your field",
+      "fieldOptions": {
+        "natural": "Natural",
+        "social": "Social"
+      },
+      "studentId": "Student ID",
+      "dob": "Date of Birth",
+      "password": "Password",
+      "passwordPlaceholder": "Password",
+      "confirmPassword": "Confirm Password",
+      "confirmPasswordPlaceholder": "Confirm Password",
+      "submit": "Create Account",
+      "submitting": "Creating account..."
+    },
+    "errors": {
+      "invalidPhoneTitle": "Invalid Phone Number",
+      "invalidPhoneDescription": "Please enter 9 digits (e.g., 912345678).",
+      "invalidCodeTitle": "Invalid Code",
+      "invalidCodeDescription": "Please enter the 6-digit code.",
+      "verificationRequiredTitle": "Verification Required",
+      "verificationRequiredDescription": "Please verify your phone number before creating an account.",
+      "passwordMismatchTitle": "Registration failed",
+      "passwordMismatchDescription": "Passwords do not match."
+    },
+    "toast": {
+      "loginSuccessTitle": "Welcome back!",
+      "loginSuccessDescription": "Logged in successfully.",
+      "loginFailedTitle": "Login failed",
+      "loginFailedDescription": "Check your credentials.",
+      "otpSentTitle": "OTP Sent!",
+      "otpSentDescription": "A verification code has been sent to your phone.",
+      "otpSendFailedTitle": "Failed to send OTP",
+      "otpSendFailedDescription": "Please check the phone number and try again.",
+      "otpVerifiedTitle": "Phone Verified!",
+      "otpVerifiedDescription": "Your phone number has been successfully verified.",
+      "otpVerifyFailedTitle": "Verification Failed",
+      "otpVerifyFailedDescription": "The code is incorrect or has expired.",
+      "registrationFailedTitle": "Registration failed",
+      "registrationFailedDescription": "Try again with different credentials.",
+      "registrationSuccessTitle": "Account created!",
+      "registrationSuccessDescription": "Your account is ready. Please log in to continue."
+    },
+    "loading": "Loading..."
+  },
+  "schoolSelect": {
+    "label": "School",
+    "loading": "Loading schools...",
+    "placeholder": "Select your school",
+    "errorTitle": "Error loading schools",
+    "errorDefault": "Failed to fetch schools",
+    "errorRetry": "Failed to fetch schools. Please try again."
+  },
+  "footer": {
+    "description": "Join SmartPrep to master Grade 12 entrance exams, practice with real questions, and get instant feedback.",
+    "linksTitle": "Links",
+    "links": {
+      "home": "Home",
+      "features": "Features",
+      "stories": "Story",
+      "pastExams": "Past Exam Library"
+    },
+    "contactTitle": "Get In Touch",
+    "emailLabel": "Email",
+    "emailAddress": "Smartprep@gmail.com",
+    "phoneLabel": "Phone",
+    "phoneNumber": "+251 114 34554",
+    "bottom": {
+      "copyright": "© 2025 All rights reserved",
+      "designedBy": "Designed and Developed by",
+      "companyName": "PixelAddis Solutions",
+      "separator": "|",
+      "terms": "Terms of Use",
+      "privacy": "Privacy Policy"
+    },
+    "social": {
+      "facebook": "Facebook",
+      "telegram": "Telegram",
+      "twitter": "Twitter",
+      "linkedin": "LinkedIn"
+    }
+  },
+  "dashboard": {
+    "notifications": "Notifications"
+  }
+}

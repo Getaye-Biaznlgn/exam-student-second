@@ -35,26 +35,79 @@ import {
   ChevronDown,
 } from "lucide-react";
 import Image from "next/image";
+import { useLocale } from "@/lib/locale-context";
 
 export default function LandingPage() {
+  const { t, formatNumber } = useLocale();
+
+  const stats = [
+    {
+      value: `${formatNumber(5000)}+`,
+      label: t("landing.stats.questionsLabel"),
+    },
+    {
+      value: `${formatNumber(1250)}+`,
+      label: t("landing.stats.studentsLabel"),
+    },
+    {
+      value: formatNumber(0.78, {
+        style: "percent",
+        maximumFractionDigits: 0,
+      }),
+      label: t("landing.stats.improvementLabel"),
+    },
+  ];
+
+  const howItWorksSteps = [
+    { key: "signUp", img: "/Document.png" },
+    { key: "pickSubject", img: "/game-icons_click.png" },
+    { key: "practice", img: "/Document.png" },
+    { key: "learn", img: "/dashicons_welcome-learn-more.png" },
+  ] as const;
+
+  const pastExamItems = [
+    { key: "english", icon: "/icon-park-outline_english.png" },
+    { key: "mathematics", icon: "/hugeicons_math.png" },
+    { key: "history", icon: "/ri_ancient-gate-line.png" },
+    { key: "physics", icon: "/hugeicons_physics.png" },
+    { key: "geography", icon: "/arcticons_world-geography-alt.png" },
+    { key: "biology", icon: "/group.png" },
+  ] as const;
+
+  const featureItems = [
+    "masterSubjects",
+    "studyAnytime",
+    "knowStanding",
+    "community",
+  ] as const;
+
+  const successStories = ["liya", "saron", "mikiyas"] as const;
+
+  const faqKeys = [
+    "realExams",
+    "difference",
+    "offline",
+    "contentCreators",
+  ] as const;
+
   return (
     <div className="flex flex-col bg-white">
       {/* Hero Section */}
       <section className="bg-gradient-to-b from-blue-50/50 to-white min-h-[80vh] lg:min-h-screen flex items-start lg:items-center pt-0">
-        <div className="bg-white rounded-3xl shadow-xl overflow-hidden max-w-7xl mx-auto w-full h-full flex flex-col justify-between">
+        <div className="bg-white rounded-3xl shadow-xl overflow-hidden max-w-7xl mx-auto w-full h-full flex flex-col justify-between ">
           {/* Main Content */}
           <div className="p-4 sm:p-8 lg:p-10 flex flex-col lg:grid lg:grid-cols-2 gap-6 lg:gap-12 items-center flex-grow">
             {/* Text Section */}
             <div className="space-y-4 sm:space-y-5 lg:order-1 order-1 mt-0">
               <h1 className="text-4xl sm:text-4xl lg:text-5xl font-bold text-gray-900 leading-tight  sm:text-left">
-                Your Dream University Is{" "}
-                <span className="text-blue-600">Closer Than You Think</span>
+                {t("landing.hero.titleStart")}{" "}
+                <span className="text-blue-600">
+                  {t("landing.hero.titleHighlight")}
+                </span>
               </h1>
 
               <p className="text-base sm:text-base lg:text-lg text-gray-600 text-center sm:text-left">
-                Join 1000+ Ethiopian students using SmartPrep to master their
-                Grade 12 entrance exams, practice with real questions, and get
-                instant feedback — all in one smart learning platform.
+                {t("landing.hero.description")}
               </p>
 
               {/* Buttons side by side on all screens */}
@@ -64,7 +117,7 @@ export default function LandingPage() {
                     size="lg"
                     className="bg-orange-500 hover:bg-orange-600 text-white font-semibold px-6 py-5 rounded-xl text-lg sm:text-lg w-auto"
                   >
-                    Start Practice
+                    {t("landing.hero.primaryCta")}
                   </Button>
                 </Link>
                 <Link href="/#how-it-works">
@@ -73,7 +126,7 @@ export default function LandingPage() {
                     variant="outline"
                     className="border-blue-600 text-blue-600 hover:bg-blue-50 font-semibold px-6 py-5 rounded-xl text-lg sm:text-lg w-auto"
                   >
-                    See how it works
+                    {t("landing.hero.secondaryCta")}
                   </Button>
                 </Link>
               </div>
@@ -89,7 +142,7 @@ export default function LandingPage() {
                 >
                   <Check className="h-4 w-4 lg:h-5 lg:w-5 text-blue-600" />
                   <span className="font-bold text-gray-800">
-                    Got 500+ Score
+                    {t("landing.hero.badge")}
                   </span>
                   <div
                     className="absolute -bottom-2 right-3 w-0 h-0 
@@ -103,13 +156,18 @@ export default function LandingPage() {
 
               {/* Bigger Circles */}
               <div className="absolute top-3 sm:top-14 lg:top-10 left-10 sm:left-18 w-[200px] h-[200px] sm:w-[270px] sm:h-[270px] lg:w-[400px] lg:h-[400px] bg-blue-500 rounded-full opacity-10 z-0"></div>
-              <div className="absolute top-8 sm:top-18 left-14 sm:left-26 w-[160px] h-[160px] sm:w-[220px] sm:h-[220px] lg:w-[340px] lg:h-[340px] bg-blue-600 rounded-full opacity-30 z-10"></div>
+              <div
+                className="absolute top-8 sm:top-18 left-14 sm:left-26 
+             w-[160px] h-[160px] sm:w-[220px] sm:h-[220px] 
+             lg:w-[340px] lg:h-[340px] rounded-full opacity-90 z-10"
+                style={{ backgroundColor: "#004B84" }}
+              ></div>
 
               {/* Slightly Larger Image */}
               <div className="relative z-20 w-full max-w-[270px] sm:max-w-[340px] lg:max-w-[520px]">
                 <Image
                   src="/111.png"
-                  alt="Ethiopian student using SmartPrep"
+                  alt={t("landing.hero.imageAlt")}
                   width={700}
                   height={850}
                   className="w-full h-auto object-contain drop-shadow-2xl scale-110"
@@ -122,30 +180,16 @@ export default function LandingPage() {
           {/* Stats */}
           <div className="bg-blue-50/70 rounded-2xl p-4 sm:p-5 lg:p-6 mx-4 sm:mx-6 lg:mx-10 mb-0">
             <div className="grid grid-cols-3 gap-3 sm:gap-4 text-center">
-              <div>
-                <div className="text-lg sm:text-xl lg:text-3xl font-bold text-blue-600">
-                  5000+
+              {stats.map((stat) => (
+                <div key={stat.label}>
+                  <div className="text-lg sm:text-xl lg:text-3xl font-bold text-blue-600">
+                    {stat.value}
+                  </div>
+                  <div className="text-xs sm:text-sm text-gray-600 mt-0.5">
+                    {stat.label}
+                  </div>
                 </div>
-                <div className="text-xs sm:text-sm text-gray-600 mt-0.5">
-                  Practice questions
-                </div>
-              </div>
-              <div>
-                <div className="text-lg sm:text-xl lg:text-3xl font-bold text-blue-600">
-                  1250+
-                </div>
-                <div className="text-xs sm:text-sm text-gray-600 mt-0.5">
-                  Active Students
-                </div>
-              </div>
-              <div>
-                <div className="text-lg sm:text-xl lg:text-3xl font-bold text-blue-600">
-                  78%
-                </div>
-                <div className="text-xs sm:text-sm text-gray-600 mt-0.5">
-                  Avg. Score Improvement
-                </div>
-              </div>
+              ))}
             </div>
           </div>
         </div>
@@ -165,39 +209,20 @@ export default function LandingPage() {
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 z-10">
           <div className="text-center mb-14">
             <h2 className="text-4xl sm:text-5xl font-extrabold text-white">
-              How it <span className="text-[#FF8A00]">Works</span>
+              {t("landing.howItWorks.title")}{" "}
+              <span className="text-[#FF8A00]">
+                {t("landing.howItWorks.highlight")}
+              </span>
             </h2>
             <p className="text-gray-100 mt-4 text-base sm:text-lg max-w-3xl mx-auto">
-              Join 100+ Ethiopian students using SmartPrep to master their Grade
-              12 entrance exams
+              {t("landing.howItWorks.description")}
             </p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-            {[
-              {
-                img: "/Document.png",
-                title: "Sign Up",
-                desc: "Create account with phone number in 2 minutes.",
-              },
-              {
-                img: "/game-icons_click.png",
-                title: "Pick Subject",
-                desc: "Choose Math, Physics, Chemistry, History, Geography, and more.",
-              },
-              {
-                img: "/Document.png",
-                title: "Practice",
-                desc: "Take timed exams or practice at your pace.",
-              },
-              {
-                img: "/dashicons_welcome-learn-more.png",
-                title: "Learn & Improve",
-                desc: "Get AI explanations, analytics by subject/topic, and personalized study recommendations.",
-              },
-            ].map((step, i) => (
+            {howItWorksSteps.map((step, i) => (
               <div
-                key={i}
+                key={step.key}
                 className="bg-white/60 rounded-[22px] p-8 text-center shadow-lg hover:shadow-2xl 
              transition-transform duration-300 hover:-translate-y-2 border border-blue-900/90 
              flex flex-col items-center justify-center"
@@ -205,17 +230,17 @@ export default function LandingPage() {
                 <div className="w-10 h-10 rounded bg-blue-500/30 flex items-center justify-center mb-2 shadow-md">
                   <img
                     src={step.img}
-                    alt={step.title}
+                    alt={t(`landing.howItWorks.steps.${step.key}.title`)}
                     className="w-5 h-5 object-contain opacity-90"
                   />
                 </div>
 
                 <h3 className="font-semibold text-lg text-[#0056B3] mb-2">
-                  {step.title}
+                  {t(`landing.howItWorks.steps.${step.key}.title`)}
                 </h3>
 
                 <p className="text-black text-sm leading-relaxed">
-                  {step.desc}
+                  {t(`landing.howItWorks.steps.${step.key}.description`)}
                 </p>
               </div>
             ))}
@@ -231,56 +256,20 @@ export default function LandingPage() {
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-10 sm:mb-14">
             <h2 className="text-3xl sm:text-5xl font-extrabold text-[#0C2340] leading-tight">
-              Past Exam <span className="text-[#007BFF]">Practice Library</span>
+              {t("landing.pastExams.title")}{" "}
+              <span className="text-[#007BFF]">
+                {t("landing.pastExams.highlight")}
+              </span>
             </h2>
             <p className="text-[#425466] mt-3 sm:mt-4 text-sm sm:text-lg max-w-3xl mx-auto leading-relaxed">
-              Practice with real Ethiopian Secondary Education Leaving Exams
-              (ESLE) — the same style, structure, and level of difficulty you'll
-              face on test day.
+              {t("landing.pastExams.description")}
             </p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-8">
-            {[
-              {
-                subject: "English",
-                year: "ESSLCE 2021-2022",
-                desc: "Polish your comprehension, grammar, and vocabulary...",
-                icon: "/icon-park-outline_english.png",
-              },
-              {
-                subject: "Mathematics",
-                year: "ESSLCE 2020-2021",
-                desc: "Sharpen your math logic with actual exam questions...",
-                icon: "/hugeicons_math.png",
-              },
-              {
-                subject: "History",
-                year: "ESSLCE 2018-2019",
-                desc: "Challenge your knowledge of Ethiopia and the world...",
-                icon: "/ri_ancient-gate-line.png",
-              },
-              {
-                subject: "Physics",
-                year: "ESSLCE 2018-2019",
-                desc: "Solve authentic physics problems just like the real exam...",
-                icon: "/hugeicons_physics.png",
-              },
-              {
-                subject: "Geography",
-                year: "ESSLCE 2019-2020",
-                desc: "Understand geography with real world map and region questions...",
-                icon: "/arcticons_world-geography-alt.png",
-              },
-              {
-                subject: "Biology",
-                year: "ESSLCE 2019-2020",
-                desc: "Study genetics, ecosystems, and biology-based reasoning...",
-                icon: "/group.png",
-              },
-            ].map((item, i) => (
+            {pastExamItems.map((item) => (
               <div
-                key={i}
+                key={item.key}
                 className="bg-white rounded-[22px] shadow-md hover:shadow-xl transition-all duration-300 p-6 border border-[#E2E8F0] relative"
               >
                 <div className="absolute top-0 left-0 right-0 h-[6px] rounded-t-[22px] bg-[#007BFF]" />
@@ -292,12 +281,13 @@ export default function LandingPage() {
                     className="w-10 h-10 object-contain opacity-90"
                   />
                   <h3 className="text-base sm:text-lg font-semibold text-[#0C2340] leading-tight">
-                    {item.subject} — {item.year}
+                    {t(`landing.pastExams.items.${item.key}.subject`)} —{" "}
+                    {t(`landing.pastExams.items.${item.key}.year`)}
                   </h3>
                 </div>
 
                 <p className="text-sm sm:text-base text-[#425466] leading-relaxed">
-                  {item.desc}
+                  {t(`landing.pastExams.items.${item.key}.description`)}
                 </p>
 
                 <button
@@ -315,7 +305,7 @@ export default function LandingPage() {
                   }}
                   className="text-[#007BFF] mt-4 font-semibold text-sm sm:text-base hover:underline"
                 >
-                  See More
+                  {t("landing.pastExams.seeMore")}
                 </button>
               </div>
             ))}
@@ -324,7 +314,7 @@ export default function LandingPage() {
           <div className="text-center mt-12 sm:mt-14">
             <Link href="/auth">
               <button className="bg-[#FF8A00] hover:bg-[#ff9f33] text-white px-6 sm:px-8 py-3 sm:py-4 rounded-full shadow-lg font-semibold text-base sm:text-lg transition">
-                SignUp to Explore More
+                {t("landing.pastExams.cta")}
               </button>
             </Link>
           </div>
@@ -344,39 +334,27 @@ export default function LandingPage() {
 
         <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-center text-4xl sm:text-5xl font-extrabold tracking-tight mb-14">
-            What You Get with <span className="text-[#FF8A00]">SmartPrep</span>
+            {t("landing.features.title")}{" "}
+            <span className="text-[#FF8A00]">
+              {t("landing.features.highlight")}
+            </span>
           </h2>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-10">
-            {[
-              {
-                title: "Master Every Subject at Your Own Pace",
-                desc: "Access thousands of authentic past exam questions across all subjects. Whether you're in Addis Ababa or a rural village, SmartPrep gives you the same preparation tools as students in the most expensive private schools.",
-              },
-              {
-                title: "Study Anytime, Anywhere",
-                desc: "All you need is a phone and internet. Practice during your commute, after school, or late at night. SmartPrep works on your schedule, not the other way around.",
-              },
-              {
-                title: "Know Exactly Where You Stand",
-                desc: "Get instant feedback after every practice test. Our AI identifies your strengths and weak points, helping you focus your study time where it matters most—just like having a personal tutor.",
-              },
-              {
-                title: "Join a Community of Dreamers",
-                desc: "You're not alone in this journey. Connect with thousands of students across Ethiopia who are preparing together, supporting each other, and working toward their dreams.",
-              },
-            ].map((item, i) => (
+            {featureItems.map((key, i) => (
               <div
-                key={i}
+                key={key}
                 className={`
             bg-white/5 backdrop-blur-xl border border-white/10 rounded-[28px] 
             p-8 min-h-[240px] 
             ${i % 2 === 1 ? "sm:mt-8" : ""}   /* shift right-side cards down */
           `}
               >
-                <h3 className="text-lg font-semibold mb-3">{item.title}</h3>
+                <h3 className="text-lg font-semibold mb-3">
+                  {t(`landing.features.items.${key}.title`)}
+                </h3>
                 <p className="text-[#D8E1EB] leading-relaxed text-sm">
-                  {item.desc}
+                  {t(`landing.features.items.${key}.description`)}
                 </p>
               </div>
             ))}
@@ -395,43 +373,21 @@ export default function LandingPage() {
         {/* Content */}
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-center text-4xl sm:text-5xl font-extrabold tracking-tight mb-14">
-            Success <span className="text-[#007BFF]">Stories</span>
+            {t("landing.successStories.title")}{" "}
+            <span className="text-[#007BFF]">
+              {t("landing.successStories.highlight")}
+            </span>
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
-            {[
-              {
-                name: "Liya",
-                location: "from a small town with few tutors",
-                story:
-                  "used SmartPrep to turn digital classroom into her personal tutor and scored 500+!",
-                stars: 5,
-                image: "/111.png",
-              },
-              {
-                name: "Saron",
-                location: "from a family with 7 kids",
-                story:
-                  "used SmartPrep's step-by-step lessons to study between chores and got into her dream school.",
-                stars: 5,
-                image: "/1111.png",
-              },
-              {
-                name: "Mikiyas",
-                location: "barely had time to study",
-                story:
-                  "SmartPrep's 'learn anytime' model helped him study on the bus and pass with flying colors.",
-                stars: 5,
-                image: "image.png",
-              },
-            ].map((story, i) => (
+            {successStories.map((key, i) => (
               <Card
-                key={i}
+                key={key}
                 className="p-6 bg-white/90 backdrop-blur-sm border-0 shadow-lg hover:shadow-xl transition-shadow duration-300"
               >
                 {/* Stars */}
                 <div className="flex items-center gap-1 mb-3">
-                  {[...Array(story.stars)].map((_, j) => (
+                  {[...Array(5)].map((_, j) => (
                     <Star
                       key={j}
                       className="h-5 w-5 fill-orange-400 text-orange-400"
@@ -441,18 +397,30 @@ export default function LandingPage() {
 
                 {/* Story */}
                 <p className="text-gray-700 italic mb-6 text-sm sm:text-base leading-relaxed">
-                  "{story.story}"
+                  "{t(`landing.successStories.items.${key}.story`)}"
                 </p>
 
                 {/* Profile */}
                 <div className="flex items-center gap-3">
                   <div
                     className="w-12 h-12 rounded-full bg-cover bg-center border-2 border-white shadow-md"
-                    style={{ backgroundImage: `url(${story.image})` }}
+                    style={{
+                      backgroundImage: `url(${
+                        key === "liya"
+                          ? "/111.png"
+                          : key === "saron"
+                          ? "/1111.png"
+                          : "image.png"
+                      })`,
+                    }}
                   />
                   <div>
-                    <p className="font-bold text-gray-900">{story.name}</p>
-                    <p className="text-sm text-gray-500">{story.location}</p>
+                    <p className="font-bold text-gray-900">
+                      {t(`landing.successStories.items.${key}.name`)}
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      {t(`landing.successStories.items.${key}.location`)}
+                    </p>
                   </div>
                 </div>
               </Card>
@@ -465,31 +433,23 @@ export default function LandingPage() {
       <section className="py-12 sm:py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-center text-4xl sm:text-5xl font-extrabold tracking-tight mb-14">
-            Frequently Asked <span className="text-[#007BFF]">Questions</span>
+            {t("landing.faq.title")}{" "}
+            <span className="text-[#007BFF]">{t("landing.faq.highlight")}</span>
           </h2>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
             {/* Left Column */}
             <Accordion type="single" collapsible className="space-y-4">
-              {[
-                {
-                  q: "Are the questions similar to real exams?",
-                  a: "Yes. All SmartPrep questions are carefully designed...",
-                },
-                {
-                  q: "How is SmartPrep different from other study apps?",
-                  a: "Unlike generic quiz apps, SmartPrep is built specifically...",
-                },
-              ].map((faq, i) => (
+              {faqKeys.slice(0, 2).map((key, i) => (
                 <AccordionItem
-                  key={`left-${i}`}
+                  key={`left-${key}`}
                   value={`left-${i}`}
                   className="bg-gray-50 rounded-xl px-4 sm:px-6 border-0"
                 >
                   <AccordionTrigger className="text-base sm:text-lg font-semibold text-gray-900 hover:no-underline py-4">
-                    {faq.q}
+                    {t(`landing.faq.items.${key}.question`)}
                   </AccordionTrigger>
                   <AccordionContent className="text-gray-600 text-sm sm:text-base pb-4">
-                    {faq.a}
+                    {t(`landing.faq.items.${key}.answer`)}
                   </AccordionContent>
                 </AccordionItem>
               ))}
@@ -497,26 +457,17 @@ export default function LandingPage() {
 
             {/* Right Column */}
             <Accordion type="single" collapsible className="space-y-4">
-              {[
-                {
-                  q: "Can I use SmartPrep offline?",
-                  a: "Not yet, but we’re working on it! You need an internet connection...",
-                },
-                {
-                  q: "Who creates the questions and study materials?",
-                  a: "Our content is created by experienced Ethiopian teachers...",
-                },
-              ].map((faq, i) => (
+              {faqKeys.slice(2).map((key, i) => (
                 <AccordionItem
-                  key={`right-${i}`}
+                  key={`right-${key}`}
                   value={`right-${i}`}
                   className="bg-gray-50 rounded-xl px-4 sm:px-6 border-0"
                 >
                   <AccordionTrigger className="text-base sm:text-lg font-semibold text-gray-900 hover:no-underline py-4">
-                    {faq.q}
+                    {t(`landing.faq.items.${key}.question`)}
                   </AccordionTrigger>
                   <AccordionContent className="text-gray-600 text-sm sm:text-base pb-4">
-                    {faq.a}
+                    {t(`landing.faq.items.${key}.answer`)}
                   </AccordionContent>
                 </AccordionItem>
               ))}
@@ -540,7 +491,7 @@ export default function LandingPage() {
             {/* Image */}
             <img
               src="/1111.png"
-              alt="Student learning"
+              alt={t("landing.newsletter.imageAlt")}
               className="relative z-20 w-[220px] object-contain drop-shadow-2xl"
             />
           </div>
@@ -552,32 +503,30 @@ export default function LandingPage() {
             {/* LEFT: TEXT + FORM */}
             <div className="max-w-xl w-full text-center lg:text-left z-10 order-2 lg:order-1">
               <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 sm:mb-6 text-white leading-tight">
-                Subscribe for Updates
+                {t("landing.newsletter.title")}
               </h2>
               <p className="text-white/90 text-base sm:text-lg leading-relaxed mb-6 sm:mb-8 max-w-lg mx-auto lg:mx-0">
-                Don’t miss out on the latest updates and exclusive content.
-                Subscribe now and be the first to know when our scored practice
-                test is live.
+                {t("landing.newsletter.description")}
               </p>
 
               {/* FORM */}
               <form className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full sm:max-w-md mx-auto lg:mx-0">
                 <input
                   type="email"
-                  placeholder="Enter your email address"
+                  placeholder={t("landing.newsletter.emailPlaceholder")}
                   className="w-full sm:flex-1 h-12 sm:h-14 rounded-full bg-white text-gray-700 placeholder-gray-400 px-5 sm:px-6 text-base border border-gray-300 focus:outline-none focus:ring-2 focus:ring-orange-400 shadow-sm"
                 />
                 <button
                   type="submit"
                   className="w-full sm:w-auto bg-[#F7931E] hover:bg-[#e58310] text-white px-8 sm:px-10 h-12 sm:h-14 rounded-full text-base font-semibold transition-all shadow-md hover:shadow-lg"
                 >
-                  Subscribe
+                  {t("landing.newsletter.cta")}
                 </button>
               </form>
 
               {/* Optional small text under input on mobile */}
               <p className="text-xs text-white/70 mt-3 sm:mt-4">
-                We respect your privacy. Unsubscribe anytime.
+                {t("landing.newsletter.privacyNote")}
               </p>
             </div>
 
@@ -590,7 +539,7 @@ export default function LandingPage() {
               {/* Image */}
               <img
                 src="/1111.png"
-                alt="Student learning"
+                alt={t("landing.newsletter.imageAlt")}
                 className="relative z-20 w-[720px] object-contain drop-shadow-xl -mt-6"
               />
             </div>
