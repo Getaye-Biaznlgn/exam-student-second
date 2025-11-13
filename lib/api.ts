@@ -29,6 +29,18 @@ export interface MyProgressResponse {
     };
   };
 }
+export interface StartLiveExamPayload {
+  exam_id: string;
+  mode: "exam" | "practice"; // keep same as your normal exam payload
+}
+export interface StartLiveExamResponse {
+  // match the shape returned by /live/start
+  exam: any;
+  student_exam_id: string;
+  questions: any[];
+  // add more fields if returned
+}
+
 export interface StudentDashboardResponse {
   performance_overview: {
     overall_average_score: number;
@@ -127,7 +139,22 @@ export interface Subject {
   improving_topics_count: number;
   topics: Topic[];
 }
+export interface SubmitLiveAnswerPayload {
+  student_question_id: string;
+  option_id: string;
+  is_flagged?: boolean;
+  time_spent_seconds?: number;
+}
 
+export interface SubmitLiveAnswerResponse {
+  success: boolean;
+  message?: string;
+  question_id: string;
+  selected_option_id: string;
+  is_flagged?: boolean;
+  time_spent_seconds?: number;
+  // add more fields if your backend returns them
+}
 export interface OverallInsights {
   strong_topics: string[];
   weak_topics: string[];
@@ -185,6 +212,41 @@ export interface ExamHistoryItem {
   answers: ExamAnswer[]; // NEW: Added answers array
 }
 
+export interface LiveExam {
+  id: string;
+  title: string;
+  description: string;
+  subject_name: string;
+  duration_minutes: number;
+  total_questions: number;
+  passing_marks: number;
+  batch: string;
+  field: string;
+  start_time: string;
+  end_time: string;
+  is_taken: boolean;
+  can_take: boolean;
+  created_at: string;
+}
+
+export interface LiveExamsResponse {
+  data: LiveExam[];
+  meta: Record<string, unknown>;
+}
+export interface SubmitLiveExamPayload {
+  student_exam_id: string;
+  answers: {
+    student_question_id: string;
+    option_id?: string;
+    is_flagged?: boolean;
+    time_spent_seconds?: number;
+  }[];
+}
+export interface SubmitLiveExamResponse {
+  success: boolean;
+  message?: string;
+  data?: any; // can be replaced with a typed ExamResult
+}
 // --- Interface for Exam History Response ---
 export type ExamHistoryResponse = ExamHistoryItem[];
 
@@ -428,6 +490,25 @@ export function startExam(
   });
 }
 
+export function startLiveExam(
+  payload: StartLiveExamPayload
+): Promise<ApiResponse<StartLiveExamResponse>> {
+  return apiFetch<StartLiveExamResponse>("/student-exams/live/start", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+export function submitLiveAnswer(
+  payload: SubmitLiveAnswerPayload
+): Promise<ApiResponse<SubmitLiveAnswerResponse>> {
+  return apiFetch<SubmitLiveAnswerResponse>(
+    "/student-exams/live/submit-answer",
+    {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }
+  );
+}
 export function submitExam(
   studentExamId: string,
   questions: StartExamResponse["questions"]
@@ -447,7 +528,28 @@ export function submitExam(
     body: JSON.stringify(payload),
   });
 }
-
+export function submitLiveExam(
+  payload: SubmitLiveExamPayload
+): Promise<ApiResponse<SubmitLiveExamResponse>> {
+  return apiFetch<SubmitLiveExamResponse>("/student-exams/live/submit-exam", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+export function fetchMyCompletedLiveExams(): Promise<
+  ApiResponse<LiveExamsResponse>
+> {
+  return apiFetch<LiveExamsResponse>("/student-exams/live/my-completed", {
+    method: "GET",
+  });
+}
+export function fetchLiveExamResults(
+  studentExamId: string
+): Promise<ApiResponse<any>> {
+  return apiFetch<any>(`/student-exams/live/results/${studentExamId}`, {
+    method: "GET",
+  });
+}
 export function fetchMyProgress(): Promise<ApiResponse<MyProgressResponse>> {
   return apiFetch<MyProgressResponse>("/student-exams/my-progress", {
     method: "GET",
@@ -469,7 +571,13 @@ export function fetchTopicAnalysis(): Promise<
     method: "GET",
   });
 }
-
+export function fetchAvailableLiveExams(): Promise<
+  ApiResponse<LiveExamsResponse>
+> {
+  return apiFetch<LiveExamsResponse>("/student-exams/live/available", {
+    method: "GET",
+  });
+}
 export function fetchExamHistory(
   mode: "exam" | "practice"
 ): Promise<ApiResponse<ExamHistoryResponse>> {

@@ -10,6 +10,9 @@ import {
   fetchAIExplanation,
   getUserProfile,
   clearAnswer,
+  startLiveExam,
+  submitLiveAnswer,
+  submitLiveExam,
 } from "@/lib/api";
 import { useLayout } from "@/lib/layout-context";
 import { IncompleteQuestionsModal } from "@/components/exam/IncompleteQuestionsModal";
@@ -25,6 +28,8 @@ import { ExamNavigationBar } from "@/components/exam/ExamNavigationBar";
 import { ExamSummary } from "@/components/exam/ExamSummary";
 import { ConfirmSubmitModal } from "@/components/exam/ConfirmSubmitModal";
 import { QuestionExplanations } from "@/components/exam/QuestionExplanation";
+
+// ...existing code...
 
 function stripHtmlTags(html: string | null | undefined): string {
   if (typeof html !== "string") return "";
@@ -65,6 +70,7 @@ export default function ExamPage() {
   const [finalResult, setFinalResult] = useState<any>(null);
 
   const [isPracticeMode, setIsPracticeMode] = useState(false);
+  const [isLiveMode, setIsLiveMode] = useState(false);
   const [aiExplanation, setAiExplanation] = useState<AIExplanation | null>(
     null
   );
@@ -91,11 +97,27 @@ export default function ExamPage() {
   const durationSeconds = (examData?.exam?.duration_minutes ?? 0) * 60;
   const [remainingSeconds, setRemainingSeconds] = useState(durationSeconds);
 
+  // Helper: compute remaining seconds for live exams accounting for scheduled start_time
+  const computeInitialRemaining = (): number => {
+    if (!examData) return durationSeconds;
+    if (!isLiveMode) return durationSeconds;
+    const startTimeStr = examData.exam?.start_time;
+    if (!startTimeStr) return durationSeconds;
+    const scheduledStart = new Date(startTimeStr).getTime();
+    const elapsedSinceScheduled = Math.floor(
+      (Date.now() - scheduledStart) / 1000
+    );
+    return Math.max(0, durationSeconds - elapsedSinceScheduled);
+  };
+
   useEffect(() => {
     if (!examStarted || durationSeconds === 0) return;
 
-    const startTime = Date.now();
-    const endTime = startTime + durationSeconds * 1000;
+    // For live exams, reduce remaining time by the delay since scheduled start_time.
+    const initialRemaining = computeInitialRemaining();
+    setRemainingSeconds(initialRemaining);
+
+    const endTime = Date.now() + initialRemaining * 1000;
 
     const timer = setInterval(() => {
       const now = Date.now();
@@ -128,19 +150,24 @@ export default function ExamPage() {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [examStarted, durationSeconds]);
+  }, [examStarted, durationSeconds, examData, isLiveMode]);
 
   // Reset timer when exam starts
   useEffect(() => {
     if (examStarted) {
-      setRemainingSeconds(durationSeconds);
+      // use same logic as above to set remainingSeconds when examStarted flips
+      const initialRemaining = computeInitialRemaining();
+      setRemainingSeconds(initialRemaining);
     }
-  }, [examStarted, durationSeconds]);
+  }, [examStarted, durationSeconds, examData, isLiveMode]);
 
   // ── Fetch exam & profile ─────────────────────────────────────────────
   useEffect(() => {
     const examId = searchParams.get("exam_id");
-    const mode = searchParams.get("mode");
+    const type = searchParams.get("type"); // 'live' or undefined
+    // If type=live and mode is missing, default to exam
+    let mode = searchParams.get("mode");
+    if (!mode && type === "live") mode = "exam";
 
     if (!examId || !["exam", "practice"].includes(mode ?? "")) {
       setError("Invalid exam ID or mode.");
@@ -149,20 +176,92 @@ export default function ExamPage() {
     }
 
     setIsPracticeMode(mode === "practice");
+    setIsLiveMode(type === "live");
 
     (async () => {
       try {
-        const res = await startExam({ exam_id: examId, mode: mode! });
-        if (res.success && res.data) {
-          setExamData(res.data);
-          setAnswers({});
-          setFlagged(new Set());
-          answersRef.current = {};
-          flaggedRef.current = new Set();
-          timeSpentRef.current = {};
-        } else setError(res.message ?? "Failed to start exam.");
-      } catch {
-        setError("Unexpected error.");
+        let res;
+        if (type === "live") {
+          res = await startLiveExam({ exam_id: examId, mode: mode! });
+          if (res.success && res.data) {
+            const questions = (res.data.questions || []).map((q: any) => {
+              const studentQuestionId =
+                q.student_question_id ?? q.id ?? q.student_question_id;
+              const questionId = q.question_id ?? q.question_id;
+              const questionText = q.question_text ?? q.text ?? "";
+              const options = (q.options || []).map((o: any) => ({
+                id:
+                  o.option_id ??
+                  o.id ??
+                  `${studentQuestionId}_opt_${Math.random()
+                    .toString(36)
+                    .slice(2, 6)}`,
+                option_key: o.option_key ?? o.key ?? null,
+                option_text: o.option_text ?? o.text ?? "",
+                is_correct: o.is_correct ?? undefined,
+              }));
+              return {
+                id: studentQuestionId,
+                question: {
+                  id: questionId,
+                  question_text: questionText,
+                  options,
+                  explanation: null,
+                  correct_option: undefined,
+                },
+                selected_option:
+                  q.selected_option_id ?? q.selected_option ?? null,
+                time_spent_seconds: q.time_spent_seconds ?? 0,
+                is_correct: q.is_correct ?? null,
+                is_flagged: q.is_flagged ?? false,
+                ai_explanation: null,
+              } as any;
+            });
+
+            setExamData({
+              student_exam_id: res.data.student_exam_id ?? res.data.id,
+              mode: mode === "practice" ? "practice" : "exam",
+              exam: res.data.exam ?? res.data.exam_detail ?? {},
+              questions,
+            } as StartExamResponse);
+
+            // Prefill UI answers using selected_option_id
+            const preAnswers: Record<string, string> = {};
+            const preFlagged = new Set<string>();
+            questions.forEach((pq: any) => {
+              if (pq.selected_option) {
+                // The backend returns selected_option_id
+                preAnswers[pq.question.id] = pq.selected_option;
+              }
+              if (pq.is_flagged) preFlagged.add(pq.question.id);
+            });
+            setAnswers(preAnswers);
+            answersRef.current = preAnswers;
+            setFlagged(preFlagged);
+            flaggedRef.current = preFlagged;
+          } else {
+            console.error("startLiveExam failed:", res);
+            setError(res?.message ?? "Failed to start live exam.");
+          }
+        } else {
+          res = await startExam({ exam_id: examId, mode: mode! });
+          if (res.success && res.data) {
+            setExamData(res.data);
+            // For non-live we intentionally don't map selected_option
+            setAnswers({});
+            answersRef.current = {};
+            setFlagged(new Set());
+            flaggedRef.current = new Set();
+          } else {
+            console.error("startExam failed:", res);
+            setError(res?.message ?? "Failed to start exam.");
+          }
+        }
+
+        timeSpentRef.current = {};
+      } catch (e: any) {
+        console.error("Exam initialization error:", e);
+        setError(e?.message ?? "Unexpected error while starting exam.");
       } finally {
         setIsLoading(false);
       }
@@ -174,8 +273,8 @@ export default function ExamPage() {
       const res = await getUserProfile();
       if (res.success && res.data) {
         const field =
-          res.data.stream?.charAt(0).toUpperCase() +
-            res.data.stream?.slice(1).toLowerCase() || "";
+          (res.data.stream?.charAt(0).toUpperCase() ?? "") +
+            (res.data.stream?.slice(1).toLowerCase() ?? "") || "";
         setProfileData({
           ...res.data,
           stream: ["Natural", "Social"].includes(field) ? field : "N/A",
@@ -191,6 +290,7 @@ export default function ExamPage() {
     if (examStarted && currentQuestion) {
       startTimeRef.current = Date.now();
       if (timeRef.current) clearInterval(timeRef.current);
+
       timeRef.current = setInterval(() => {}, 1000);
     }
     return () => {
@@ -262,20 +362,32 @@ export default function ExamPage() {
     const opt = currentQuestion.question.options.find((o) => o.id === optionId);
     if (!opt) return;
 
-    setAnswers((prev) => ({
-      ...prev,
-      [currentQuestion.question.id]: optionId,
-    }));
+    setAnswers((prev) => {
+      const next = { ...prev, [currentQuestion.question.id]: optionId };
+      answersRef.current = next;
+      return next;
+    });
     updateCurrentTime();
 
     try {
-      await submitAnswer({
-        question_id: currentQuestion.question.id,
-        selected_option: opt.option_key,
-        time_spent_seconds:
-          timeSpentRef.current[currentQuestion.question.id] ?? 0,
-        is_flagged: flaggedRef.current.has(currentQuestion.question.id),
-      });
+      if (isLiveMode) {
+        // live endpoint expects student_question_id and option_id
+        await submitLiveAnswer({
+          student_question_id: currentQuestion.id,
+          option_id: optionId,
+          time_spent_seconds:
+            timeSpentRef.current[currentQuestion.question.id] ?? 0,
+          is_flagged: flaggedRef.current.has(currentQuestion.question.id),
+        });
+      } else {
+        await submitAnswer({
+          question_id: currentQuestion.question.id,
+          selected_option: opt.option_key ?? optionId,
+          time_spent_seconds:
+            timeSpentRef.current[currentQuestion.question.id] ?? 0,
+          is_flagged: flaggedRef.current.has(currentQuestion.question.id),
+        });
+      }
     } catch (e) {
       console.error(e);
     }
@@ -287,13 +399,23 @@ export default function ExamPage() {
     setAnswers((prev) => {
       const updated = { ...prev };
       delete updated[currentQuestion.question.id];
+      answersRef.current = updated;
       return updated;
     });
 
     updateCurrentTime();
 
     try {
-      await clearAnswer(currentQuestion.question.id);
+      if (isLiveMode) {
+        await submitLiveAnswer({
+          student_question_id: currentQuestion.id,
+          option_id: null as any,
+          is_flagged: false,
+          time_spent_seconds: 0,
+        });
+      } else {
+        await clearAnswer(currentQuestion.question.id);
+      }
     } catch (e) {
       console.error("Error clearing answer:", e);
     }
@@ -328,6 +450,7 @@ export default function ExamPage() {
     const newFlagged = new Set(flagged);
     willFlag ? newFlagged.add(qId) : newFlagged.delete(qId);
     setFlagged(newFlagged);
+    flaggedRef.current = newFlagged;
     updateCurrentTime();
 
     if (willFlag) {
@@ -337,12 +460,21 @@ export default function ExamPage() {
             ?.option_key ?? null
         : null;
       try {
-        await submitAnswer({
-          question_id: qId,
-          selected_option: optKey,
-          time_spent_seconds: timeSpentRef.current[qId] ?? 0,
-          is_flagged: true,
-        });
+        if (isLiveMode) {
+          await submitLiveAnswer({
+            student_question_id: currentQuestion.id,
+            option_id: sel ?? null,
+            time_spent_seconds: timeSpentRef.current[qId] ?? 0,
+            is_flagged: true,
+          });
+        } else {
+          await submitAnswer({
+            question_id: qId,
+            selected_option: optKey,
+            time_spent_seconds: timeSpentRef.current[qId] ?? 0,
+            is_flagged: true,
+          });
+        }
       } catch (e) {
         console.error(e);
       }
@@ -357,26 +489,46 @@ export default function ExamPage() {
     updateCurrentTime();
 
     try {
-      const payload = examData!.questions.map((q) => {
-        const selId = answersRef.current[q.question.id]; // ← Use ref
-        const selKey = selId
-          ? q.question.options.find((o) => o.id === selId)?.option_key ?? null
-          : null;
-
-        return {
-          ...q,
-          selected_option: selKey,
-          time_spent_seconds: timeSpentRef.current[q.question.id] ?? 0,
-          is_flagged: flaggedRef.current.has(q.question.id), // ← Use ref
+      if (isLiveMode) {
+        const livePayload = {
+          student_exam_id: examData!.student_exam_id,
+          answers: examData!.questions.map((q) => {
+            const selId = answersRef.current[q.question.id] ?? null;
+            return {
+              student_question_id: q.id,
+              option_id: selId ?? undefined,
+              is_flagged: flaggedRef.current.has(q.question.id),
+              time_spent_seconds: timeSpentRef.current[q.question.id] ?? 0,
+            };
+          }),
         };
-      });
-
-      const res = await submitExam(examData!.student_exam_id, payload);
-      if (res.success && res.data) {
-        setFinalResult(res.data);
-        setExamCompleted(true);
+        const res = await submitLiveExam(livePayload);
+        if (res.success && res.data) {
+          setFinalResult(res.data);
+          setExamCompleted(true);
+        } else {
+          setError(res.message ?? "Live submit failed.");
+        }
       } else {
-        setError(res.message ?? "Submit failed.");
+        const payload = examData!.questions.map((q) => {
+          const selId = answersRef.current[q.question.id]; // ← Use ref
+          const selKey = selId
+            ? q.question.options.find((o) => o.id === selId)?.option_key ?? null
+            : null;
+          return {
+            ...q,
+            selected_option: selKey,
+            time_spent_seconds: timeSpentRef.current[q.question.id] ?? 0,
+            is_flagged: flaggedRef.current.has(q.question.id), // ← Use ref
+          };
+        });
+        const res = await submitExam(examData!.student_exam_id, payload);
+        if (res.success && res.data) {
+          setFinalResult(res.data);
+          setExamCompleted(true);
+        } else {
+          setError(res.message ?? "Submit failed.");
+        }
       }
     } catch (e) {
       setError("Unexpected submit error.");
@@ -454,6 +606,49 @@ export default function ExamPage() {
   }
 
   if (examCompleted) {
+    // Show success modal only for LIVE exams
+    if (isLiveMode) {
+      return (
+        <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
+          <div className="bg-white rounded-2xl p-8 w-full max-w-sm text-center shadow-xl animate-fadeIn">
+            <div className="flex justify-center mb-4">
+              <div className="h-14 w-14 rounded-full bg-green-100 flex items-center justify-center">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-8 w-8 text-green-600"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M5 13l4 4L19 7"
+                  />
+                </svg>
+              </div>
+            </div>
+
+            <h2 className="text-2xl font-semibold text-green-600 mb-2">
+              Exam Submitted Successfully!
+            </h2>
+            <p className="text-gray-700 mb-6">
+              Your live exam has been submitted successfully. Thank you for
+              participating.
+            </p>
+
+            <button
+              onClick={() => router.push("/")}
+              className="bg-primary text-white px-6 py-2 rounded-lg hover:bg-primary/90 transition"
+            >
+              Go to Home
+            </button>
+          </div>
+        </div>
+      );
+    }
+
     return (
       <ExamResultCard
         result={finalResult}
