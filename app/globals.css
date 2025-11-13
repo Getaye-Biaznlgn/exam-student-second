@@ -152,3 +152,173 @@
 .animate-fadeIn {
   animation: fadeIn 0.3s ease-out;
 }
+@keyframes glowPulse {
+  0%,
+  100% {
+    opacity: 0.8;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+}
+@keyframes glowSlow {
+  0%,
+  100% {
+    opacity: 0.1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.15;
+    transform: scale(1.1);
+  }
+}
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+@keyframes bounceSubtle {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+}
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes fadeInSlow {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Utility classes */
+.animate-glow-pulse {
+  animation: glowPulse 4s ease-in-out infinite;
+}
+.animate-glow-slow {
+  animation: glowSlow 6s ease-in-out infinite;
+}
+.animate-float {
+  animation: float 5s ease-in-out infinite;
+}
+.hover\\:animate-bounce-subtle:hover {
+  animation: bounceSubtle 0.4s ease-in-out;
+}
+.animate-fadeIn {
+  animation: fadeIn 0.8s ease-out forwards;
+}
+.animate-fadeInSlow {
+  animation: fadeInSlow 1.5s ease-out forwards;
+}
+.animate-fadeUp {
+  animation: fadeUp 0.9s ease-out forwards;
+}
+.animate-slideIn {
+  animation: slideIn 1s ease-out forwards;
+}
+@keyframes buttonGlow {
+  0%,
+  100% {
+    box-shadow: 0 0 0px rgba(255, 138, 0, 0);
+  }
+  50% {
+    box-shadow: 0 0 12px rgba(255, 138, 0, 0.4);
+  }
+}
+
+@keyframes buttonGlowSlow {
+  0%,
+  100% {
+    box-shadow: 0 0 0px rgba(37, 99, 235, 0);
+  }
+  50% {
+    box-shadow: 0 0 10px rgba(37, 99, 235, 0.3);
+  }
+}
+
+.animate-button-glow {
+  animation: buttonGlow 3s ease-in-out infinite;
+}
+.animate-button-glow-slow {
+  animation: buttonGlowSlow 4s ease-in-out infinite;
+}
+@keyframes buttonGlow {
+  0%,
+  100% {
+    box-shadow: 0 0 0px rgba(255, 138, 0, 0);
+  }
+  50% {
+    box-shadow: 0 0 12px rgba(255, 138, 0, 0.45);
+  }
+}
+
+@keyframes buttonGlowBlue {
+  0%,
+  100% {
+    box-shadow: 0 0 0px rgba(37, 99, 235, 0);
+  }
+  50% {
+    box-shadow: 0 0 10px rgba(37, 99, 235, 0.35);
+  }
+}
+
+@keyframes bounceSoft {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+/* Combine bounce + glow for both buttons */
+.animate-button-bounce-glow {
+  animation: bounceSoft 3.2s ease-in-out infinite,
+    buttonGlow 3.5s ease-in-out infinite;
+}
+
+.animate-button-bounce-glow-blue {
+  animation: bounceSoft 3.5s ease-in-out infinite,
+    buttonGlowBlue 4s ease-in-out infinite;
+}

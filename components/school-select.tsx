@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
+import { useLocale } from "@/lib/locale-context";
 
 interface SchoolSelectProps {
   value: string;
@@ -23,6 +24,7 @@ export function SchoolSelect({ value, onValueChange, disabled = false }: SchoolS
   const [schools, setSchools] = useState<School[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  const { t } = useLocale();
 
   useEffect(() => {
     const loadSchools = async () => {
@@ -34,16 +36,16 @@ export function SchoolSelect({ value, onValueChange, disabled = false }: SchoolS
           setSchools(response.data);
         } else {
           toast({
-            title: "Error loading schools",
-            description: response.message || "Failed to fetch schools",
+            title: t("schoolSelect.errorTitle"),
+            description: response.message || t("schoolSelect.errorDefault"),
             variant: "destructive",
           });
         }
       } catch (error) {
         console.error("Error fetching schools:", error);
         toast({
-          title: "Error loading schools",
-          description: "Failed to fetch schools. Please try again.",
+          title: t("schoolSelect.errorTitle"),
+          description: t("schoolSelect.errorRetry"),
           variant: "destructive",
         });
       } finally {
@@ -52,15 +54,15 @@ export function SchoolSelect({ value, onValueChange, disabled = false }: SchoolS
     };
 
     loadSchools();
-  }, [toast]);
+  }, [toast, t]);
 
   if (loading) {
     return (
       <div className="space-y-2">
-        <Label htmlFor="school-select">School</Label>
+        <Label htmlFor="school-select">{t("schoolSelect.label")}</Label>
         <Select disabled>
           <SelectTrigger>
-            <SelectValue placeholder="Loading schools..." />
+            <SelectValue placeholder={t("schoolSelect.loading")} />
           </SelectTrigger>
         </Select>
       </div>
@@ -69,10 +71,10 @@ export function SchoolSelect({ value, onValueChange, disabled = false }: SchoolS
 
   return (
     <div className="space-y-2">
-      <Label htmlFor="school-select">School</Label>
+      <Label htmlFor="school-select">{t("schoolSelect.label")}</Label>
       <Select value={value} onValueChange={onValueChange} disabled={disabled}>
         <SelectTrigger id="school-select">
-          <SelectValue placeholder="Select your school" />
+          <SelectValue placeholder={t("schoolSelect.placeholder")} />
         </SelectTrigger>
         <SelectContent>
           {schools.map((school) => (

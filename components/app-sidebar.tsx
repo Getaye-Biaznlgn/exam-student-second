@@ -6,13 +6,14 @@ import { usePathname } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useLocale } from "@/lib/locale-context";
 
 const navigation = [
-  { name: "Dashboard", href: "/dashboard", icon: Home },
-  { name: "Topic Analysis", href: "/topic-analysis", icon: Brain },
-  { name: "History", href: "/history", icon: Clock },
-  { name: "Progress", href: "/progress", icon: TrendingUp },
-];
+  { key: "dashboard", href: "/dashboard", icon: Home },
+  { key: "topicAnalysis", href: "/topic-analysis", icon: Brain },
+  { key: "history", href: "/history", icon: Clock },
+  { key: "progress", href: "/progress", icon: TrendingUp },
+] as const;
 
 interface AppSidebarProps {
   onClose?: () => void;
@@ -21,6 +22,7 @@ interface AppSidebarProps {
 export function AppSidebar({ onClose }: AppSidebarProps = {}) {
   const pathname = usePathname();
   const { user, logout } = useAuth();
+  const { t } = useLocale();
 
   const handleLinkClick = () => {
     if (onClose) {
@@ -52,7 +54,7 @@ export function AppSidebar({ onClose }: AppSidebarProps = {}) {
           const isActive = pathname === item.href;
           return (
             <Link
-              key={item.name}
+              key={item.key}
               href={item.href}
               onClick={handleLinkClick}
               className={cn(
@@ -63,7 +65,7 @@ export function AppSidebar({ onClose }: AppSidebarProps = {}) {
               )}
             >
               <item.icon className="h-5 w-5" />
-              {item.name}
+              {t(`navigation.${item.key}`)}
             </Link>
           );
         })}
@@ -77,7 +79,7 @@ export function AppSidebar({ onClose }: AppSidebarProps = {}) {
           onClick={logout}
         >
           <LogOut className="h-5 w-5" />
-          Logout
+          {t("auth.logout")}
         </Button>
       </div>
     </div>

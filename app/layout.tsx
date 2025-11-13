@@ -9,6 +9,7 @@ import "./globals.css";
 
 // --- NEW IMPORTS ---
 import { LayoutProvider } from "@/lib/layout-context";
+import { LocaleProvider } from "@/lib/locale-context";
 import { MainLayout } from "@/components/MainLayout";
 
 // --- REMOVED IMPORTS ---
@@ -35,14 +36,16 @@ export default function RootLayout({
       >
         <Suspense fallback={null}>
           <AuthProvider>
-            {/* 1. Wrap everything with the LayoutProvider */}
-            <LayoutProvider>
-              {/* 2. Use MainLayout to render the content */}
-              <MainLayout>
-                {/* 3. Your page (children) goes inside */}
-                {children}
-              </MainLayout>
-            </LayoutProvider>
+            <LocaleProvider>
+              {/* 1. Wrap everything with the LayoutProvider */}
+              <LayoutProvider>
+                {/* 2. Use MainLayout to render the content */}
+                <MainLayout>
+                  {/* 3. Your page (children) goes inside */}
+                  {children}
+                </MainLayout>
+              </LayoutProvider>
+            </LocaleProvider>
           </AuthProvider>
         </Suspense>
         <Analytics />
